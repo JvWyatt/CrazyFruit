@@ -1,0 +1,13 @@
+# Godot 4
+.godot/
+
+# Export / build output
+/build/
+*.apk
+*.aab
+*.keystore
+*.jks
+
+# Editor
+*.tmp
+.editor

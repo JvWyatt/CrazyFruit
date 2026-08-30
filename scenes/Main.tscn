@@ -1,0 +1,83 @@
+[gd_scene load_steps=16 format=3 uid="uid://bv83m2ak4a23p"]
+
+[ext_resource type="Script" uid="uid://ctmisjsdikrjn" path="res://scripts/Main.gd" id="1_main"]
+[ext_resource type="PackedScene" uid="uid://dg03k36pm1y8a" path="res://scenes/ui/MainMenu.tscn" id="2_menu"]
+[ext_resource type="PackedScene" uid="uid://c7m5p23s78va1" path="res://scenes/game/FruitSpawner.tscn" id="3_spawner"]
+[ext_resource type="PackedScene" uid="uid://bv83nas24w8q1" path="res://scenes/game/SwipeController.tscn" id="4_swipe"]
+[ext_resource type="PackedScene" uid="uid://dm28ka4n2e7k0" path="res://scenes/ui/HUD.tscn" id="5_hud"]
+[ext_resource type="PackedScene" uid="uid://df72mk4w870p1" path="res://scenes/ui/RunUpgradeModal.tscn" id="6_run_up"]
+[ext_resource type="PackedScene" uid="uid://dmk8730pa16c1" path="res://scenes/ui/StatsModal.tscn" id="7_stats_mod"]
+[ext_resource type="PackedScene" uid="uid://sn1j1sh7dogw" path="res://scenes/ui/OrderCompletionModal.tscn" id="8_order_completion"]
+[ext_resource type="PackedScene" uid="uid://cx62m20g3n4a1" path="res://scenes/ui/CardSelectionModal.tscn" id="9_card_sel"]
+[ext_resource type="PackedScene" uid="uid://b00g72yq15x3a" path="res://scenes/ui/ResultsModal.tscn" id="10_results"]
+[ext_resource type="PackedScene" uid="uid://daqm4p2e81ba1" path="res://scenes/ui/KnifeShopModal.tscn" id="11_knife_shop"]
+[ext_resource type="PackedScene" uid="uid://bwm82l5k4qaa1" path="res://scenes/ui/PrestigeShopModal.tscn" id="12_prestige_shop"]
+[ext_resource type="PackedScene" path="res://scenes/ui/ProgressModal.tscn" id="13_progress"]
+[ext_resource type="PackedScene" path="res://scenes/ui/CardsModal.tscn" id="14_cards"]
+[ext_resource type="PackedScene" path="res://scenes/game/Fruit3DWorld.tscn" id="16_3d"]
+
+[node name="Main" type="Node"]
+script = ExtResource("1_main")
+
+[node name="Background" type="ColorRect" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(1, 1, 1, 0)
+
+[node name="MainMenu" parent="." instance=ExtResource("2_menu")]
+
+[node name="GameWorld" type="Node2D" parent="."]
+
+[node name="Fruit3DLayer" type="SubViewportContainer" parent="GameWorld"]
+offset_right = 720.0
+offset_bottom = 1280.0
+mouse_filter = 2
+stretch = true
+
+[node name="Viewport" type="SubViewport" parent="GameWorld/Fruit3DLayer"]
+size = Vector2i(720, 1280)
+own_world_3d = true
+transparent_bg = true
+
+[node name="FruitSpawner" parent="GameWorld" instance=ExtResource("3_spawner")]
+play_bounds = Rect2(10, 240, 700, 900)
+
+[node name="SwipeController" parent="GameWorld" instance=ExtResource("4_swipe")]
+
+[node name="HUDLayer" type="CanvasLayer" parent="GameWorld"]
+
+[node name="HUD" parent="GameWorld/HUDLayer" instance=ExtResource("5_hud")]
+
+[node name="Modals" type="CanvasLayer" parent="."]
+layer = 50
+
+[node name="RunUpgradeModal" parent="Modals" instance=ExtResource("6_run_up")]
+visible = false
+
+[node name="StatsModal" parent="Modals" instance=ExtResource("7_stats_mod")]
+visible = false
+
+[node name="OrderCompletionModal" parent="Modals" instance=ExtResource("8_order_completion")]
+visible = false
+
+[node name="CardSelectionModal" parent="Modals" instance=ExtResource("9_card_sel")]
+visible = false
+
+[node name="ResultsModal" parent="Modals" instance=ExtResource("10_results")]
+visible = false
+
+[node name="KnifeShopModal" parent="Modals" instance=ExtResource("11_knife_shop")]
+visible = false
+
+[node name="PrestigeShopModal" parent="Modals" instance=ExtResource("12_prestige_shop")]
+visible = false
+
+[node name="ProgressModal" parent="Modals" instance=ExtResource("13_progress")]
+visible = false
+
+[node name="CardsModal" parent="Modals" instance=ExtResource("14_cards")]
+visible = false

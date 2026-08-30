@@ -1,0 +1,62 @@
+extends Node
+class_name Ballistic
+# ============================================================================
+# Ballistic: componente de movimiento parab\u00f3lico (estilo Fruit Ninja).
+# ----------------------------------------------------------------------------
+# Se usa como hijo de frutas y obst\u00e1culos. Es puramente mec\u00e1nico: no
+# sabe nada de frutas, obst\u00e1culos, vida, resistencia ni da\u00f1o.
+# Los proyectiles REBOTAN en las paredes laterales (wall_left/wall_right) y
+# solo salen del juego al caer por debajo de escape_y (entonces llama a
+# _on_projectile_escaped() en su padre).
+# ============================================================================
+
+var velocity: Vector2 = Vector2.ZERO
+var gravity: float = 1500.0
+var escape_y: float = 1500.0
+var wall_left: float = 10.0
+var wall_right: float = 710.0
+var is_active: bool = false
+
+# Lanza desde from_position con una velocidad inicial y gravedad determinadas.
+# Solo funciona si el padre es un Node2D (se desplaza al padre).
+func launch(from_position: Vector2, launch_velocity: Vector2, p_gravity: float = 1500.0, p_wall_left: float = 10.0, p_wall_right: float = 710.0) -> void:
+	var parent := get_parent()
+	if parent is Node2D:
+		parent.position = from_position
+	velocity = launch_velocity
+	gravity = p_gravity
+	wall_left = p_wall_left
+	wall_right = p_wall_right
+	is_active = true
+
+func stop() -> void:
+	is_active = false
+
+func _physics_process(delta: float) -> void:
+	if not is_active:
+		return
+	var parent := get_parent()
+	if not (parent is Node2D):
+		is_active = false
+		return
+
+	velocity.y += gravity * delta
+	parent.position += velocity * delta
+	var p: Vector2 = parent.position
+
+	# Rebote en las paredes laterales (solo si viene hacia la pared, para no
+	# quedarse atrapado dentro del borde). La vertical no cambia.
+	if p.x < wall_left:
+		if velocity.x < 0.0:
+			parent.position.x = wall_left + (wall_left - p.x)
+			velocity.x = -velocity.x
+	elif p.x > wall_right:
+		if velocity.x > 0.0:
+			parent.position.x = wall_right - (p.x - wall_right)
+			velocity.x = -velocity.x
+
+	# Solo abandona el juego al caer por debajo (nunca por los laterales).
+	if parent.position.y > escape_y:
+		is_active = false
+		if parent.has_method("_on_projectile_escaped"):
+			parent._on_projectile_escaped()

@@ -116,14 +116,14 @@ theme_override_colors/font_color = Color(1, 0.88, 0.25, 1)
 theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.8)
 theme_override_constants/shadow_offset_y = 3
 theme_override_font_sizes/font_size = 42
-text = "PUESTO DE ENSALADAS"
+text = "CRAZY FRUIT"
 horizontal_alignment = 1
 
 [node name="SubtitleLabel" type="Label" parent="CenterVBox/TitleVBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.7, 0.8, 0.95, 1)
 theme_override_font_sizes/font_size = 18
-text = "Puesto de Ensaladas de Frutas"
+text = "¡Rebana y Vende Frutas!"
 horizontal_alignment = 1
 
 [node name="ButtonsVBox" type="VBoxContainer" parent="CenterVBox"]

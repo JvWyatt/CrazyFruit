@@ -26,7 +26,7 @@ const OBSTACLE_SCENE: PackedScene = preload("res://scenes/game/Obstacle.tscn")
 # se pierden por el borde superior y vuelven a caer. La gravedad y el punto de
 # desaparición viven en Ballistic.gd.
 const LAUNCH_SPEED_MIN: float = 1000.0
-const LAUNCH_SPEED_MAX: float = 2200.0
+const LAUNCH_SPEED_MAX: float = 2000.0
 const LAUNCH_ANGLE_MAX_DEG: float = 20.0
 
 var active_fruits: Array[Fruit] = []

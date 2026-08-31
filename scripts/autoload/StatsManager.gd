@@ -67,26 +67,26 @@ var knives_db: Dictionary = {
 		"id": "weapon_fist",
 		"name": "Puño",
 		"description": "La herramienta más básica para empezar.",
-		"damage": 3.0,
+		"damage": 5.0,
 		"energy_cost": 1,
 		"price": 0,
 		"icon": "👊"
 	},
 	"weapon_fork": {
 		"id": "weapon_fork", "name": "Tenedor", "description": "Un pequeño avance en precisión.",
-		"damage": 6.0, "energy_cost": 0.9, "price": 25, "icon": "🍴"
+		"damage": 10.0, "energy_cost": 0.9, "price": 25, "icon": "🍴"
 	},
 	"weapon_table_knife": {
 		"id": "weapon_table_knife", "name": "Cuchillo de mesa", "description": "Un filo sencillo y práctico.",
-		"damage": 10.0, "energy_cost": 0.8, "price": 45, "icon": "🔪"
+		"damage": 15.0, "energy_cost": 0.8, "price": 45, "icon": "🔪"
 	},
 	"weapon_scissors": {
 		"id": "weapon_scissors", "name": "Tijera", "description": "Dos filos para cortes más rápidos.",
-		"damage": 16.0, "energy_cost": 0.7, "price": 80, "icon": "✂️"
+		"damage": 20.0, "energy_cost": 0.7, "price": 80, "icon": "✂️"
 	},
 	"weapon_box_cutter": {
 		"id": "weapon_box_cutter", "name": "Cúter", "description": "Una hoja fina y sorprendentemente eficaz.",
-		"damage": 24.0, "energy_cost": 0.6, "price": 150, "icon": "🪒"
+		"damage": 25.0, "energy_cost": 0.6, "price": 150, "icon": "🪒"
 	},
 	"weapon_knife": {
 		"id": "weapon_knife", "name": "Cuchillo", "description": "Un filo fiable para el trabajo diario.",

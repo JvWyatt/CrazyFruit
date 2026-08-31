@@ -27,9 +27,6 @@ class_name Fruit3D
 #   Si el .glb no existe, se usa la fruta esferica de color base (fallback).
 # ============================================================================
 
-const WORLD_HALF_W: float = 360.0
-const WORLD_HALF_H: float = 640.0
-
 const WHOLE_MODELS_DIR: String = "res://assets/models/whole/"
 const BROKEN_MODELS_DIR: String = "res://assets/models/broken/"
 const ROCK_MODELS_DIR: String = "res://assets/models/"
@@ -43,7 +40,6 @@ var _broken_vel_a: Vector3 = Vector3.ZERO
 var _broken_vel_b: Vector3 = Vector3.ZERO
 
 const BROKEN_GRAVITY: float = 1500.0
-const BROKEN_GROUND: float = -660.0
 
 var half_a: MeshInstance3D
 var half_b: MeshInstance3D
@@ -54,10 +50,12 @@ var half_b: MeshInstance3D
 func is_broken() -> bool:
 	return _broken
 
-# Convierte la posicion 2D (px, eje Y hacia abajo, pantalla 720x1280) a
-# coordenadas del mundo 3D espejo (camera ortografica 1:1 centrada en 0,0).
+# Convierte la posicion 2D (px, eje Y hacia abajo) a coordenadas del mundo 3D
+# espejo (camera ortografica 1:1 centrada en 0,0). Usa el tamano REAL del
+# viewport para que el mapeo siga exacto en pantallas mas altas que 720x1280.
 func set_pos2d(pos: Vector2) -> void:
-	position = Vector3(pos.x - WORLD_HALF_W, WORLD_HALF_H - pos.y, 0.0)
+	var vs := get_viewport().get_visible_rect().size
+	position = Vector3(pos.x - vs.x / 2.0, vs.y / 2.0 - pos.y, 0.0)
 
 func setup_fruit(fd: FruitData, golden: bool, p_scale: float = 1.0) -> void:
 	is_rock = false
@@ -171,8 +169,14 @@ func _update_broken_halves(delta: float) -> void:
 	half_b.position += _broken_vel_b * delta
 	half_a.rotation.z += -2.5 * delta
 	half_b.rotation.z += 2.5 * delta
-	if half_a.position.y < BROKEN_GROUND or half_b.position.y < BROKEN_GROUND:
+	if half_a.position.y < _kill_y() or half_b.position.y < _kill_y():
 		queue_free()
+
+# Altura a la que las mitades "salen" de pantalla: justo debajo del borde real
+# del viewport (adaptado a pantallas mas altas que 720x1280).
+func _kill_y() -> float:
+	var vs := get_viewport().get_visible_rect().size
+	return -vs.y / 2.0 - 20.0
 
 # ============================================================================
 # Carga de modelos del usuario (con fallback procedural).

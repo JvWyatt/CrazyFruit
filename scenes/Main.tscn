@@ -1,4 +1,4 @@
-[gd_scene load_steps=16 format=3 uid="uid://bv83m2ak4a23p"]
+[gd_scene load_steps=15 format=3 uid="uid://bv83m2ak4a23p"]
 
 [ext_resource type="Script" uid="uid://ctmisjsdikrjn" path="res://scripts/Main.gd" id="1_main"]
 [ext_resource type="PackedScene" uid="uid://dg03k36pm1y8a" path="res://scenes/ui/MainMenu.tscn" id="2_menu"]
@@ -14,7 +14,6 @@
 [ext_resource type="PackedScene" uid="uid://bwm82l5k4qaa1" path="res://scenes/ui/PrestigeShopModal.tscn" id="12_prestige_shop"]
 [ext_resource type="PackedScene" path="res://scenes/ui/ProgressModal.tscn" id="13_progress"]
 [ext_resource type="PackedScene" path="res://scenes/ui/CardsModal.tscn" id="14_cards"]
-[ext_resource type="PackedScene" path="res://scenes/game/Fruit3DWorld.tscn" id="16_3d"]
 
 [node name="Main" type="Node"]
 script = ExtResource("1_main")
@@ -26,22 +25,11 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
-color = Color(1, 1, 1, 0)
+color = Color(0.24577132, 0.69673496, 0.7205561, 1)
 
 [node name="MainMenu" parent="." instance=ExtResource("2_menu")]
 
 [node name="GameWorld" type="Node2D" parent="."]
-
-[node name="Fruit3DLayer" type="SubViewportContainer" parent="GameWorld"]
-offset_right = 720.0
-offset_bottom = 1280.0
-mouse_filter = 2
-stretch = true
-
-[node name="Viewport" type="SubViewport" parent="GameWorld/Fruit3DLayer"]
-size = Vector2i(720, 1280)
-own_world_3d = true
-transparent_bg = true
 
 [node name="FruitSpawner" parent="GameWorld" instance=ExtResource("3_spawner")]
 play_bounds = Rect2(10, 240, 700, 900)
@@ -51,6 +39,22 @@ play_bounds = Rect2(10, 240, 700, 900)
 [node name="HUDLayer" type="CanvasLayer" parent="GameWorld"]
 
 [node name="HUD" parent="GameWorld/HUDLayer" instance=ExtResource("5_hud")]
+
+[node name="Fruit3DLayer" type="SubViewportContainer" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+stretch = true
+
+[node name="Viewport" type="SubViewport" parent="Fruit3DLayer"]
+own_world_3d = true
+transparent_bg = true
+handle_input_locally = false
+size = Vector2i(720, 1280)
+render_target_update_mode = 4
 
 [node name="Modals" type="CanvasLayer" parent="."]
 layer = 50

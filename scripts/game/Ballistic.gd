@@ -19,7 +19,11 @@ var is_active: bool = false
 
 # Lanza desde from_position con una velocidad inicial y gravedad determinadas.
 # Solo funciona si el padre es un Node2D (se desplaza al padre).
-func launch(from_position: Vector2, launch_velocity: Vector2, p_gravity: float = 1500.0, p_wall_left: float = 10.0, p_wall_right: float = 710.0) -> void:
+# p_escape_y: altura (px) por debajo de la cual el proyectil "escapa". Debe ir
+# acorde al alto REAL del viewport: un valor fijo (p.ej. 1500) elimina las
+# frutas al instante en pantallas más altas que 720x1280 (la fruta nace a
+# play_bounds.end.y + 150, que en pantalla alta supera 1500).
+func launch(from_position: Vector2, launch_velocity: Vector2, p_gravity: float = 1500.0, p_wall_left: float = 10.0, p_wall_right: float = 710.0, p_escape_y: float = 1500.0) -> void:
 	var parent := get_parent()
 	if parent is Node2D:
 		parent.position = from_position
@@ -27,6 +31,7 @@ func launch(from_position: Vector2, launch_velocity: Vector2, p_gravity: float =
 	gravity = p_gravity
 	wall_left = p_wall_left
 	wall_right = p_wall_right
+	escape_y = p_escape_y
 	is_active = true
 
 func stop() -> void:

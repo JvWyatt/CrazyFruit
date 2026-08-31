@@ -14,7 +14,8 @@ const FRUIT3D_WORLD_SCENE: PackedScene = preload("res://scenes/game/Fruit3DWorld
 @onready var fruit_spawner: Node2D = $GameWorld/FruitSpawner
 @onready var swipe_controller: Node2D = $GameWorld/SwipeController
 @onready var hud: Control = $GameWorld/HUDLayer/HUD
-@onready var fruit3d_layer: SubViewportContainer = $GameWorld/Fruit3DLayer
+@onready var fruit3d_layer: SubViewportContainer = $Fruit3DLayer
+var _fruit3d_viewport: SubViewport
 
 @onready var run_upgrade_modal: Control = $Modals/RunUpgradeModal
 @onready var stats_modal: Control = $Modals/StatsModal
@@ -62,10 +63,15 @@ func _ready() -> void:
 
 # Instancia el mundo 3D de frutas dentro del SubViewport transparente, que
 # espeja las frutas/piedras 2D (ver Fruit3DWorld.gd). Puro visual.
+# Fruit3DLayer es hijo directo de Main (como Background/MainMenu), por lo que
+# sus anchors abarcan el canvas completo (720x1280 de base, mas alto en moviles).
+# El SubViewportContainer tiene `stretch` activado: el contenedor redimensiona
+# el SubViewport a su propio rect cada frame, asi la camara/set_pos2d mapean 1:1
+# con cualquier alto real (no hay que fijar `size` a mano: se ignora + warning).
 func _init_fruit3d_overlay() -> void:
-	var viewport: SubViewport = fruit3d_layer.get_node("Viewport")
 	var world: Node3D = FRUIT3D_WORLD_SCENE.instantiate()
-	viewport.add_child(world)
+	_fruit3d_viewport = fruit3d_layer.get_node("Viewport")
+	_fruit3d_viewport.add_child(world)
 	if world.has_method("setup_fruit_spawner"):
 		world.setup_fruit_spawner(fruit_spawner)
 

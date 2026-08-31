@@ -22,14 +22,12 @@ const OBSTACLE_SCENE: PackedScene = preload("res://scenes/game/Obstacle.tscn")
 
 # Parámetros del lanzamiento. La velocidad inicial (y el ángulo respecto a la
 # vertical) se eligen al azar dentro de estos rangos para que cada lanzamiento
-# sea un poco distinto y las parábolas llenen la pantalla (0..1280): los más
-# bajos quedan a media altura y los más altos rozan el borde superior. La
-# gravedad y el punto de desaparición viven en Ballistic.gd.
-const LAUNCH_SPEED_MIN: float = 1350.0
-const LAUNCH_SPEED_MAX: float = 1750.0
+# sea un poco distinto: los más lentos quedan a media altura y los más rápidos
+# se pierden por el borde superior y vuelven a caer. La gravedad y el punto de
+# desaparición viven en Ballistic.gd.
+const LAUNCH_SPEED_MIN: float = 1000.0
+const LAUNCH_SPEED_MAX: float = 2200.0
 const LAUNCH_ANGLE_MAX_DEG: float = 20.0
-# Altura de aparición: justo debajo del borde inferior de la pantalla.
-const LAUNCH_Y: float = 1290.0
 
 var active_fruits: Array[Fruit] = []
 var active_obstacles: Array[Obstacle] = []
@@ -37,6 +35,8 @@ var is_spawning_enabled: bool = false
 var launch_timer: float = 0.0
 
 func _ready() -> void:
+	call_deferred("_adapt_play_bounds")
+	get_viewport().size_changed.connect(func(): call_deferred("_adapt_play_bounds"))
 	GameManager.run_started.connect(func():
 		clear_all()
 		is_spawning_enabled = true
@@ -44,6 +44,21 @@ func _ready() -> void:
 	)
 	GameManager.run_ended.connect(func(_summary): clear_all(); is_spawning_enabled = false)
 	GameManager.order_completed.connect(func(_order): clear_all())
+
+# El area de juego mantiene las MISMA proporciones que el diseno 720x1280
+# (borde 10px, tope al 18.75% del alto, fondo al 89%) pero escala con el alto
+# REAL del viewport, para que el campo llene pantallas mas altas como la del
+# movil. En el escritorio (720x1280) queda identico a antes.
+func _adapt_play_bounds() -> void:
+	var vp := get_viewport_rect()
+	if vp.size.y <= 0.0:
+		return
+	play_bounds = Rect2(
+		10.0,
+		vp.size.y * 0.1875,
+		maxf(10.0, vp.size.x - 20.0),
+		vp.size.y * 0.703125
+	)
 
 func _process(delta: float) -> void:
 	if not is_spawning_enabled or not GameManager.is_round_active:
@@ -102,7 +117,7 @@ func _compute_launch() -> Dictionary:
 	var dir_x: float = 1.0 if randf() > 0.5 else -1.0
 	var from: Vector2 = Vector2(
 		randf_range(play_bounds.position.x + 70, play_bounds.end.x - 70),
-		LAUNCH_Y
+		play_bounds.end.y + 150.0
 	)
 	var vel: Vector2 = Vector2(sin(angle) * speed * dir_x, -cos(angle) * speed)
 	return {"from": from, "vel": vel}
@@ -120,7 +135,7 @@ func _launch_fruit() -> void:
 	add_child(fruit)
 	fruit.add_to_group("fruits")
 	fruit.setup(fruit_res)
-	fruit.launch(launch["from"], launch["vel"], play_bounds.position.x, play_bounds.end.x)
+	fruit.launch(launch["from"], launch["vel"], play_bounds.position.x, play_bounds.end.x, _escape_y())
 	fruit.fruit_destroyed.connect(_on_fruit_destroyed)
 	active_fruits.append(fruit)
 
@@ -130,8 +145,15 @@ func _launch_obstacle() -> void:
 	add_child(obstacle)
 	obstacle.add_to_group("obstacles")
 	obstacle.setup(randf_range(30.0, 44.0))
-	obstacle.launch(launch["from"], launch["vel"], play_bounds.position.x, play_bounds.end.x)
+	obstacle.launch(launch["from"], launch["vel"], play_bounds.position.x, play_bounds.end.x, _escape_y())
 	active_obstacles.append(obstacle)
+
+# Altura a la que los proyectiles "escapan" del juego: un poco por debajo del
+# borde inferior REAL del viewport. En pantallas altas (movil 720x1560) este
+# valor supera el 1500 fijo de Ballistic; si se dejara fijo, las frutas que
+# nacen a play_bounds.end.y + 150 (> 1500) escaparian apenas lanzadas.
+func _escape_y() -> float:
+	return get_viewport_rect().size.y + 60.0
 
 func _on_fruit_destroyed(fruit: Fruit) -> void:
 	if fruit in active_fruits:

@@ -27,7 +27,9 @@ func _ready() -> void:
 func _install_theme() -> void:
 	var theme := Theme.new()
 
-	# Botones: forma de píldora con borde, relieve inferior y sombra.
+	# Botones: esquinas claramente redondeadas con borde, relieve inferior y sombra.
+# (Radio fijo 18: una píldora con radio 999 en botones anchos se ve como un
+# rectángulo plano; con radio 18 el redondeo es evidente en todas las pantallas.)
 	var btn_normal := _pill_style(Color(0.16, 0.2, 0.34), Color(0.45, 0.55, 0.85, 0.9), 3)
 	var btn_hover := _pill_style(Color(0.23, 0.3, 0.5), Color(0.72, 0.8, 0.97, 1.0), 4)
 	var btn_pressed := _pill_style(Color(0.085, 0.11, 0.2), Color(0.95, 0.78, 0.32, 1.0), 1)
@@ -55,6 +57,18 @@ func _install_theme() -> void:
 	theme.set_stylebox("background", "ProgressBar", _box_style(Color(0.09, 0.11, 0.17), Color(0.2, 0.26, 0.42, 0.8), 8))
 	theme.set_stylebox("fill", "ProgressBar", _box_style(Color(0.31, 0.84, 0.62), Color(0.31, 0.84, 0.62, 0.0), 8))
 
+	# Pestañas redondeadas (p.ej. Mejoras/Frutería/Armas de la tienda de mejoras).
+	theme.set_stylebox("tab_selected", "TabContainer", _box_style(Color(0.16, 0.2, 0.34), Color(0.45, 0.55, 0.85, 0.9), 12, 2))
+	theme.set_stylebox("tab_unselected", "TabContainer", _box_style(Color(0.09, 0.11, 0.17), Color(0.2, 0.26, 0.42, 0.6), 12))
+	theme.set_stylebox("tab_hovered", "TabContainer", _box_style(Color(0.12, 0.15, 0.24), Color(0.4, 0.5, 0.75, 0.7), 12))
+	theme.set_stylebox("tab_focused", "TabContainer", _box_style(Color(0.12, 0.15, 0.24), Color(0.3, 0.6, 1.0, 0.9), 12, 2))
+	theme.set_stylebox("panel", "TabContainer", _box_style(COLOR_PANEL, Color(0.28, 0.36, 0.58, 0.8), 14))
+	theme.set_color("font_color_selected", "TabContainer", COLOR_TEXT)
+	theme.set_color("font_unselected_color", "TabContainer", COLOR_TEXT_DIM)
+	theme.set_color("font_hovered_color", "TabContainer", COLOR_TEXT)
+	theme.set_font_size("font_size", "TabContainer", 16)
+	theme.set_constant("tab_separation", "TabContainer", 2)
+
 	# Paneles por defecto (tarjeta oscura con borde y sombra).
 	theme.set_stylebox("panel", "PanelContainer", _box_style(COLOR_PANEL, Color(0.28, 0.36, 0.58), 14, 8))
 
@@ -77,7 +91,7 @@ func _install_theme() -> void:
 	get_tree().root.theme = theme
 
 func _pill_style(bg: Color, border: Color, shadow_size: int) -> StyleBoxFlat:
-	var sb := _box_style(bg, border, 999, shadow_size)
+	var sb := _box_style(bg, border, 18, shadow_size)
 	sb.content_margin_left = 24
 	sb.content_margin_right = 24
 	sb.content_margin_top = 10

@@ -24,30 +24,31 @@ signal open_stats_requested
 
 var upgrade_keys: Array[String] = ["damage", "energy_max", "luck", "money", "launch_rate"]
 var fruit_prices: Dictionary = {
-	# Progresión geoétrica coherente con los objetivos del día (~x1.75 por
-	# pedido): cada fruta cuesta aprox. 3-4 pedidos de objetivo anterior, así
-	# que se compran de una en una (cadena: hay que comprar la anterior).
+	# Progresión rebalanceada (curva MÁS empinada que antes): cada fruta cuesta
+	# ~2x la anterior. Las primeras se siguen comprando en los primeros días,
+	# pero las de gama media/alta requieren correr mucho más profundo en el
+	# negocio, para que no puedas comprar casi todo en las primeras runs.
 	# La Frutería está bloqueada en cadena: no puedes comprar una fruta sin
 	# haber comprado la anterior (ver _get_prev_fruit_id).
-	"banana": 60,
-	"peach": 110,
-	"cherry": 200,
-	"orange": 350,
-	"apple": 600,
-	"pear": 1050,
-	"kiwi": 1900,
-	"mango": 3400,
-	"lemon": 6000,
-	"watermelon": 10500,
-	"melon": 18500,
-	"pineapple": 32000,
-	"papaya": 56000,
-	"coconut": 98000,
-	"avocado": 170000,
-	"dragon_fruit": 300000,
-	"guava": 525000,
-	"quince": 920000,
-	"pumpkin": 1600000
+	"banana": 120,
+	"peach": 260,
+	"cherry": 550,
+	"orange": 1100,
+	"apple": 2200,
+	"pear": 4200,
+	"kiwi": 8000,
+	"mango": 15000,
+	"lemon": 30000,
+	"watermelon": 60000,
+	"melon": 120000,
+	"pineapple": 240000,
+	"papaya": 480000,
+	"coconut": 960000,
+	"avocado": 1900000,
+	"dragon_fruit": 3800000,
+	"guava": 7500000,
+	"quince": 15000000,
+	"pumpkin": 30000000
 }
 
 # Cached row refs so purchases can update in place instead of rebuilding the whole shop

@@ -141,15 +141,15 @@ Se desbloquean/equipan por partida en la pestaña **Armas**.
 | Arma | Ícono | Daño | Gasto energía | Precio |
 |---|---|---|---|---|
 | Puño | 👊 | 5 | 1.0 | gratis |
-| Tenedor | 🍴 | 10 | 0.9 | $25 |
-| Cuchillo de mesa | 🔪 | 15 | 0.8 | $45 |
-| Tijera | ✂️ | 20 | 0.7 | $80 |
-| Cúter | 🪒 | 25 | 0.6 | $150 |
-| Cuchillo | 🔪 | 35 | 0.5 | $270 |
-| Machete | 🗡️ | 50 | 0.4 | $500 |
-| Hacha | 🪓 | 70 | 0.3 | $900 |
-| Espada | ⚔️ | 95 | 0.2 | $1600 |
-| Motosierra | 🪚 | 130 | 0.1 | $2900 |
+| Tenedor | 🍴 | 10 | 0.9 | $40 |
+| Cuchillo de mesa | 🔪 | 15 | 0.8 | $90 |
+| Tijera | ✂️ | 20 | 0.7 | $180 |
+| Cúter | 🪒 | 25 | 0.6 | $340 |
+| Cuchillo | 🔪 | 35 | 0.5 | $650 |
+| Machete | 🗡️ | 50 | 0.4 | $1.250 |
+| Hacha | 🪓 | 70 | 0.3 | $2.400 |
+| Espada | ⚔️ | 95 | 0.2 | $4.600 |
+| Motosierra | 🪚 | 130 | 0.1 | $9.000 |
 
 ---
 
@@ -161,25 +161,25 @@ comprado la anterior. Desbloqueos por partida.
 | Fruta | Vida | Recompensa | Precio |
 |---|---|---|---|
 | 🍓 Fresa | 18 | 1–10 | inicial |
-| 🍌 Banana | 27 | 5–15 | $60 |
-| 🍑 Melocotón | 41 | 8–25 | $110 |
-| 🍒 Cereza | 61 | 15–45 | $200 |
-| 🍊 Naranja | 91 | 25–80 | $350 |
-| 🍎 Manzana | 137 | 45–135 | $600 |
-| 🍐 Pera | 205 | 80–235 | $1050 |
-| 🥝 Kiwi | 308 | 140–420 | $1900 |
-| 🥭 Mango | 461 | 240–720 | $3400 |
-| 🍋 Limón | 692 | 420–1250 | $6000 |
-| 🍉 Sandía | 1400 | 750–2200 | $10500 |
-| 🍈 Melón | 1900 | 1300–3900 | $18500 |
-| 🍍 Piña | 2600 | 2250–6800 | $32000 |
-| 🥭 Papaya | 3500 | 4.000–12.000 | $56.000 |
-| 🥥 Coco | 4700 | 7.000–21.000 | $98.000 |
-| 🥑 Aguacate | 6300 | 12.000–36.000 | $170.000 |
-| Pitahaya | 8500 | 21.000–64.000 | $300.000 |
-| Guayaba | 11500 | 37.000–112.000 | $525.000 |
-| Membrillo | 15500 | 65.000–195.000 | $920.000 |
-| 🎃 Calabaza | 21000 | 114.000–340.000 | $1.600.000 |
+| 🍌 Banana | 27 | 5–15 | $120 |
+| 🍑 Melocotón | 41 | 8–25 | $260 |
+| 🍒 Cereza | 61 | 15–45 | $550 |
+| 🍊 Naranja | 91 | 25–80 | $1.100 |
+| 🍎 Manzana | 137 | 45–135 | $2.200 |
+| 🍐 Pera | 205 | 80–235 | $4.200 |
+| 🥝 Kiwi | 308 | 140–420 | $8.000 |
+| 🥭 Mango | 461 | 240–720 | $15.000 |
+| 🍋 Limón | 692 | 420–1250 | $30.000 |
+| 🍉 Sandía | 1400 | 750–2200 | $60.000 |
+| 🍈 Melón | 1900 | 1300–3900 | $120.000 |
+| 🍍 Piña | 2600 | 2250–6800 | $240.000 |
+| 🥭 Papaya | 3500 | 4.000–12.000 | $480.000 |
+| 🥥 Coco | 4700 | 7.000–21.000 | $960.000 |
+| 🥑 Aguacate | 6300 | 12.000–36.000 | $1.900.000 |
+| Pitahaya | 8500 | 21.000–64.000 | $3.800.000 |
+| Guayaba | 11500 | 37.000–112.000 | $7.500.000 |
+| Membrillo | 15500 | 65.000–195.000 | $15.000.000 |
+| 🎃 Calabaza | 21000 | 114.000–340.000 | $30.000.000 |
 
 > Otros 13 STATS que usan las frutas: penalización de vida/recompensa por comodines;
 > el **crítico** siempre multiplica ×2 (fijo, no mejorable); hay **fruta dorada** (1%

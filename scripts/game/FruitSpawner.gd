@@ -25,8 +25,12 @@ const OBSTACLE_SCENE: PackedScene = preload("res://scenes/game/Obstacle.tscn")
 # sea un poco distinto: los más lentos quedan a media altura y los más rápidos
 # se pierden por el borde superior y vuelven a caer. La gravedad y el punto de
 # desaparición viven en Ballistic.gd.
-const LAUNCH_SPEED_MIN: float = 1000.0
-const LAUNCH_SPEED_MAX: float = 2000.0
+# La velocidad inicial se bajó 20% (x0.8) y la gravedad se ajustó también
+# (x0.64, ver Fruit.gd/Obstacle.gd/Ballistic.gd) para que las frutas crucen la
+# pantalla más lentas pero alcancen la MISMA altura y alcance que antes
+# (la parábola mantiene su forma; el tiempo de vuelo es ~1.25x mayor).
+const LAUNCH_SPEED_MIN: float = 800.0
+const LAUNCH_SPEED_MAX: float = 1600.0
 const LAUNCH_ANGLE_MAX_DEG: float = 20.0
 
 var active_fruits: Array[Fruit] = []

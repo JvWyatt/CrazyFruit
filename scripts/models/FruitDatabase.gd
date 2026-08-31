@@ -355,5 +355,8 @@ static func create_fruit_resource(fruit_id: String) -> FruitData:
 	fd.unlock_order = dict["unlock_order"]
 	fd.base_color = dict["base_color"]
 	fd.inner_color = dict["inner_color"]
-	fd.radius = dict["radius"]
+	# Frutas x2 de tamaño: el radio de la DB se duplica en runtime para que los
+	# sprites, el hitbox y el modelo 3D se vean el doble de grandes (antes eran
+	# demasiado pequeñas). Scales sprite, hitbox y modelo 3D a la vez.
+	fd.radius = dict["radius"] * 2.0
 	return fd

@@ -31,7 +31,8 @@ func setup(p_radius: float) -> void:
 
 func launch(from_position: Vector2, launch_velocity: Vector2, p_wall_left: float = 10.0, p_wall_right: float = 710.0, p_escape_y: float = 1500.0) -> void:
 	if ballistic:
-		ballistic.launch(from_position, launch_velocity, 1500.0, p_wall_left, p_wall_right, p_escape_y)
+		# Gravedad x0.64 (1500 -> 960) coherente con la fruta/y la velocidad x0.8.
+		ballistic.launch(from_position, launch_velocity, 960.0, p_wall_left, p_wall_right, p_escape_y)
 
 func _process(delta: float) -> void:
 	if hit_cooldown > 0.0:

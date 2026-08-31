@@ -74,39 +74,39 @@ var knives_db: Dictionary = {
 	},
 	"weapon_fork": {
 		"id": "weapon_fork", "name": "Tenedor", "description": "Un pequeño avance en precisión.",
-		"damage": 10.0, "energy_cost": 0.9, "price": 25, "icon": "🍴"
+		"damage": 10.0, "energy_cost": 0.9, "price": 40, "icon": "🍴"
 	},
 	"weapon_table_knife": {
 		"id": "weapon_table_knife", "name": "Cuchillo de mesa", "description": "Un filo sencillo y práctico.",
-		"damage": 15.0, "energy_cost": 0.8, "price": 45, "icon": "🔪"
+		"damage": 15.0, "energy_cost": 0.8, "price": 90, "icon": "🔪"
 	},
 	"weapon_scissors": {
 		"id": "weapon_scissors", "name": "Tijera", "description": "Dos filos para cortes más rápidos.",
-		"damage": 20.0, "energy_cost": 0.7, "price": 80, "icon": "✂️"
+		"damage": 20.0, "energy_cost": 0.7, "price": 180, "icon": "✂️"
 	},
 	"weapon_box_cutter": {
 		"id": "weapon_box_cutter", "name": "Cúter", "description": "Una hoja fina y sorprendentemente eficaz.",
-		"damage": 25.0, "energy_cost": 0.6, "price": 150, "icon": "🪒"
+		"damage": 25.0, "energy_cost": 0.6, "price": 340, "icon": "🪒"
 	},
 	"weapon_knife": {
 		"id": "weapon_knife", "name": "Cuchillo", "description": "Un filo fiable para el trabajo diario.",
-		"damage": 35.0, "energy_cost": 0.5, "price": 270, "icon": "🔪"
+		"damage": 35.0, "energy_cost": 0.5, "price": 650, "icon": "🔪"
 	},
 	"weapon_machete": {
 		"id": "weapon_machete", "name": "Machete", "description": "Fuerza y alcance en cada golpe.",
-		"damage": 50.0, "energy_cost": 0.4, "price": 500, "icon": "🗡️"
+		"damage": 50.0, "energy_cost": 0.4, "price": 1250, "icon": "🗡️"
 	},
 	"weapon_axe": {
 		"id": "weapon_axe", "name": "Hacha", "description": "Un corte pesado que parte cualquier fruta.",
-		"damage": 70.0, "energy_cost": 0.3, "price": 900, "icon": "🪓"
+		"damage": 70.0, "energy_cost": 0.3, "price": 2400, "icon": "🪓"
 	},
 	"weapon_sword": {
 		"id": "weapon_sword", "name": "Espada", "description": "Precisión y potencia de nivel superior.",
-		"damage": 95.0, "energy_cost": 0.2, "price": 1600, "icon": "⚔️"
+		"damage": 95.0, "energy_cost": 0.2, "price": 4600, "icon": "⚔️"
 	},
 	"weapon_chainsaw": {
 		"id": "weapon_chainsaw", "name": "Motosierra", "description": "La herramienta definitiva para cortar sin parar.",
-		"damage": 130.0, "energy_cost": 0.1, "price": 2900, "icon": "🪚"
+		"damage": 130.0, "energy_cost": 0.1, "price": 9000, "icon": "🪚"
 	}
 }
 

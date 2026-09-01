@@ -55,7 +55,7 @@ func _update_launch_rate_display() -> void:
 var _last_money: float = -1.0
 
 func _on_money_changed(amount: float) -> void:
-	money_label.text = "💰 $" + _format_number(amount)
+	money_label.text = "💰 $" + UiTheme.format_money(amount)
 	if amount > _last_money and _last_money >= 0.0:
 		UiTheme.pulse_label(money_label, 1.12)
 	_last_money = amount
@@ -65,7 +65,7 @@ func _on_order_progress_changed(progress: float, target: float) -> void:
 	status_info_label.text = "💼 Negocio " + str(SaveManager.save_data.get("days_started", 1))
 	order_progress_bar.max_value = target
 	order_progress_bar.value = min(progress, target)
-	order_progress_label.text = "$" + _format_number(progress) + " / $" + _format_number(target)
+	order_progress_label.text = "$" + UiTheme.format_money(progress) + " / $" + UiTheme.format_money(target)
 
 func _on_energy_changed(current_e: float, max_e: float) -> void:
 	energy_bar.max_value = max_e
@@ -92,15 +92,3 @@ func _on_quit_confirmed() -> void:
 func _on_quit_canceled() -> void:
 	if GameManager.current_state == GameManager.GameState.PLAYING:
 		GameManager.resume_turn()
-
-func _format_number(val: float) -> String:
-	var int_val: int = int(round(val))
-	var str_val: String = str(int_val)
-	var formatted: String = ""
-	var count: int = 0
-	for i in range(str_val.length() - 1, -1, -1):
-		if count > 0 and count % 3 == 0:
-			formatted = "," + formatted
-		formatted = str_val[i] + formatted
-		count += 1
-	return formatted

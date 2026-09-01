@@ -5,7 +5,7 @@ extends Node
 # Guarda el progreso PERMANENTE del jugador en disco (archivo JSON en
 # "user://"), es decir, todo lo que sobrevive aunque el negocio quiebre o se
 # cierre el juego: reputación/prestigio, mejoras de prestigio, y estadísticas
-# históricas (dinero total ganado, frutas cortadas, etc).
+# históricas (frutas cortadas, mejor día, reputación acumulada, etc).
 #
 # IMPORTANTE: "unlocked_fruits"/"unlocked_knives"/"equipped_knife" aquí
 # guardados son solo un registro histórico (para la pantalla de Progreso).
@@ -37,7 +37,6 @@ var save_data: Dictionary = {
 	"discovered_cards": [],
 	"equipped_knife": "weapon_fist",
 	"high_score_order": 0,
-	"total_money_earned": 0.0,
 	"total_fruits_cut": 0,
 	"total_reputation_earned": 0,
 	"days_started": 0,
@@ -151,26 +150,6 @@ func discover_card(card_id: String) -> void:
 		save_data["discovered_cards"] = discovered
 		save_to_disk()
 
-func get_wallet_balance() -> float:
-	return float(save_data.get("total_money_earned", 0.0))
-
-# Acumula en tiempo real las ganancias TOTALES de la vida del jugador (cada
-# fruta cortada suma aquí directamente). Así la pantalla de Progreso
-# ("Ganancias totales") siempre está al día, sin depender de que el negocio
-# quiebre para contabilizarse.
-func add_total_money_earned(amount: float) -> void:
-	save_data["total_money_earned"] = float(save_data.get("total_money_earned", 0.0)) + amount
-	save_to_disk()
-
-# Nota: usada solo por la tienda de armas independiente del menú principal
-# (KnifeShopModal), que actualmente no está conectada a ningún botón del juego.
-func spend_wallet_balance(amount: float) -> bool:
-	if get_wallet_balance() >= amount:
-		save_data["total_money_earned"] = get_wallet_balance() - amount
-		save_to_disk()
-		return true
-	return false
-
 func is_knife_unlocked(knife_id: String) -> bool:
 	var unlocked: Array = get_unlocked_knives()
 	return knife_id in unlocked
@@ -193,12 +172,11 @@ func set_equipped_knife(knife_id: String) -> void:
 	save_to_disk()
 	emit_signal("equipped_knife_changed", knife_id)
 
-func record_run_stats(completed_order: int, money_earned: float, fruits_cut: int) -> void:
+func record_run_stats(completed_order: int, fruits_cut: int) -> void:
 	if completed_order > int(save_data.get("high_score_order", 0)):
 		save_data["high_score_order"] = completed_order
-	# NOTA: el dinero ya se acumuló en tiempo real con add_total_money_earned()
-	# en cada corte (ver GameManager.register_fruit_cut), así que aquí NO se
-	# vuelve a sumar money_earned para evitar doble contabilidad.
+	# NOTA: el dinero histórico total ya no se acumula (no se muestra en ningún
+	# lugar de la UI); solo se cuentan las frutas cortadas y el mejor día.
 	save_data["total_fruits_cut"] = int(save_data.get("total_fruits_cut", 0)) + fruits_cut
 	var best_clients: int = int(save_data.get("best_clients_in_day", 0))
 	if completed_order > best_clients:
@@ -224,7 +202,6 @@ func reset_save() -> void:
 		"discovered_cards": [],
 		"equipped_knife": "weapon_fist",
 		"high_score_order": 0,
-		"total_money_earned": 0.0,
 		"total_fruits_cut": 0,
 		"total_reputation_earned": 0,
 		"days_started": 0,

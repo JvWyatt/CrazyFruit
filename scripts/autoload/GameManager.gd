@@ -179,9 +179,6 @@ func register_fruit_cut(fruit_data: FruitData, base_reward: float, is_jackpot: b
 	total_fruits_cut_run += 1
 	if is_jackpot:
 		total_jackpots_run += 1
-	# Ganancias totales de la vida del jugador: se acumulan en tiempo real para
-	# que la pantalla de Progreso contabilice cada corte (no solo al quebrar).
-	SaveManager.add_total_money_earned(final_reward)
 
 	emit_signal("money_changed", run_money)
 	emit_signal("order_progress_changed", order_progress, order_target)
@@ -256,7 +253,7 @@ func end_run_failed() -> void:
 	var earned_prestige: int = prestige_from_orders + prestige_from_money
 
 	SaveManager.add_prestige_points(earned_prestige)
-	SaveManager.record_run_stats(completed_orders_count, total_money_generated_run, total_fruits_cut_run)
+	SaveManager.record_run_stats(completed_orders_count, total_fruits_cut_run)
 
 	var summary: Dictionary = {
 		"completed_orders": completed_orders_count,

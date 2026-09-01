@@ -129,6 +129,17 @@ func card_style(border_color: Color = COLOR_BORDER, bg_color: Color = COLOR_ROW)
 func apply_card(panel: PanelContainer, border_color: Color = COLOR_BORDER, bg_color: Color = COLOR_ROW) -> void:
 	panel.add_theme_stylebox_override("panel", card_style(border_color, bg_color))
 
+# Formato de dinero consistente: enteros simplificados con sufijos K/M para
+# cantidades grandes (ej: 1250 -> "1.2K", 2500000 -> "2.5M"). Usado en TODA
+# la UI (HUD, tiendas, resúmenes) para evitar formatos dispersos.
+func format_money(value: float) -> String:
+	var v: int = int(round(value))
+	if v >= 1000000:
+		return str(snappedf(float(v) / 1000000.0, 0.1)) + "M"
+	elif v >= 1000:
+		return str(snappedf(float(v) / 1000.0, 0.1)) + "K"
+	return str(v)
+
 # Entrada suave de modales/paneles: fade + escala con rebote suave.
 func pop_in(control: Control) -> void:
 	if control == null:
@@ -140,14 +151,6 @@ func pop_in(control: Control) -> void:
 	tween.set_parallel(true)
 	tween.tween_property(control, "modulate:a", 1.0, 0.22).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 	tween.tween_property(control, "scale", Vector2.ONE, 0.28).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-
-# Aparición simple con fade (para elementos que no escalan bien, p.ej. root).
-func fade_in(control: CanvasItem) -> void:
-	if control == null:
-		return
-	control.modulate.a = 0.0
-	var tween := control.create_tween()
-	tween.tween_property(control, "modulate:a", 1.0, 0.3).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 
 # Pulso de escala en una etiqueta (p.ej. al subir el dinero).
 func pulse_label(label: Control, amount: float = 1.14) -> void:

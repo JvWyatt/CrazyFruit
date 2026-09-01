@@ -42,11 +42,15 @@ func _refresh_ui() -> void:
 				var rarity: String = str(card["rarity"])
 				discovered_by_rarity[rarity] = int(discovered_by_rarity.get(rarity, 0)) + 1
 				break
-	_add_row("Comunes", str(discovered_by_rarity.get("Común", 0)) + " / " + str(total_by_rarity.get("Común", 0)))
-	_add_row("Raros", str(discovered_by_rarity.get("Rara", 0)) + " / " + str(total_by_rarity.get("Rara", 0)))
-	_add_row("Épicos", str(discovered_by_rarity.get("Épica", 0)) + " / " + str(total_by_rarity.get("Épica", 0)))
-	_add_row("Legendarios", str(discovered_by_rarity.get("Legendaria", 0)) + " / " + str(total_by_rarity.get("Legendaria", 0)))
-	_add_row("Míticos", str(discovered_by_rarity.get("Mítico", 0)) + " / " + str(total_by_rarity.get("Mítico", 0)))
+	var rarity_labels: Dictionary = {
+		"Común": "Comunes",
+		"Rara": "Raros",
+		"Épica": "Épicos",
+		"Legendaria": "Legendarios",
+		"Mítico": "Míticos",
+	}
+	for rarity in CardDatabase.RARITIES:
+		_add_row(str(rarity_labels.get(rarity, rarity)), str(discovered_by_rarity.get(rarity, 0)) + " / " + str(total_by_rarity.get(rarity, 0)))
 
 func _add_section(title: String) -> void:
 	var label := Label.new()
@@ -72,6 +76,3 @@ func _add_row(label_text: String, value_text: String) -> void:
 func _on_close_pressed() -> void:
 	SoundManager.play_click()
 	visible = false
-
-func _format_number(value: float) -> String:
-	return "%,d" % int(round(value))

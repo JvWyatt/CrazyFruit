@@ -28,8 +28,6 @@ func _ready() -> void:
 	cards_button.pressed.connect(_on_cards_pressed)
 	reset_button.pressed.connect(_on_reset_pressed)
 	reset_confirm_dialog.confirmed.connect(_on_reset_confirmed)
-	SaveManager.prestige_changed.connect(func(_p): update_display())
-	update_display()
 	call_deferred("_maybe_animate")
 
 func _notification(what: int) -> void:
@@ -43,9 +41,6 @@ func _maybe_animate() -> void:
 		return
 	_last_anim_time = Time.get_ticks_msec()
 	animate_in()
-
-func update_display() -> void:
-	pass
 
 func animate_in() -> void:
 	UiTheme.pop_in($CenterVBox)
@@ -72,4 +67,3 @@ func _on_reset_pressed() -> void:
 
 func _on_reset_confirmed() -> void:
 	SaveManager.reset_save()
-	update_display()

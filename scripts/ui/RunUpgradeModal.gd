@@ -9,7 +9,6 @@ extends Control
 # run_unlocked_knives y StatsManager.run_upgrade_levels).
 # ============================================================================
 
-signal modal_closed
 signal start_next_order_requested
 signal open_stats_requested
 
@@ -22,7 +21,6 @@ signal open_stats_requested
 @onready var stats_button: Button = $Panel/VBox/BottomHBox/StatsButton
 @onready var continue_button: Button = $Panel/VBox/BottomHBox/ContinueButton
 
-var upgrade_keys: Array[String] = ["damage", "energy_max", "luck", "money", "launch_rate"]
 var fruit_prices: Dictionary = {
 	# Progresión rebalanceada (curva MÁS empinada que antes): cada fruta cuesta
 	# ~2x la anterior. Las primeras se siguen comprando en los primeros días,
@@ -74,17 +72,17 @@ func open_modal(order_completed_num: int = 0) -> void:
 
 func _refresh_ui() -> void:
 	# Only update money label without rebuilding UI
-	money_label.text = "💰 $" + _format_number(GameManager.run_money)
+	money_label.text = "💰 $" + UiTheme.format_money(GameManager.run_money)
 
 # Full UI rebuild (expensive, only call on open)
 func _rebuild_ui() -> void:
-	money_label.text = "💰 $" + _format_number(GameManager.run_money)
+	money_label.text = "💰 $" + UiTheme.format_money(GameManager.run_money)
 
 	for child in items_container.get_children():
 		child.queue_free()
 	_upgrade_rows.clear()
 
-	for key in upgrade_keys:
+	for key in StatsManager.run_upgrade_definitions.keys():
 		var def: Dictionary = StatsManager.run_upgrade_definitions[key]
 		var level: int = StatsManager.run_upgrade_levels[key]
 		var cost: int = StatsManager.get_run_upgrade_cost(key)
@@ -118,7 +116,7 @@ func _rebuild_ui() -> void:
 
 		var buy_btn := Button.new()
 		buy_btn.custom_minimum_size = Vector2(120, 48)
-		buy_btn.text = "$" + _format_number(float(cost))
+		buy_btn.text = "$" + UiTheme.format_money(float(cost))
 		buy_btn.add_theme_font_size_override("font_size", 16)
 		buy_btn.disabled = not can_buy
 
@@ -147,7 +145,7 @@ func _update_upgrade_row(key: String) -> void:
 	var level: int = StatsManager.run_upgrade_levels[key]
 	var cost: int = StatsManager.get_run_upgrade_cost(key)
 	row["name_lbl"].text = str(row["def"]["name"]) + " (x" + str(level) + ")"
-	row["buy_btn"].text = "$" + _format_number(float(cost))
+	row["buy_btn"].text = "$" + UiTheme.format_money(float(cost))
 
 # Fruta anterior en la cadena de desbloqueo ("" si es la primera). Regla de
 # la Frutería: no se puede comprar una fruta sin haber comprado la anterior.
@@ -196,7 +194,7 @@ func _sync_fruit_row(fruit_id: String) -> void:
 		buy_btn.text = "🔒 BLOQUEADO"
 		buy_btn.disabled = true
 		return
-	buy_btn.text = "DESBLOQUEAR\n$" + _format_number(float(row["price"]))
+	buy_btn.text = "DESBLOQUEAR\n$" + UiTheme.format_money(float(row["price"]))
 	buy_btn.disabled = GameManager.run_money < int(row["price"])
 
 func _rebuild_fruit_shop() -> void:
@@ -307,7 +305,7 @@ func _rebuild_weapon_shop() -> void:
 			action_btn.text = "🔒 BLOQUEADO"
 			action_btn.disabled = true
 		else:
-			action_btn.text = "DESBLOQUEAR\n$" + _format_number(float(price))
+			action_btn.text = "DESBLOQUEAR\n$" + UiTheme.format_money(float(price))
 			action_btn.disabled = GameManager.run_money < price
 			action_btn.pressed.connect(func():
 				if _get_prev_knife_id(captured_id) != "" and not GameManager.is_knife_unlocked_this_run(_get_prev_knife_id(captured_id)):
@@ -354,22 +352,8 @@ func _on_continue_pressed() -> void:
 	SoundManager.play_click()
 	visible = false
 	emit_signal("start_next_order_requested")
-	emit_signal("modal_closed")
 
 func _on_close_pressed() -> void:
 	SoundManager.play_click()
 	visible = false
 	emit_signal("start_next_order_requested")
-	emit_signal("modal_closed")
-
-func _format_number(val: float) -> String:
-	var int_val: int = int(round(val))
-	var str_val: String = str(int_val)
-	var formatted: String = ""
-	var count: int = 0
-	for i in range(str_val.length() - 1, -1, -1):
-		if count > 0 and count % 3 == 0:
-			formatted = "," + formatted
-		formatted = str_val[i] + formatted
-		count += 1
-	return formatted

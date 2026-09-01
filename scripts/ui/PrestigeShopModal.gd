@@ -5,13 +5,9 @@ extends Control
 # en StatsManager.prestige_definitions.
 # ============================================================================
 
-signal modal_closed
-
 @onready var prestige_label: Label = $Panel/VBox/HeaderHBox/PrestigeLabel
 @onready var close_button: Button = $Panel/VBox/HeaderHBox/CloseButton
 @onready var items_container: VBoxContainer = $Panel/VBox/ScrollContainer/ItemsVBox
-
-var prestige_keys: Array[String] = ["experience", "expert_hand", "good_provider", "good_fortune", "launch_speed"]
 
 func _ready() -> void:
 	close_button.pressed.connect(_on_close_pressed)
@@ -29,7 +25,7 @@ func _refresh_ui() -> void:
 	for child in items_container.get_children():
 		child.queue_free()
 
-	for key in prestige_keys:
+	for key in StatsManager.prestige_definitions.keys():
 		var def: Dictionary = StatsManager.prestige_definitions[key]
 		var level: int = SaveManager.get_prestige_level(key)
 		var cost: int = StatsManager.get_prestige_upgrade_cost(key)
@@ -84,4 +80,3 @@ func _refresh_ui() -> void:
 func _on_close_pressed() -> void:
 	SoundManager.play_click()
 	visible = false
-	emit_signal("modal_closed")

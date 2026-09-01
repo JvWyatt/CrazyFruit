@@ -45,8 +45,7 @@ func _refresh_cards(card_ids: Array) -> void:
 		cards_container.add_child(empty_label)
 		return
 
-	var rarities := ["Común", "Rara", "Épica", "Legendaria", "Mítico"]
-	for rarity in rarities:
+	for rarity in CardDatabase.RARITIES:
 		var rarity_cards: Array[Dictionary] = []
 		for card in found_cards:
 			if str(card["rarity"]) == rarity:
@@ -56,7 +55,7 @@ func _refresh_cards(card_ids: Array) -> void:
 		var rarity_label := Label.new()
 		rarity_label.text = rarity
 		rarity_label.add_theme_font_size_override("font_size", 18)
-		rarity_label.modulate = _rarity_color(rarity)
+		rarity_label.modulate = CardDatabase.rarity_color(rarity)
 		cards_container.add_child(rarity_label)
 		for card in rarity_cards:
 			var card_label := Label.new()
@@ -64,14 +63,6 @@ func _refresh_cards(card_ids: Array) -> void:
 			card_label.add_theme_font_size_override("font_size", 15)
 			card_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 			cards_container.add_child(card_label)
-
-func _rarity_color(rarity: String) -> Color:
-	match rarity:
-		"Común": return Color(0.3, 0.7, 1.0)
-		"Rara": return Color(0.3, 0.9, 0.4)
-		"Épica": return Color(0.8, 0.4, 1.0)
-		"Legendaria": return Color(1.0, 0.75, 0.1)
-		_: return Color(1.0, 0.4, 0.8)
 
 func _on_close_pressed() -> void:
 	SoundManager.play_click()

@@ -11,12 +11,18 @@ class_name Ballistic
 # ============================================================================
 
 var velocity: Vector2 = Vector2.ZERO
+# Constantes del lanzamiento, compartidas por frutas y obstáculos.
 # Gravedad x1.21 (960 - 1161.6): junto con la velocidad x1.1 de FruitSpawner,
-# las frutas van 10% más rápido pero conservan el mismo alcance/altura.
-var gravity: float = 1161.6
-var escape_y: float = 1500.0
-var wall_left: float = 10.0
-var wall_right: float = 710.0
+# los proyectiles van 10% más rápido pero conservan el mismo alcance/altura.
+const DEFAULT_GRAVITY: float = 1161.6
+const DEFAULT_WALL_LEFT: float = 10.0
+const DEFAULT_WALL_RIGHT: float = 710.0
+const DEFAULT_ESCAPE_Y: float = 1500.0
+
+var gravity: float = DEFAULT_GRAVITY
+var escape_y: float = DEFAULT_ESCAPE_Y
+var wall_left: float = DEFAULT_WALL_LEFT
+var wall_right: float = DEFAULT_WALL_RIGHT
 var is_active: bool = false
 
 # Lanza desde from_position con una velocidad inicial y gravedad determinadas.
@@ -25,7 +31,7 @@ var is_active: bool = false
 # acorde al alto REAL del viewport: un valor fijo (p.ej. 1500) elimina las
 # frutas al instante en pantallas más altas que 720x1280 (la fruta nace a
 # play_bounds.end.y + 150, que en pantalla alta supera 1500).
-func launch(from_position: Vector2, launch_velocity: Vector2, p_gravity: float = 1161.6, p_wall_left: float = 10.0, p_wall_right: float = 710.0, p_escape_y: float = 1500.0) -> void:
+func launch(from_position: Vector2, launch_velocity: Vector2, p_gravity: float = DEFAULT_GRAVITY, p_wall_left: float = DEFAULT_WALL_LEFT, p_wall_right: float = DEFAULT_WALL_RIGHT, p_escape_y: float = DEFAULT_ESCAPE_Y) -> void:
 	var parent := get_parent()
 	if parent is Node2D:
 		parent.position = from_position

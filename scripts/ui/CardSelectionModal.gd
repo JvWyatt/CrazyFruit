@@ -45,10 +45,10 @@ func open_modal(order_completed_num: int) -> void:
 		return
 
 	# Resumen del día: conseguido, impuesto y ganancia neta.
-	earned_value.text = "$" + _format_number(earned)
-	tax_value.text = "$" + _format_number(tax)
+	earned_value.text = "$" + UiTheme.format_money(earned)
+	tax_value.text = "$" + UiTheme.format_money(tax)
 	var profit: float = earned - tax
-	profit_value.text = "$" + _format_number(profit)
+	profit_value.text = "$" + UiTheme.format_money(profit)
 	profit_value.modulate = Color(0.6, 0.95, 0.6, 1) if profit >= 0.0 else Color(1, 0.6, 0.6, 1)
 
 	for child in cards_container.get_children():
@@ -109,14 +109,6 @@ func open_modal(order_completed_num: int) -> void:
 
 		card_panel.add_child(hbox)
 		cards_container.add_child(card_panel)
-
-func _format_number(value: float) -> String:
-	var v: int = int(value)
-	if v >= 1000000:
-		return str(snappedf(float(v) / 1000000.0, 0.1)) + "M"
-	elif v >= 1000:
-		return str(snappedf(float(v) / 1000.0, 0.1)) + "K"
-	return str(v)
 
 func _on_card_selected(card_data: Dictionary) -> void:
 	SoundManager.play_victory()

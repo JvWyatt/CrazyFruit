@@ -21,7 +21,6 @@ var _fruit3d_viewport: SubViewport
 @onready var stats_modal: Control = $Modals/StatsModal
 @onready var card_selection_modal: Control = $Modals/CardSelectionModal
 @onready var results_modal: Control = $Modals/ResultsModal
-@onready var knife_shop_modal: Control = $Modals/KnifeShopModal
 @onready var prestige_shop_modal: Control = $Modals/PrestigeShopModal
 @onready var progress_modal: Control = $Modals/ProgressModal
 @onready var cards_modal: Control = $Modals/CardsModal
@@ -44,8 +43,6 @@ func _ready() -> void:
 	run_upgrade_modal.start_next_order_requested.connect(_on_start_next_order_from_shop)
 	stats_modal.modal_closed.connect(_on_stats_modal_closed)
 	results_modal.return_to_menu_requested.connect(_on_return_to_menu_requested)
-	knife_shop_modal.modal_closed.connect(func(): main_menu.update_display())
-	prestige_shop_modal.modal_closed.connect(func(): main_menu.update_display())
 
 	# Wire Modal events for completion flow
 	card_selection_modal.unpayable.connect(func(): GameManager.end_run_failed())
@@ -75,7 +72,6 @@ func _init_fruit3d_overlay() -> void:
 
 func _show_main_menu() -> void:
 	main_menu.visible = true
-	main_menu.update_display()
 	game_world.visible = false
 	hud.visible = false
 	fruit_spawner.disable_spawning()
@@ -84,7 +80,6 @@ func _show_main_menu() -> void:
 	stats_modal.visible = false
 	card_selection_modal.visible = false
 	results_modal.visible = false
-	knife_shop_modal.visible = false
 	prestige_shop_modal.visible = false
 	progress_modal.visible = false
 	cards_modal.visible = false

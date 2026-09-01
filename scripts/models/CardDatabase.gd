@@ -16,13 +16,16 @@ extends RefCounted
 
 static var ALL_CARDS: Array[Dictionary] = _build_cards()
 
+# Orden canónico de rarezas (usado por la galería y las estadísticas).
+const RARITIES: Array[String] = ["Común", "Rara", "Épica", "Legendaria", "Mítico"]
+
 static func _build_cards() -> Array[Dictionary]:
 	var cards: Array[Dictionary] = []
 	var common := "Común"
 	var rare := "Rara"
 	var epic := "Épica"
 	var legendary := "Legendaria"
-	var mythic := "Mítica"
+	var mythic := "Mítico"
 
 	# --------------------------------------------------------------------------
 	# Pool común: 62 cartas de efecto único y magnitud moderada/baja.
@@ -146,14 +149,9 @@ static func _build_cards() -> Array[Dictionary]:
 	return cards
 
 static func _card(title: String, desc: String, rarity: String, effect_type: String, effect_value: float) -> Dictionary:
-	return {"id": "card_" + title.to_lower().replace(" ", "_"), "title": title, "desc": desc, "icon": "🃏", "rarity": rarity, "color": _rarity_color(rarity), "effect_type": effect_type, "effect_value": effect_value}
+	return {"id": "card_" + title.to_lower().replace(" ", "_"), "title": title, "desc": desc, "icon": "🃏", "rarity": rarity, "color": rarity_color(rarity), "effect_type": effect_type, "effect_value": effect_value}
 
-# Igual que _card(), pero para una carta que aplica VARIOS efectos a la vez
-# (por ejemplo +daño y +jackpot juntos en la misma carta).
-static func _multi_card(title: String, desc: String, rarity: String, effects: Array) -> Dictionary:
-	return {"id": "card_" + title.to_lower().replace(" ", "_"), "title": title, "desc": desc, "icon": "🃏", "rarity": rarity, "color": _rarity_color(rarity), "effect_type": "multi", "effects": effects}
-
-static func _rarity_color(rarity: String) -> Color:
+static func rarity_color(rarity: String) -> Color:
 	match rarity:
 		"Común": return Color(0.3, 0.7, 1.0)
 		"Rara": return Color(0.3, 0.9, 0.4)
@@ -162,7 +160,7 @@ static func _rarity_color(rarity: String) -> Color:
 		_: return Color(1.0, 0.4, 0.8)
 
 # Probabilidad por SIMPLE DISTRIBUCIÓN: como el pool está bien balanceado
-# (62 Común / 27 Rara / 7 Épica / 3 Legendaria / 1 Mítica), el azar puro ya
+# (62 Común / 27 Rara / 7 Épica / 3 Legendaria / 1 Mítico), el azar puro ya
 # produce la distribución deseada de rarezas. Se elige cada carta uniformemente
 # al azar entre el total SIN pesos forzados.
 static func get_random_cards(count: int = 3) -> Array[Dictionary]:

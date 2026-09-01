@@ -24,7 +24,7 @@ func open_modal(summary: Dictionary) -> void:
 	visible = true
 	UiTheme.pop_in($Panel)
 	orders_label.text = "📋 Días completados: " + str(summary.get("completed_orders", 0))
-	money_label.text = "💰 Ganancias generadas: $" + _format_number(float(summary.get("money_generated", 0.0)))
+	money_label.text = "💰 Ganancias generadas: $" + UiTheme.format_money(float(summary.get("money_generated", 0.0)))
 	fruits_label.text = "🍉 Frutas cortadas: " + str(summary.get("fruits_cut", 0))
 	jackpots_label.text = "⭐ Grandes ventas conseguidas: " + str(summary.get("jackpots", 0))
 	best_order_label.text = "🏆 Mejor día alcanzado: #" + str(summary.get("best_order", 1))
@@ -35,15 +35,3 @@ func _on_continue_pressed() -> void:
 	SoundManager.play_click()
 	visible = false
 	emit_signal("return_to_menu_requested")
-
-func _format_number(val: float) -> String:
-	var int_val: int = int(round(val))
-	var str_val: String = str(int_val)
-	var formatted: String = ""
-	var count: int = 0
-	for i in range(str_val.length() - 1, -1, -1):
-		if count > 0 and count % 3 == 0:
-			formatted = "," + formatted
-		formatted = str_val[i] + formatted
-		count += 1
-	return formatted

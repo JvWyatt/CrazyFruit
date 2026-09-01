@@ -29,10 +29,10 @@ func setup(p_radius: float) -> void:
 		collision_shape.shape = circle_shape
 	queue_redraw()
 
-func launch(from_position: Vector2, launch_velocity: Vector2, p_wall_left: float = 10.0, p_wall_right: float = 710.0, p_escape_y: float = 1500.0) -> void:
+func launch(from_position: Vector2, launch_velocity: Vector2, p_wall_left: float = Ballistic.DEFAULT_WALL_LEFT, p_wall_right: float = Ballistic.DEFAULT_WALL_RIGHT, p_escape_y: float = Ballistic.DEFAULT_ESCAPE_Y) -> void:
 	if ballistic:
-		# Gravedad x1.21 (960 -> 1161.6) coherente con la fruta/y la velocidad x1.1.
-		ballistic.launch(from_position, launch_velocity, 1161.6, p_wall_left, p_wall_right, p_escape_y)
+		# Gravedad y paredes compartidas con las frutas (ver Ballistic.<constantes>).
+		ballistic.launch(from_position, launch_velocity, Ballistic.DEFAULT_GRAVITY, p_wall_left, p_wall_right, p_escape_y)
 
 func _process(delta: float) -> void:
 	if hit_cooldown > 0.0:

@@ -19,7 +19,6 @@ var _fruit3d_viewport: SubViewport
 
 @onready var run_upgrade_modal: Control = $Modals/RunUpgradeModal
 @onready var stats_modal: Control = $Modals/StatsModal
-@onready var order_completion_modal: Control = $Modals/OrderCompletionModal
 @onready var card_selection_modal: Control = $Modals/CardSelectionModal
 @onready var results_modal: Control = $Modals/ResultsModal
 @onready var knife_shop_modal: Control = $Modals/KnifeShopModal
@@ -49,8 +48,7 @@ func _ready() -> void:
 	prestige_shop_modal.modal_closed.connect(func(): main_menu.update_display())
 
 	# Wire Modal events for completion flow
-	order_completion_modal.objective_paid.connect(_on_objective_paid)
-	order_completion_modal.objective_unpayable.connect(_on_objective_unpayable)
+	card_selection_modal.unpayable.connect(func(): GameManager.end_run_failed())
 
 	# Wire Game Manager events
 	GameManager.order_completed.connect(_on_order_completed)
@@ -84,7 +82,6 @@ func _show_main_menu() -> void:
 	fruit_spawner.clear_all()
 	run_upgrade_modal.visible = false
 	stats_modal.visible = false
-	order_completion_modal.visible = false
 	card_selection_modal.visible = false
 	results_modal.visible = false
 	knife_shop_modal.visible = false
@@ -125,16 +122,9 @@ func _on_quit_run_requested() -> void:
 
 func _on_order_completed(order_num: int) -> void:
 	fruit_spawner.clear_all()
-	# First, show objective payment screen
-	order_completion_modal.open_modal(order_num, GameManager.order_target)
-
-func _on_objective_paid() -> void:
-	# Player paid the daily objective as tax - continue to comodines
-	card_selection_modal.open_modal(GameManager.current_order)
-
-func _on_objective_unpayable() -> void:
-	# Player can't pay the objective - end the run
-	GameManager.end_run_failed()
+	# Resumen del día (conseguido/impuesto/ganancia) y comodines se muestran
+	# juntos en el CardSelectionModal (el impuesto se paga automáticamente ahí).
+	card_selection_modal.open_modal(order_num)
 
 func _on_card_chosen(order_num: int) -> void:
 	# After choosing blessing card, open in-run upgrades shop between rounds

@@ -30,26 +30,26 @@ var fruit_prices: Dictionary = {
 	# negocio, para que no puedas comprar casi todo en las primeras runs.
 	# La Frutería está bloqueada en cadena: no puedes comprar una fruta sin
 	# haber comprado la anterior (ver _get_prev_fruit_id).
-	# Todos los precios se multiplicaron x2 en el rebalanceo general.
-	"banana": 240,
-	"peach": 520,
-	"cherry": 1100,
-	"orange": 2200,
-	"apple": 4400,
-	"pear": 8400,
-	"kiwi": 16000,
-	"mango": 30000,
-	"lemon": 60000,
-	"watermelon": 120000,
-	"melon": 240000,
-	"pineapple": 480000,
-	"papaya": 960000,
-	"coconut": 1920000,
-	"avocado": 3800000,
-	"dragon_fruit": 7600000,
-	"guava": 15000000,
-	"quince": 30000000,
-	"pumpkin": 60000000
+	# La primera fruta (plátano) cuesta 100 y suben progresivamente (~2x).
+	"banana": 100,
+	"peach": 210,
+	"cherry": 450,
+	"orange": 900,
+	"apple": 1800,
+	"pear": 3500,
+	"kiwi": 6700,
+	"mango": 12000,
+	"lemon": 25000,
+	"watermelon": 50000,
+	"melon": 100000,
+	"pineapple": 200000,
+	"papaya": 400000,
+	"coconut": 790000,
+	"avocado": 1600000,
+	"dragon_fruit": 3200000,
+	"guava": 6200000,
+	"quince": 12000000,
+	"pumpkin": 25000000
 }
 
 # Cached row refs so purchases can update in place instead of rebuilding the whole shop

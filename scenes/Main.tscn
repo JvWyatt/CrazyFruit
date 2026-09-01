@@ -1,4 +1,4 @@
-[gd_scene load_steps=15 format=3 uid="uid://bv83m2ak4a23p"]
+[gd_scene load_steps=14 format=3 uid="uid://bv83m2ak4a23p"]
 
 [ext_resource type="Script" uid="uid://ctmisjsdikrjn" path="res://scripts/Main.gd" id="1_main"]
 [ext_resource type="PackedScene" uid="uid://dg03k36pm1y8a" path="res://scenes/ui/MainMenu.tscn" id="2_menu"]
@@ -7,7 +7,6 @@
 [ext_resource type="PackedScene" uid="uid://dm28ka4n2e7k0" path="res://scenes/ui/HUD.tscn" id="5_hud"]
 [ext_resource type="PackedScene" uid="uid://df72mk4w870p1" path="res://scenes/ui/RunUpgradeModal.tscn" id="6_run_up"]
 [ext_resource type="PackedScene" uid="uid://dmk8730pa16c1" path="res://scenes/ui/StatsModal.tscn" id="7_stats_mod"]
-[ext_resource type="PackedScene" uid="uid://sn1j1sh7dogw" path="res://scenes/ui/OrderCompletionModal.tscn" id="8_order_completion"]
 [ext_resource type="PackedScene" uid="uid://cx62m20g3n4a1" path="res://scenes/ui/CardSelectionModal.tscn" id="9_card_sel"]
 [ext_resource type="PackedScene" uid="uid://b00g72yq15x3a" path="res://scenes/ui/ResultsModal.tscn" id="10_results"]
 [ext_resource type="PackedScene" uid="uid://daqm4p2e81ba1" path="res://scenes/ui/KnifeShopModal.tscn" id="11_knife_shop"]
@@ -63,9 +62,6 @@ layer = 50
 visible = false
 
 [node name="StatsModal" parent="Modals" instance=ExtResource("7_stats_mod")]
-visible = false
-
-[node name="OrderCompletionModal" parent="Modals" instance=ExtResource("8_order_completion")]
 visible = false
 
 [node name="CardSelectionModal" parent="Modals" instance=ExtResource("9_card_sel")]

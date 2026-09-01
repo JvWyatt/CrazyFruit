@@ -1,15 +1,25 @@
 extends Control
 # ============================================================================
 # CardSelectionModal: pantalla para elegir un comodín (carta) al completar
-# un pedido. Las cartas disponibles vienen de CardDatabase.gd; al elegir una
-# se aplica con StatsManager.apply_card_upgrade().
+# un pedido. Muestra primero el resumen del día (conseguido, impuesto,
+# ganancia) y debajo las cartas disponibles. Al completar el pedido el
+# impuesto (objetivo del día) se paga automáticamente aquí; si no se puede
+# pagar, el negocio termina (ver Main.gd).
+# Las cartas disponibles vienen de CardDatabase.gd; al elegir una se aplica
+# con StatsManager.apply_card_upgrade().
 # ============================================================================
 
 signal card_chosen(order_num: int)
+signal unpayable
 
 @onready var cards_container: VBoxContainer = $Panel/VBox/CardsScroll/CardsVBox
 @onready var title_label: Label = $Panel/VBox/TitleLabel
 @onready var subtitle_label: Label = $Panel/VBox/SubtitleLabel
+@onready var summary_panel: PanelContainer = $Panel/VBox/SummaryPanel
+@onready var summary_title: Label = $Panel/VBox/SummaryPanel/SummaryVBox/SummaryTitle
+@onready var earned_value: Label = $Panel/VBox/SummaryPanel/SummaryVBox/EarnedRow/EarnedValue
+@onready var tax_value: Label = $Panel/VBox/SummaryPanel/SummaryVBox/TaxRow/TaxValue
+@onready var profit_value: Label = $Panel/VBox/SummaryPanel/SummaryVBox/ProfitRow/ProfitValue
 
 var current_completed_order: int = 1
 
@@ -23,6 +33,23 @@ func open_modal(order_completed_num: int) -> void:
 	UiTheme.confetti_burst($Panel, Vector2(maxf($Panel.size.x * 0.5, 360.0), 70.0), 120)
 	title_label.text = "🎉 ¡DÍA #" + str(order_completed_num) + " COMPLETADO!"
 	subtitle_label.text = "Selecciona 1 comodín para mejorar tu negocio:"
+
+	# Impuesto (objetivo del día): se paga automáticamente al completar el día.
+	var tax: float = GameManager.order_target
+	var earned: float = GameManager.order_progress
+
+	if not GameManager.spend_run_money(tax):
+		# No se puede pagar el impuesto: negocio en quiebra.
+		visible = false
+		emit_signal("unpayable")
+		return
+
+	# Resumen del día: conseguido, impuesto y ganancia neta.
+	earned_value.text = "$" + _format_number(earned)
+	tax_value.text = "$" + _format_number(tax)
+	var profit: float = earned - tax
+	profit_value.text = "$" + _format_number(profit)
+	profit_value.modulate = Color(0.6, 0.95, 0.6, 1) if profit >= 0.0 else Color(1, 0.6, 0.6, 1)
 
 	for child in cards_container.get_children():
 		child.queue_free()
@@ -82,6 +109,14 @@ func open_modal(order_completed_num: int) -> void:
 
 		card_panel.add_child(hbox)
 		cards_container.add_child(card_panel)
+
+func _format_number(value: float) -> String:
+	var v: int = int(value)
+	if v >= 1000000:
+		return str(snappedf(float(v) / 1000000.0, 0.1)) + "M"
+	elif v >= 1000:
+		return str(snappedf(float(v) / 1000.0, 0.1)) + "K"
+	return str(v)
 
 func _on_card_selected(card_data: Dictionary) -> void:
 	SoundManager.play_victory()

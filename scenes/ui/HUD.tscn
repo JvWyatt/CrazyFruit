@@ -1,6 +1,8 @@
-[gd_scene load_steps=6 format=3 uid="uid://dm28ka4n2e7k0"]
+[gd_scene load_steps=9 format=3 uid="uid://dm28ka4n2e7k0"]
 
 [ext_resource type="Script" uid="uid://obkbe7bebsws" path="res://scripts/ui/HUD.gd" id="1_hud"]
+[ext_resource type="PackedScene" path="res://scenes/ui/SettingsSection.tscn" id="2_ss"]
+[ext_resource type="PackedScene" path="res://scenes/ui/ConfirmDialog.tscn" id="3_cd"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_panel"]
 content_margin_left = 16.0
@@ -46,6 +48,25 @@ corner_radius_top_left = 8
 corner_radius_top_right = 8
 corner_radius_bottom_right = 8
 corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_pause"]
+bg_color = Color(0.09, 0.11, 0.19, 0.98)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.45, 0.55, 0.85, 1)
+corner_radius_top_left = 18
+corner_radius_top_right = 18
+corner_radius_bottom_right = 18
+corner_radius_bottom_left = 18
+shadow_color = Color(0, 0, 0, 0.5)
+shadow_size = 10
+shadow_offset = Vector2(0, 4)
+content_margin_left = 28.0
+content_margin_top = 24.0
+content_margin_right = 28.0
+content_margin_bottom = 24.0
 
 [node name="HUD" type="Control"]
 layout_mode = 3
@@ -211,16 +232,101 @@ layout_mode = 2
 theme_override_font_sizes/font_size = 18
 text = "📊 Stats"
 
-[node name="QuitButton" type="Button" parent="BottomContainer/ButtonsHBox"]
+[node name="PauseButton" type="Button" parent="BottomContainer/ButtonsHBox"]
 custom_minimum_size = Vector2(130, 56)
 layout_mode = 2
 theme_override_font_sizes/font_size = 18
-text = "🚪 Salir"
+text = "⏸ Pausa"
 
-[node name="QuitConfirmDialog" type="ConfirmationDialog" parent="."]
-title = "Renunciar al negocio"
-initial_position = 1
-size = Vector2i(420, 160)
-ok_button_text = "Renunciar"
-dialog_text = "¿Seguro que quieres renunciar a este negocio? Perderás el progreso del día actual."
-cancel_button_text = "Seguir jugando"
+[node name="PausePanel" type="Control" parent="."]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Scrim" type="ColorRect" parent="PausePanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 0.6)
+
+[node name="Card" type="PanelContainer" parent="PausePanel"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -300.0
+offset_top = -280.0
+offset_right = 300.0
+offset_bottom = 280.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_pause")
+
+[node name="PauseVBox" type="VBoxContainer" parent="PausePanel/Card"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="PauseTitle" type="Label" parent="PausePanel/Card/PauseVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.88, 0.25, 1)
+theme_override_font_sizes/font_size = 32
+text = "⏸ PAUSA"
+horizontal_alignment = 1
+
+[node name="PauseDayLabel" type="Label" parent="PausePanel/Card/PauseVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.75, 0.8, 0.92, 1)
+theme_override_font_sizes/font_size = 16
+text = ""
+horizontal_alignment = 1
+
+[node name="ContinueButton" type="Button" parent="PausePanel/Card/PauseVBox"]
+custom_minimum_size = Vector2(0, 56)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.94, 0.96, 1, 1)
+theme_override_font_sizes/font_size = 20
+text = "▶ CONTINUAR"
+
+[node name="SettingsButton" type="Button" parent="PausePanel/Card/PauseVBox"]
+custom_minimum_size = Vector2(0, 56)
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+text = "⚙️ AJUSTES"
+
+[node name="PauseQuitButton" type="Button" parent="PausePanel/Card/PauseVBox"]
+custom_minimum_size = Vector2(0, 48)
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.55, 0.5, 1)
+theme_override_font_sizes/font_size = 16
+text = "🚪 SALIR"
+
+[node name="SettingsVBox" type="VBoxContainer" parent="PausePanel/Card"]
+visible = false
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="SettingsTitle" type="Label" parent="PausePanel/Card/SettingsVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.88, 0.25, 1)
+theme_override_font_sizes/font_size = 28
+text = "AJUSTES"
+horizontal_alignment = 1
+
+[node name="SettingsSection" parent="PausePanel/Card/SettingsVBox" instance=ExtResource("2_ss")]
+
+[node name="SettingsBackButton" type="Button" parent="PausePanel/Card/SettingsVBox"]
+custom_minimum_size = Vector2(0, 52)
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "← VOLVER"
+
+[node name="PauseConfirmDialog" parent="." instance=ExtResource("3_cd")]

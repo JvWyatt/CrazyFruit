@@ -64,7 +64,6 @@ func _refresh_ui() -> void:
 	_add_stat_row("Recompensa mínima de frutas", "x" + str(snappedf(StatsManager.card_reward_min_multiplier, 0.01)), "Multiplicador de recompensa mínima", Color(1.0, 0.88, 0.3))
 	_add_stat_row("Recompensa máxima de frutas", "x" + str(snappedf(StatsManager.card_reward_max_multiplier, 0.01)), "Multiplicador de recompensa máxima", Color(1.0, 0.88, 0.3))
 	_add_stat_row("Multiplicador de ganancias", "x" + str(snappedf(StatsManager.get_final_money_multiplier(), 0.01)), "Base: x1.0 | Bonus de mejoras: +" + str(int(round((StatsManager.get_final_money_multiplier() / StatsManager.card_money_multiplier - 1.0) * 100.0))) + "%", Color(1.0, 0.88, 0.3))
-	_add_stat_row("Objetivo de dinero del Día", "$" + str(int(round(GameManager.order_target))), "Objetivo actual del día", Color(1.0, 0.88, 0.3))
 	_add_stat_row("Precio de armas", "x" + str(snappedf(StatsManager.card_weapon_price_multiplier, 0.01)), "Multiplicador de precios", Color(0.8, 0.85, 1.0))
 	_add_stat_row("Precio de frutas", "x" + str(snappedf(StatsManager.card_fruit_price_multiplier, 0.01)), "Multiplicador de precios", Color(0.8, 0.85, 1.0))
 	_add_stat_row("Precio de mejoras", "x" + str(snappedf(StatsManager.card_upgrade_price_multiplier, 0.01)), "Multiplicador de precios", Color(0.8, 0.85, 1.0))

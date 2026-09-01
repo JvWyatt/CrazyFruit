@@ -157,6 +157,23 @@ theme_override_font_sizes/font_size = 15
 text = "$0"
 horizontal_alignment = 2
 
+[node name="NextTargetRow" type="HBoxContainer" parent="Panel/VBox/SummaryPanel/SummaryVBox"]
+layout_mode = 2
+
+[node name="NextTargetLabel" type="Label" parent="Panel/VBox/SummaryPanel/SummaryVBox/NextTargetRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.95, 0.85, 0.55, 1)
+theme_override_font_sizes/font_size = 14
+text = "🎯 Objetivo del siguiente día:"
+
+[node name="NextTargetValue" type="Label" parent="Panel/VBox/SummaryPanel/SummaryVBox/NextTargetRow"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.95, 0.85, 0.55, 1)
+theme_override_font_sizes/font_size = 14
+text = "$0"
+horizontal_alignment = 2
+
 [node name="HSeparator" type="HSeparator" parent="Panel/VBox"]
 layout_mode = 2
 

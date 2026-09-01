@@ -1,0 +1,228 @@
+<!DOCTYPE html><html class="dark" lang="es"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Crazy Fruit - Gameplay HUD</title>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<!-- Google Fonts: Nunito Sans (Placeholder for custom fonts if needed, following theme config) -->
+<link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:ital,opsz,wght@0,6..12,200..1000;1,6..12,200..1000&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Configuration -->
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-bright": "#4d266f",
+                        "secondary-fixed-dim": "#ffb1c4",
+                        "tertiary": "#ffffff",
+                        "on-surface": "#f1daff",
+                        "glow-pink": "rgba(255, 0, 127, 0.5)",
+                        "on-secondary-fixed": "#3f001a",
+                        "on-tertiary-fixed-variant": "#004f4f",
+                        "inverse-primary": "#506600",
+                        "outline": "#8e9379",
+                        "secondary-fixed": "#ffd9e1",
+                        "on-surface-variant": "#c4c9ac",
+                        "on-tertiary-fixed": "#002020",
+                        "on-background": "#f1daff",
+                        "error": "#ffb4ab",
+                        "on-primary-fixed-variant": "#3c4d00",
+                        "on-secondary-fixed-variant": "#8f0044",
+                        "secondary": "#ffb1c4",
+                        "primary-fixed": "#c3f400",
+                        "inverse-surface": "#f1daff",
+                        "on-error": "#690005",
+                        "tertiary-fixed": "#00fbfb",
+                        "surface-tint": "#abd600",
+                        "on-primary": "#283500",
+                        "surface-container": "#310553",
+                        "deep-void": "#000000",
+                        "primary-fixed-dim": "#abd600",
+                        "primary": "#ffffff",
+                        "surface-container-lowest": "#1a0031",
+                        "on-secondary-container": "#590028",
+                        "surface-container-high": "#3d145e",
+                        "primary-container": "#c3f400",
+                        "surface": "#21003d",
+                        "on-error-container": "#ffdad6",
+                        "on-tertiary-container": "#007070",
+                        "surface-container-low": "#2d004f",
+                        "surface-dim": "#21003d",
+                        "surface-container-highest": "#48216a",
+                        "glass-stroke": "rgba(204, 255, 0, 0.3)",
+                        "on-tertiary": "#003737",
+                        "secondary-container": "#ff4a8d",
+                        "background": "#21003d",
+                        "tertiary-container": "#00fbfb",
+                        "on-secondary": "#65002e",
+                        "madness-orange": "#FF6600",
+                        "tertiary-fixed-dim": "#00dddd",
+                        "inverse-on-surface": "#441c65",
+                        "on-primary-fixed": "#161e00",
+                        "on-primary-container": "#556d00",
+                        "error-container": "#93000a",
+                        "surface-variant": "#48216a",
+                        "outline-variant": "#444933"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "margin-mobile": "16px",
+                        "safe-top": "44px",
+                        "unit": "8px",
+                        "margin-desktop": "40px",
+                        "gutter": "20px",
+                        "touch-target": "48px"
+                    },
+                    "fontFamily": {
+                        "label-lg": ["Nunito Sans"],
+                        "body-sm": ["Nunito Sans"],
+                        "caption-caps": ["Nunito Sans"],
+                        "currency-md": ["Nunito Sans"],
+                        "display-title": ["Nunito Sans"],
+                        "headline-lg-mobile": ["Nunito Sans"],
+                        "headline-lg": ["Nunito Sans"],
+                        "body-lg": ["Nunito Sans"]
+                    },
+                    "fontSize": {
+                        "label-lg": ["20px", { "lineHeight": "24px", "letterSpacing": "0.05em", "fontWeight": "700" }],
+                        "body-sm": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "caption-caps": ["12px", { "lineHeight": "16px", "letterSpacing": "0.1em", "fontWeight": "800" }],
+                        "currency-md": ["28px", { "lineHeight": "32px", "fontWeight": "900" }],
+                        "display-title": ["60px", { "lineHeight": "64px", "letterSpacing": "-0.03em", "fontWeight": "900" }],
+                        "headline-lg-mobile": ["32px", { "lineHeight": "38px", "fontWeight": "800" }],
+                        "headline-lg": ["38px", { "lineHeight": "44px", "fontWeight": "800" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        /* Custom Neon Glows & Animations */
+        .neon-glow-pink { box-shadow: 0 0 15px rgba(255, 0, 127, 0.6), inset 0 0 10px rgba(255, 0, 127, 0.4); }
+        .neon-glow-cyan { box-shadow: 0 0 15px rgba(0, 251, 251, 0.6), inset 0 0 10px rgba(0, 251, 251, 0.4); }
+        .neon-glow-primary { box-shadow: 0 0 15px rgba(195, 244, 0, 0.6), inset 0 0 10px rgba(195, 244, 0, 0.4); }
+        .text-glow-primary { text-shadow: 0 0 10px rgba(195, 244, 0, 0.8); }
+        
+        @keyframes float {
+            0% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-10px) rotate(2deg); }
+            100% { transform: translateY(0px) rotate(0deg); }
+        }
+        .animate-float { animation: float 4s ease-in-out infinite; }
+        
+        @keyframes liquid-fill {
+            0% { background-position: 0% 50%; }
+            100% { background-position: 100% 50%; }
+        }
+        .liquid-bar {
+            background-size: 200% 200%;
+            animation: liquid-fill 2s linear infinite;
+        }
+
+        /* Ambient Void Background */
+        .ambient-void {
+            background: radial-gradient(circle at 50% 50%, #21003d 0%, #000000 100%);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-deep-void text-on-surface font-body-lg h-screen w-screen overflow-hidden flex flex-col relative selection:bg-secondary-container selection:text-on-secondary-fixed">
+<!-- Gameplay Area Canvas -->
+<div class="absolute inset-0 z-0 bg-surface-container-lowest bg-gradient-to-b from-surface-container-lowest to-deep-void overflow-hidden">
+    <!-- Subtle Neon Pattern Overlay -->
+    <div class="absolute inset-0 opacity-20 mix-blend-screen bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]"></div>
+    <!-- Soft Radial Glow for Depth -->
+    <div class="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(72,33,106,0.3)_0%,transparent_70%)]"></div>
+    <!-- Vignette -->
+    <div class="absolute inset-0 shadow-[inset_0_0_150px_rgba(0,0,0,0.9)]"></div>
+</div>
+<!-- Floating Gameplay Elements (Fruits) -->
+<div class="absolute inset-0 z-10 pointer-events-none overflow-hidden">
+<!-- Strawberry -->
+<div class="absolute top-[30%] left-[20%] animate-float" style="animation-delay: 0s;">
+<div class="w-24 h-24 bg-surface-container/60 backdrop-blur-md rounded-full border border-glass-stroke shadow-[inset_0_0_20px_rgba(255,74,141,0.5)] flex items-center justify-center relative neon-glow-pink">
+<span class="material-symbols-outlined text-6xl text-secondary" style="font-variation-settings: 'FILL' 1;">nutrition</span>
+<!-- Health Bar -->
+<div class="absolute -bottom-4 w-16 h-2 bg-deep-void rounded-full overflow-hidden border border-outline-variant">
+<div class="h-full bg-gradient-to-r from-secondary to-secondary-container w-3/4"></div>
+</div>
+</div>
+</div>
+<!-- Banana -->
+<div class="absolute top-[45%] right-[25%] animate-float" style="animation-delay: 1.5s;">
+<div class="w-20 h-20 bg-surface-container/60 backdrop-blur-md rounded-full border border-glass-stroke shadow-[inset_0_0_20px_rgba(195,244,0,0.5)] flex items-center justify-center relative neon-glow-primary">
+<span class="material-symbols-outlined text-5xl text-primary-fixed" style="font-variation-settings: 'FILL' 1;">eco</span>
+<!-- Health Bar -->
+<div class="absolute -bottom-4 w-12 h-2 bg-deep-void rounded-full overflow-hidden border border-outline-variant">
+<div class="h-full bg-gradient-to-r from-primary-fixed to-surface-tint w-1/2"></div>
+</div>
+</div>
+</div>
+</div>
+<!-- Top HUD Container -->
+<div class="z-20 w-full px-4 pt-safe-top pb-2 flex flex-col gap-unit sticky top-0 max-w-md mx-auto">
+<!-- TopAppBar (Based on Shared Components JSON) -->
+<header class="bg-surface/80 dark:bg-surface-dim/80 backdrop-blur-xl w-full rounded-2xl px-4 py-3 flex justify-between items-center border border-glass-stroke shadow-[inset_0_0_15px_rgba(255,0,127,0.3)]"><div class="flex flex-col w-full gap-2"><div class="flex justify-between items-center w-full"><div class="flex flex-col"><span class="font-caption-caps text-caption-caps text-on-surface-variant uppercase tracking-widest">Día 4</span><div class="flex items-center gap-1"><span class="material-symbols-outlined text-primary-fixed" style="font-variation-settings: 'FILL' 1;">paid</span><span class="font-currency-md text-currency-md text-primary-fixed text-glow-primary">$1.2K</span></div></div><div class="flex items-center gap-2 bg-surface-container-high px-3 py-1 rounded-lg border border-tertiary-fixed/30 neon-glow-cyan"><span class="material-symbols-outlined text-tertiary-fixed">timer</span><span class="font-currency-md text-label-lg text-tertiary-fixed">02:45</span></div></div><div class="flex flex-col gap-1"><div class="flex justify-between items-center"><span class="font-caption-caps text-caption-caps text-secondary uppercase">Energía</span></div><div class="w-full h-3 bg-deep-void rounded-full border border-secondary-container/50 overflow-hidden relative"><div class="absolute inset-0 bg-gradient-to-r from-secondary-container to-madness-orange w-4/5 liquid-bar neon-glow-pink"></div></div></div></div></header>
+<!-- Progress Bar (Pedido) -->
+<div class="w-full max-w-md mx-auto mt-2 bg-surface-container/90 backdrop-blur-md rounded-xl p-3 border border-glass-stroke shadow-[0_4px_20px_rgba(0,0,0,0.5)]">
+<div class="flex justify-between items-center mb-1">
+<span class="font-label-lg text-body-sm text-on-surface">Progreso del Pedido</span>
+<span class="font-caption-caps text-caption-caps text-primary-fixed">85%</span>
+</div>
+<div class="w-full h-3 bg-deep-void rounded-full overflow-hidden border border-outline relative">
+<!-- Progress Fill -->
+<div class="h-full bg-gradient-to-r from-madness-orange to-primary-fixed w-[85%] relative">
+<!-- Liquid noise overlay effect -->
+<div class="absolute inset-0 opacity-30 mix-blend-overlay bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI4IiBoZWlnaHQ9IjgiPgo8cmVjdCB3aWR0aD0iOCIgaGVpZ2h0PSI4IiBmaWxsPSIjZmZmIiBmaWxsLW9wYWNpdHk9IjAuMSIvPgo8L3N2Zz4=')]"></div>
+</div>
+<!-- Target Marker -->
+<div class="absolute top-0 bottom-0 right-[20%] w-1 bg-tertiary shadow-[0_0_8px_#ffffff] z-10"></div>
+</div>
+</div>
+</div>
+<!-- Main Content Area (Void to allow gameplay visual) -->
+<main class="flex-1 w-full relative z-10 flex flex-col items-center justify-center">
+<!-- Interactive elements would go here, leaving mostly empty for HUD focus -->
+</main>
+<!-- Bottom Actions Layer -->
+<div class="z-20 w-full px-4 pb-safe flex justify-between items-end pointer-events-none p-4 max-w-md mx-auto">
+<!-- Left Action: Stats -->
+<button class="pointer-events-auto group relative overflow-hidden rounded-full px-6 py-3 bg-surface-container-high border border-glass-stroke shadow-[0_4px_15px_rgba(0,0,0,0.6)] hover:scale-105 transition-transform duration-200">
+<div class="absolute inset-0 bg-gradient-to-r from-primary-fixed/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+<div class="flex items-center gap-2 relative z-10 text-primary-fixed">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">bar_chart</span>
+<span class="font-label-lg text-label-lg uppercase tracking-wider">Stats</span>
+</div>
+<!-- Inner top highlight -->
+<div class="absolute top-0 inset-x-2 h-[2px] bg-white/20 rounded-full"></div>
+</button>
+<!-- Right Action: Pause -->
+<button class="pointer-events-auto group relative overflow-hidden rounded-full px-6 py-3 bg-surface-container-highest border border-glass-stroke shadow-[0_4px_15px_rgba(0,0,0,0.6)] hover:scale-105 transition-transform duration-200">
+<div class="absolute inset-0 bg-gradient-to-r from-surface-bright/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+<div class="flex items-center gap-2 relative z-10 text-on-surface">
+<span class="font-label-lg text-label-lg uppercase tracking-wider text-shadow-md">Pausa</span>
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">pause_circle</span>
+</div>
+<!-- Inner top highlight -->
+<div class="absolute top-0 inset-x-2 h-[2px] bg-white/20 rounded-full"></div>
+</button>
+</div>
+
+
+
+
+</body></html>

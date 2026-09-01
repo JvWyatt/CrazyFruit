@@ -20,6 +20,7 @@ signal unpayable
 @onready var earned_value: Label = $Panel/VBox/SummaryPanel/SummaryVBox/EarnedRow/EarnedValue
 @onready var tax_value: Label = $Panel/VBox/SummaryPanel/SummaryVBox/TaxRow/TaxValue
 @onready var profit_value: Label = $Panel/VBox/SummaryPanel/SummaryVBox/ProfitRow/ProfitValue
+@onready var next_target_value: Label = $Panel/VBox/SummaryPanel/SummaryVBox/NextTargetRow/NextTargetValue
 
 var current_completed_order: int = 1
 
@@ -50,6 +51,9 @@ func open_modal(order_completed_num: int) -> void:
 	var profit: float = earned - tax
 	profit_value.text = "$" + UiTheme.format_money(profit)
 	profit_value.modulate = Color(0.6, 0.95, 0.6, 1) if profit >= 0.0 else Color(1, 0.6, 0.6, 1)
+
+	# Vista previa del objetivo del próximo día (debajo del impuesto del resumen).
+	next_target_value.text = "$" + UiTheme.format_money(GameManager.get_order_target_for(GameManager.current_order + 1))
 
 	for child in cards_container.get_children():
 		child.queue_free()

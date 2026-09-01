@@ -53,6 +53,13 @@ func _install_theme() -> void:
 	theme.set_color("font_disabled_color", "Button", Color(0.45, 0.5, 0.6, 0.7))
 	theme.set_constant("separation", "Button", 0)
 
+	# Sliders horizontales (ajustes): carril oscuro, relleno verde y pomo dorado.
+	theme.set_stylebox("slider", "HSlider", _box_style(Color(0.09, 0.11, 0.17), Color(0.16, 0.21, 0.34, 0.8), 5))
+	theme.set_stylebox("grabber_area", "HSlider", _box_style(Color(0.31, 0.84, 0.62), Color(0, 0, 0, 0), 5))
+	theme.set_stylebox("grabber_area_highlight", "HSlider", _box_style(Color(0.34, 0.92, 0.68), Color(0, 0, 0, 0), 5))
+	theme.set_stylebox("grabber", "HSlider", _box_style(Color(1.0, 0.835, 0.29), Color(0.8, 0.6, 0.2, 0.9), 999))
+	theme.set_stylebox("grabber_highlight", "HSlider", _box_style(Color(1.0, 0.9, 0.5), Color(0.8, 0.6, 0.2, 0.9), 999))
+
 	# Barras de progreso (fondo con borde sutil + relleno redondeado).
 	theme.set_stylebox("background", "ProgressBar", _box_style(Color(0.09, 0.11, 0.17), Color(0.2, 0.26, 0.42, 0.8), 8))
 	theme.set_stylebox("fill", "ProgressBar", _box_style(Color(0.31, 0.84, 0.62), Color(0.31, 0.84, 0.62, 0.0), 8))

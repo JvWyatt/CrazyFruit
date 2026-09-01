@@ -1,6 +1,8 @@
-[gd_scene load_steps=6 format=3 uid="uid://dg03k36pm1y8a"]
+[gd_scene load_steps=9 format=3 uid="uid://dg03k36pm1y8a"]
 
 [ext_resource type="Script" path="res://scripts/ui/MainMenu.gd" id="1_mm"]
+[ext_resource type="PackedScene" path="res://scenes/ui/SettingsSection.tscn" id="2_ss"]
+[ext_resource type="PackedScene" path="res://scenes/ui/ConfirmDialog.tscn" id="3_cd"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_card"]
 bg_color = Color(0.12, 0.14, 0.22, 0.9)
@@ -12,6 +14,25 @@ content_margin_left = 16.0
 content_margin_top = 16.0
 content_margin_right = 16.0
 content_margin_bottom = 16.0
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_settings"]
+bg_color = Color(0.09, 0.11, 0.19, 0.98)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.45, 0.55, 0.85, 1)
+corner_radius_top_left = 18
+corner_radius_top_right = 18
+corner_radius_bottom_right = 18
+corner_radius_bottom_left = 18
+shadow_color = Color(0, 0, 0, 0.5)
+shadow_size = 10
+shadow_offset = Vector2(0, 4)
+content_margin_left = 28.0
+content_margin_top = 24.0
+content_margin_right = 28.0
+content_margin_bottom = 24.0
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_play_normal"]
 bg_color = Color(0.98, 0.78, 0.22, 1)
@@ -167,6 +188,12 @@ layout_mode = 2
 theme_override_font_sizes/font_size = 18
 text = "🃏 COMODINES"
 
+[node name="SettingsButton" type="Button" parent="CenterVBox/ButtonsVBox"]
+custom_minimum_size = Vector2(0, 52)
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "⚙️ AJUSTES"
+
 [node name="ResetButton" type="Button" parent="CenterVBox/ButtonsVBox"]
 custom_minimum_size = Vector2(0, 44)
 layout_mode = 2
@@ -174,11 +201,57 @@ theme_override_colors/font_color = Color(0.7, 0.5, 0.5, 1)
 theme_override_font_sizes/font_size = 14
 text = "🔄 REINICIAR PROGRESO"
 
-[node name="ResetConfirmDialog" type="ConfirmationDialog" parent="."]
-title = "Reiniciar progreso"
-initial_position = 1
-size = Vector2i(420, 160)
-ok_button_text = "Reiniciar"
-cancel_button_text = "Cancelar"
-dialog_text = "¿Seguro que quieres reiniciar todo el progreso permanente? Esta acción no se puede deshacer."
+[node name="ResetConfirmDialog" parent="." instance=ExtResource("3_cd")]
+
+[node name="SettingsPanel" type="Control" parent="."]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Scrim" type="ColorRect" parent="SettingsPanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 0.55)
+
+[node name="SettingsCard" type="PanelContainer" parent="SettingsPanel"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -310.0
+offset_top = -220.0
+offset_right = 310.0
+offset_bottom = 220.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_settings")
+
+[node name="VBox" type="VBoxContainer" parent="SettingsPanel/SettingsCard"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="TitleLabel" type="Label" parent="SettingsPanel/SettingsCard/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.88, 0.25, 1)
+theme_override_font_sizes/font_size = 30
+text = "AJUSTES"
+horizontal_alignment = 1
+
+[node name="SettingsSection" parent="SettingsPanel/SettingsCard/VBox" instance=ExtResource("2_ss")]
+
+[node name="BackButton" type="Button" parent="SettingsPanel/SettingsCard/VBox"]
+custom_minimum_size = Vector2(0, 52)
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "← VOLVER"
 

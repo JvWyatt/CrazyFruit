@@ -2,8 +2,12 @@ extends Control
 # ============================================================================
 # HUD: la interfaz que se ve MIENTRAS juegas (dinero, pedido, barra de
 # energía, tiempo restante de la ronda, frecuencia de lanzamiento, arma
-# equipada y botones de Stats/Salir). Solo muestra datos que vienen de
+# equipada y botones de Stats/Pausa). Solo muestra datos que vienen de
 # GameManager/StatsManager; no decide reglas.
+#
+# El botón de pausa abre el PausePanel: pausa la ronda (pause_turn), permite
+# ajustar el volumen (SettingsSection), continuar jugando o salir del negocio
+# (con ConfirmDialog estilizado antes de renunciar).
 # ============================================================================
 
 signal open_stats_requested
@@ -20,8 +24,18 @@ signal quit_run_requested
 @onready var energy_label: Label = $TopContainer/VBox/EnergyContainer/EnergyBar/EnergyLabel
 @onready var knife_label: Label = $BottomContainer/KnifeInfoLabel
 @onready var stats_btn: Button = $BottomContainer/ButtonsHBox/StatsButton
-@onready var quit_btn: Button = $BottomContainer/ButtonsHBox/QuitButton
-@onready var quit_confirm_dialog: ConfirmationDialog = $QuitConfirmDialog
+@onready var pause_btn: Button = $BottomContainer/ButtonsHBox/PauseButton
+@onready var pause_panel: Control = $PausePanel
+@onready var pause_card: PanelContainer = $PausePanel/Card
+@onready var pause_day_label: Label = $PausePanel/Card/PauseVBox/PauseDayLabel
+@onready var continue_btn: Button = $PausePanel/Card/PauseVBox/ContinueButton
+@onready var settings_btn: Button = $PausePanel/Card/PauseVBox/SettingsButton
+@onready var pause_quit_btn: Button = $PausePanel/Card/PauseVBox/PauseQuitButton
+@onready var pause_vbox: VBoxContainer = $PausePanel/Card/PauseVBox
+@onready var settings_vbox: VBoxContainer = $PausePanel/Card/SettingsVBox
+@onready var settings_section: SettingsSection = $PausePanel/Card/SettingsVBox/SettingsSection
+@onready var settings_back_btn: Button = $PausePanel/Card/SettingsVBox/SettingsBackButton
+@onready var pause_confirm_dialog: ConfirmDialog = $PauseConfirmDialog
 
 func _ready() -> void:
 	GameManager.money_changed.connect(_on_money_changed)
@@ -32,9 +46,12 @@ func _ready() -> void:
 	GameManager.run_knife_equipped.connect(func(_id): _update_knife_display())
 
 	stats_btn.pressed.connect(_on_stats_button_pressed)
-	quit_btn.pressed.connect(_on_quit_button_pressed)
-	quit_confirm_dialog.confirmed.connect(_on_quit_confirmed)
-	quit_confirm_dialog.canceled.connect(_on_quit_canceled)
+	pause_btn.pressed.connect(_on_pause_button_pressed)
+	continue_btn.pressed.connect(_on_continue_pressed)
+	settings_btn.pressed.connect(_on_settings_button_pressed)
+	settings_back_btn.pressed.connect(_on_settings_back_pressed)
+	pause_quit_btn.pressed.connect(_on_pause_quit_pressed)
+	pause_confirm_dialog.confirmed.connect(_on_quit_confirmed)
 	_update_knife_display()
 	_update_launch_rate_display()
 
@@ -81,14 +98,43 @@ func _on_stats_button_pressed() -> void:
 	SoundManager.play_click()
 	emit_signal("open_stats_requested")
 
-func _on_quit_button_pressed() -> void:
+# --- Pausa --------------------------------------------------------------
+
+func _on_pause_button_pressed() -> void:
 	SoundManager.play_click()
 	GameManager.pause_turn()
-	quit_confirm_dialog.popup_centered()
+	pause_day_label.text = "📋 Día " + str(GameManager.current_order)
+	pause_vbox.visible = true
+	settings_vbox.visible = false
+	pause_panel.visible = true
+	UiTheme.pop_in(pause_card)
 
-func _on_quit_confirmed() -> void:
-	emit_signal("quit_run_requested")
-
-func _on_quit_canceled() -> void:
+func _on_continue_pressed() -> void:
+	SoundManager.play_click()
+	pause_panel.visible = false
 	if GameManager.current_state == GameManager.GameState.PLAYING:
 		GameManager.resume_turn()
+
+func _on_settings_button_pressed() -> void:
+	SoundManager.play_click()
+	settings_section.sync()
+	pause_vbox.visible = false
+	settings_vbox.visible = true
+
+func _on_settings_back_pressed() -> void:
+	SoundManager.play_click()
+	settings_vbox.visible = false
+	pause_vbox.visible = true
+
+func _on_pause_quit_pressed() -> void:
+	SoundManager.play_click()
+	pause_confirm_dialog.open(
+		"RENUNCIAR AL NEGOCIO",
+		"¿Seguro que quieres renunciar a este negocio?\nPerderás el progreso del día actual.",
+		"RENUNCIAR",
+		"CONTINUAR JUGANDO"
+	)
+
+func _on_quit_confirmed() -> void:
+	pause_panel.visible = false
+	emit_signal("quit_run_requested")

@@ -72,6 +72,7 @@ func _init_fruit3d_overlay() -> void:
 
 func _show_main_menu() -> void:
 	main_menu.visible = true
+	SoundManager.play_menu_music()
 	game_world.visible = false
 	hud.visible = false
 	fruit_spawner.disable_spawning()
@@ -89,6 +90,7 @@ func _on_start_game_requested() -> void:
 	game_world.visible = true
 	hud.visible = true
 	fruit_spawner.enable_spawning()
+	SoundManager.play_game_music()
 	GameManager.start_new_run()
 
 func _on_open_prestige_shop_requested() -> void:

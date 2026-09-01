@@ -9,7 +9,7 @@ class_name Obstacle
 # Movimiento: usa el componente Ballistic (estilo Fruit Ninja).
 # ============================================================================
 
-@export var radius: float = 38.0
+@export var radius: float = 35.0
 
 var hit_cooldown: float = 0.0
 var spin_speed: float = 1.0
@@ -31,8 +31,8 @@ func setup(p_radius: float) -> void:
 
 func launch(from_position: Vector2, launch_velocity: Vector2, p_wall_left: float = 10.0, p_wall_right: float = 710.0, p_escape_y: float = 1500.0) -> void:
 	if ballistic:
-		# Gravedad x0.64 (1500 -> 960) coherente con la fruta/y la velocidad x0.8.
-		ballistic.launch(from_position, launch_velocity, 960.0, p_wall_left, p_wall_right, p_escape_y)
+		# Gravedad x1.21 (960 -> 1161.6) coherente con la fruta/y la velocidad x1.1.
+		ballistic.launch(from_position, launch_velocity, 1161.6, p_wall_left, p_wall_right, p_escape_y)
 
 func _process(delta: float) -> void:
 	if hit_cooldown > 0.0:

@@ -193,7 +193,7 @@ func confetti_burst(parent: Node, local_position: Vector2, amount: int = 90) -> 
 	var scale_curve := Curve.new()
 	scale_curve.add_point(Vector2(0, 1), 0, 0, 0, 0)
 	scale_curve.add_point(Vector2(1, 0.4), 0, 0, 0, 0)
-	particles.scale_curve = scale_curve
+	particles.scale_amount_curve = scale_curve
 	parent.add_child(particles)
 	_cleanup_confetti_later(particles)
 

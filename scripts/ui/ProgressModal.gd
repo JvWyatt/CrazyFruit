@@ -21,19 +21,9 @@ func _refresh_ui() -> void:
 		child.queue_free()
 
 	_add_section("🏆 PROGRESO")
-	_add_row("Reputación acumulada", str(SaveManager.save_data.get("total_reputation_earned", 0)))
-	_add_row("Ganancias totales", "$" + _format_number(float(SaveManager.save_data.get("total_money_earned", 0.0))))
-	_add_row("Días completados", str(SaveManager.save_data.get("best_clients_in_day", 0)))
-	_add_row("Negocios en quiebra", str(SaveManager.save_data.get("days_started", 0)))
-
-	_add_section("🔪 UTENSILIOS DISPONIBLES")
-	var unlocked_weapons: Array = SaveManager.get_unlocked_knives()
-	var weapon_names: Array[String] = []
-	for weapon_id in unlocked_weapons:
-		if StatsManager.knives_db.has(str(weapon_id)):
-			weapon_names.append(str(StatsManager.knives_db[str(weapon_id)]["name"]))
-	_add_row("Armas desbloqueadas", str(unlocked_weapons.size()) + " / " + str(StatsManager.knives_db.size()))
-	_add_row("Disponibles", ", ".join(weapon_names))
+	_add_row("Reputación acumulada", str(int(SaveManager.save_data.get("total_reputation_earned", 0))))
+	_add_row("Días completados", str(int(SaveManager.save_data.get("best_clients_in_day", 0))))
+	_add_row("Negocios en quiebra", str(int(SaveManager.save_data.get("days_started", 0))))
 
 	_add_section("🍓 FRUTAS DISPONIBLES")
 	var unlocked_fruits: Array = SaveManager.get_unlocked_fruits()

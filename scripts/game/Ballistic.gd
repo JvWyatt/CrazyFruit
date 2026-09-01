@@ -11,9 +11,9 @@ class_name Ballistic
 # ============================================================================
 
 var velocity: Vector2 = Vector2.ZERO
-# Gravedad x0.64 (1500 - 960): junto con la velocidad x0.8 de FruitSpawner, las
-# frutas van 20% más lentas pero conservan el mismo alcance/altura de parábola.
-var gravity: float = 960.0
+# Gravedad x1.21 (960 - 1161.6): junto con la velocidad x1.1 de FruitSpawner,
+# las frutas van 10% más rápido pero conservan el mismo alcance/altura.
+var gravity: float = 1161.6
 var escape_y: float = 1500.0
 var wall_left: float = 10.0
 var wall_right: float = 710.0
@@ -25,7 +25,7 @@ var is_active: bool = false
 # acorde al alto REAL del viewport: un valor fijo (p.ej. 1500) elimina las
 # frutas al instante en pantallas más altas que 720x1280 (la fruta nace a
 # play_bounds.end.y + 150, que en pantalla alta supera 1500).
-func launch(from_position: Vector2, launch_velocity: Vector2, p_gravity: float = 960.0, p_wall_left: float = 10.0, p_wall_right: float = 710.0, p_escape_y: float = 1500.0) -> void:
+func launch(from_position: Vector2, launch_velocity: Vector2, p_gravity: float = 1161.6, p_wall_left: float = 10.0, p_wall_right: float = 710.0, p_escape_y: float = 1500.0) -> void:
 	var parent := get_parent()
 	if parent is Node2D:
 		parent.position = from_position

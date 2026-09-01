@@ -26,10 +26,10 @@ signal equipped_knife_changed(knife_id: String)
 var save_data: Dictionary = {
 	"prestige_points": 0,
 	"prestige_levels": {
-		"experience": 0,       # +5% starting damage / lvl
-		"expert_hand": 0,      # +10 max energy / lvl
-		"good_provider": 0,    # +5% money / lvl
-		"good_fortune": 0,     # +3% jackpot chance / lvl
+		"experience": 0,       # +10% starting damage / lvl
+		"expert_hand": 0,      # +10% max energy / lvl
+		"good_provider": 0,    # +10% money / lvl
+		"good_fortune": 0,     # +1% jackpot chance / lvl
 		"launch_speed": 0,     # +25% launch frequency / lvl
 	},
 	"unlocked_knives": ["weapon_fist"],
@@ -154,6 +154,14 @@ func discover_card(card_id: String) -> void:
 func get_wallet_balance() -> float:
 	return float(save_data.get("total_money_earned", 0.0))
 
+# Acumula en tiempo real las ganancias TOTALES de la vida del jugador (cada
+# fruta cortada suma aquí directamente). Así la pantalla de Progreso
+# ("Ganancias totales") siempre está al día, sin depender de que el negocio
+# quiebre para contabilizarse.
+func add_total_money_earned(amount: float) -> void:
+	save_data["total_money_earned"] = float(save_data.get("total_money_earned", 0.0)) + amount
+	save_to_disk()
+
 # Nota: usada solo por la tienda de armas independiente del menú principal
 # (KnifeShopModal), que actualmente no está conectada a ningún botón del juego.
 func spend_wallet_balance(amount: float) -> bool:
@@ -188,7 +196,9 @@ func set_equipped_knife(knife_id: String) -> void:
 func record_run_stats(completed_order: int, money_earned: float, fruits_cut: int) -> void:
 	if completed_order > int(save_data.get("high_score_order", 0)):
 		save_data["high_score_order"] = completed_order
-	save_data["total_money_earned"] = float(save_data.get("total_money_earned", 0.0)) + money_earned
+	# NOTA: el dinero ya se acumuló en tiempo real con add_total_money_earned()
+	# en cada corte (ver GameManager.register_fruit_cut), así que aquí NO se
+	# vuelve a sumar money_earned para evitar doble contabilidad.
 	save_data["total_fruits_cut"] = int(save_data.get("total_fruits_cut", 0)) + fruits_cut
 	var best_clients: int = int(save_data.get("best_clients_in_day", 0))
 	if completed_order > best_clients:

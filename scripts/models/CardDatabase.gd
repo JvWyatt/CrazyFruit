@@ -22,71 +22,127 @@ static func _build_cards() -> Array[Dictionary]:
 	var rare := "Rara"
 	var epic := "Épica"
 	var legendary := "Legendaria"
+	var mythic := "Mítica"
 
-	# Common pool: 20 cards
+	# --------------------------------------------------------------------------
+	# Pool común: 62 cartas de efecto único y magnitud moderada/baja.
+	# --------------------------------------------------------------------------
 	cards.append(_card("Filo Ligero", "+3% daño", common, "damage", 0.03))
+	cards.append(_card("Filo de Acero", "+5% daño", common, "damage", 0.05))
+	cards.append(_card("Puño Firme", "+7% daño", common, "damage", 0.07))
+	cards.append(_card("Pulso", "+4% daño", common, "damage", 0.04))
+	cards.append(_card("Filo Afilado", "+6% daño", common, "damage", 0.06))
+	cards.append(_card("Golpe Letal", "+5.5% daño", common, "damage", 0.055))
 	cards.append(_card("Buen Aguante", "+3% resistencia máxima", common, "energy_max", 0.03))
-	cards.append(_card("Cosecha Segura", "+3% recompensa mínima de frutas", common, "reward_min", 0.03))
-	cards.append(_card("Fruta Valiosa", "+3% recompensa máxima de frutas", common, "reward_max", 0.03))
+	cards.append(_card("Piernas Firmes", "+4% resistencia máxima", common, "energy_max", 0.04))
+	cards.append(_card("Segundo Aliento", "+5% resistencia máxima", common, "energy_max", 0.05))
+	cards.append(_card("Vigor Rápido", "+6% resistencia máxima", common, "energy_max", 0.06))
+	cards.append(_card("Refuerzo", "+3.5% resistencia máxima", common, "energy_max", 0.035))
+	cards.append(_card("Resistencia Extra", "+5.5% resistencia máxima", common, "energy_max", 0.055))
+	cards.append(_card("Cosecha Segura", "+3% recompensa mínima", common, "reward_min", 0.03))
+	cards.append(_card("Fruto Fresco", "+4% recompensa mínima", common, "reward_min", 0.04))
+	cards.append(_card("Buen Reparto", "+5% recompensa mínima", common, "reward_min", 0.05))
+	cards.append(_card("Cosecha Ligera", "+3.5% recompensa mínima", common, "reward_min", 0.035))
+	cards.append(_card("Suelo Fertil", "+5.5% recompensa mínima", common, "reward_min", 0.055))
+	cards.append(_card("Fruta Valiosa", "+3% recompensa máxima", common, "reward_max", 0.03))
+	cards.append(_card("Jugo Maduro", "+4% recompensa máxima", common, "reward_max", 0.04))
+	cards.append(_card("Cosecha Doble", "+5% recompensa máxima", common, "reward_max", 0.05))
+	cards.append(_card("Cosecha Plena", "+3.5% recompensa máxima", common, "reward_max", 0.035))
+	cards.append(_card("Cosecha Amplia", "+5.5% recompensa máxima", common, "reward_max", 0.055))
 	cards.append(_card("Pequeña Fortuna", "+0.3% probabilidad de Jackpot", common, "jackpot", 0.003))
+	cards.append(_card("Buena Estrella", "+0.25% probabilidad de Jackpot", common, "jackpot", 0.0025))
 	cards.append(_card("Premio Mayor", "+0.1x multiplicador de Jackpot", common, "jackpot_multiplier", 0.1))
 	cards.append(_card("Buen Negocio", "+3% multiplicador de ganancias", common, "money", 0.03))
+	cards.append(_card("Monedero", "+4% multiplicador de ganancias", common, "money", 0.04))
+	cards.append(_card("Bolsa Rellena", "+5% multiplicador de ganancias", common, "money", 0.05))
+	cards.append(_card("Bolsa Doblada", "+3.5% multiplicador de ganancias", common, "money", 0.035))
+	cards.append(_card("Mercado Furioso", "+5.5% multiplicador de ganancias", common, "money", 0.055))
+	cards.append(_card("Riqueza", "+6% multiplicador de ganancias", common, "money", 0.06))
 	cards.append(_card("Punto Preciso", "+1% probabilidad de Crítico", common, "crit_chance", 0.01))
+	cards.append(_card("Foco", "+2% probabilidad de Crítico", common, "crit_chance", 0.02))
+	cards.append(_card("Filigrana", "+3% probabilidad de Crítico", common, "crit_chance", 0.03))
+	cards.append(_card("Golpe Firme", "+1.5% probabilidad de Crítico", common, "crit_chance", 0.015))
+	cards.append(_card("Mano Certera", "+1.2% probabilidad de Crítico", common, "crit_chance", 0.012))
+	cards.append(_card("Puntería", "+2.5% probabilidad de Crítico", common, "crit_chance", 0.025))
 	cards.append(_card("Ritmo Constante", "+3% frecuencia de lanzamiento", common, "launch_rate", 0.03))
+	cards.append(_card("Viento Leve", "+4% frecuencia de lanzamiento", common, "launch_rate", 0.04))
+	cards.append(_card("Rayo", "+5% frecuencia de lanzamiento", common, "launch_rate", 0.05))
+	cards.append(_card("Giro Veloz", "+3.5% frecuencia de lanzamiento", common, "launch_rate", 0.035))
+	cards.append(_card("Tormenta Ligera", "+5.5% frecuencia de lanzamiento", common, "launch_rate", 0.055))
+	cards.append(_card("Filo en el Viento", "+2.5% frecuencia de lanzamiento", common, "launch_rate", 0.025))
 	cards.append(_card("Fruta Delicada", "-3% vida de las frutas", common, "fruit_hp", -0.03))
+	cards.append(_card("Fruta Frágil", "-4% vida de las frutas", common, "fruit_hp", -0.04))
 	cards.append(_card("Armas Baratas", "-3% precio de armas", common, "weapon_price", -0.03))
+	cards.append(_card("Rebaja", "-4% precio de armas", common, "weapon_price", -0.04))
+	cards.append(_card("Compra Mayorista", "-5% precio de armas", common, "weapon_price", -0.05))
 	cards.append(_card("Frutas Baratas", "-3% precio de frutas", common, "fruit_price", -0.03))
+	cards.append(_card("Oferta", "-4% precio de frutas", common, "fruit_price", -0.04))
+	cards.append(_card("Venta al Por Mayor", "-5% precio de frutas", common, "fruit_price", -0.05))
 	cards.append(_card("Mejoras Baratas", "-3% precio de mejoras", common, "upgrade_price", -0.03))
+	cards.append(_card("Cambio Justo", "-4% precio de mejoras", common, "upgrade_price", -0.04))
+	cards.append(_card("Ahorro Mayor", "-5% precio de mejoras", common, "upgrade_price", -0.05))
 	cards.append(_card("Buen Progreso", "-3% objetivo de dinero del día", common, "order_target", -0.03))
-	cards.append(_multi_card("Filo Afortunado", "+2% daño y +0.2% Jackpot", common, [{"type": "damage", "value": 0.02}, {"type": "jackpot", "value": 0.002}]))
-	cards.append(_multi_card("Cosecha Rentable", "+2% recompensa mínima y +2% máxima", common, [{"type": "reward_min", "value": 0.02}, {"type": "reward_max", "value": 0.02}]))
-	cards.append(_multi_card("Golpe Valioso", "+2% Crítico y +2% multiplicador de dinero", common, [{"type": "crit_chance", "value": 0.02}, {"type": "money", "value": 0.02}]))
-	cards.append(_multi_card("Corte Eficiente", "+2% daño y +2% resistencia máxima", common, [{"type": "damage", "value": 0.02}, {"type": "energy_max", "value": 0.02}]))
-	cards.append(_multi_card("Lluvia Ligera", "+2% frecuencia de lanzamiento y +2% recompensa máxima", common, [{"type": "launch_rate", "value": 0.02}, {"type": "reward_max", "value": 0.02}]))
-	cards.append(_multi_card("Cosecha Veloz", "+2% frecuencia de lanzamiento y +2% daño", common, [{"type": "launch_rate", "value": 0.02}, {"type": "damage", "value": 0.02}]))
+	cards.append(_card("Día Corto", "-4% objetivo de dinero del día", common, "order_target", -0.04))
+	cards.append(_card("Día Bueno", "-5% objetivo de dinero del día", common, "order_target", -0.05))
+	cards.append(_card("Cortes Ligeros", "-4% energía por golpe", common, "energy_cost", -0.04))
+	cards.append(_card("Mano Suave", "-6% energía por golpe", common, "energy_cost", -0.06))
+	cards.append(_card("Brillo Dorado", "+0.05% de Probabilidad de Fruta Dorada", common, "golden_fruit_chance", 0.0005))
+	cards.append(_card("Toque Brillante", "+0.1% de Probabilidad de Fruta Dorada", common, "golden_fruit_chance", 0.001))
+	cards.append(_card("Filo del Experto", "+6.5% daño", common, "damage", 0.065))
 
-	# Rare pool: 15 cards
-	cards.append(_card("Filo Superior", "+7% daño", rare, "damage", 0.07))
-	cards.append(_card("Reserva Extra", "+8% resistencia máxima", rare, "energy_max", 0.08))
-	cards.append(_card("Cosecha Rica", "+8% recompensa mínima", rare, "reward_min", 0.08))
-	cards.append(_card("Fruta Dorada", "+8% recompensa máxima", rare, "reward_max", 0.08))
-	cards.append(_card("Fortuna Creciente", "+1% Jackpot", rare, "jackpot", 0.01))
+	# --------------------------------------------------------------------------
+	# Pool raro: 27 cartas de efecto único y magnitud mayor.
+	# --------------------------------------------------------------------------
+	cards.append(_card("Filo Superior", "+9% daño", rare, "damage", 0.09))
+	cards.append(_card("Filo Devastador", "+12% daño", rare, "damage", 0.12))
+	cards.append(_card("Reserva Extra", "+9% resistencia máxima", rare, "energy_max", 0.09))
+	cards.append(_card("Reserva Titánica", "+12% resistencia máxima", rare, "energy_max", 0.12))
+	cards.append(_card("Cosecha Rica", "+9% recompensa mínima", rare, "reward_min", 0.09))
+	cards.append(_card("Cosecha Abundante", "+12% recompensa mínima", rare, "reward_min", 0.12))
+	cards.append(_card("Cosecha Mayor", "+9% recompensa máxima", rare, "reward_max", 0.09))
+	cards.append(_card("Cosecha Exuberante", "+12% recompensa máxima", rare, "reward_max", 0.12))
+	cards.append(_card("Fortuna Creciente", "+0.6% probabilidad de Jackpot", rare, "jackpot", 0.006))
+	cards.append(_card("Fortuna Dorada", "+1% probabilidad de Jackpot", rare, "jackpot", 0.01))
 	cards.append(_card("Jackpot Mejorado", "+0.3x multiplicador de Jackpot", rare, "jackpot_multiplier", 0.3))
-	cards.append(_card("Negocio Próspero", "+7% multiplicador de ganancias", rare, "money", 0.07))
-	cards.append(_card("Golpe Certero", "+4% Crítico", rare, "crit_chance", 0.04))
-	cards.append(_card("Ritmo Fuerte", "+7% frecuencia de lanzamiento", rare, "launch_rate", 0.07))
-	cards.append(_card("Fruta Frágil", "-7% vida de las frutas", rare, "fruit_hp", -0.07))
-	cards.append(_card("Comerciante", "-7% precio de armas, frutas y mejoras", rare, "all_prices", -0.07))
-	cards.append(_card("Día Favorable", "-7% objetivo de dinero del día", rare, "order_target", -0.07))
-	cards.append(_multi_card("Racha de Cortes", "+4% Crítico y +4% daño", rare, [{"type": "crit_chance", "value": 0.04}, {"type": "damage", "value": 0.04}]))
-	cards.append(_multi_card("Lluvia Rentable", "+4% frecuencia de lanzamiento y +4% recompensa mínima", rare, [{"type": "launch_rate", "value": 0.04}, {"type": "reward_min", "value": 0.04}]))
-	cards.append(_multi_card("Negocio Veloz", "+4% frecuencia de lanzamiento y +4% ganancias", rare, [{"type": "launch_rate", "value": 0.04}, {"type": "money", "value": 0.04}]))
+	cards.append(_card("Negocio Próspero", "+9% multiplicador de ganancias", rare, "money", 0.09))
+	cards.append(_card("Mercado Dorado", "+12% multiplicador de ganancias", rare, "money", 0.12))
+	cards.append(_card("Golpe Certero", "+3.5% probabilidad de Crítico", rare, "crit_chance", 0.035))
+	cards.append(_card("Golpe Mortal", "+4.5% probabilidad de Crítico", rare, "crit_chance", 0.045))
+	cards.append(_card("Ritmo Fuerte", "+9% frecuencia de lanzamiento", rare, "launch_rate", 0.09))
+	cards.append(_card("Tormenta de Frutas", "+12% frecuencia de lanzamiento", rare, "launch_rate", 0.12))
+	cards.append(_card("Fruta Frágil II", "-7% vida de las frutas", rare, "fruit_hp", -0.07))
+	cards.append(_card("Fruta Rompible", "-10% vida de las frutas", rare, "fruit_hp", -0.10))
+	cards.append(_card("Toque Dorado", "+0.2% de Probabilidad de Fruta Dorada", rare, "golden_fruit_chance", 0.002))
+	cards.append(_card("Cosecha Dorada", "+0.3% de Probabilidad de Fruta Dorada", rare, "golden_fruit_chance", 0.003))
+	cards.append(_card("Corte Eficiente", "-12% energía por golpe", rare, "energy_cost", -0.12))
+	cards.append(_card("Día Favorable", "-8% objetivo de dinero del día", rare, "order_target", -0.08))
+	cards.append(_card("Comerciante", "-6% precio de armas, frutas y mejoras", rare, "all_prices", -0.06))
+	cards.append(_card("Mayorista de Armas", "-8% precio de armas", rare, "weapon_price", -0.08))
+	cards.append(_card("Cesta de Ofertas", "-8% precio de frutas", rare, "fruit_price", -0.08))
+	cards.append(_card("Tecnología de Punta", "-8% precio de mejoras", rare, "upgrade_price", -0.08))
 
-	# Epic pool: 10 cards
-	cards.append(_card("Filo Devastador", "+15% daño", epic, "damage", 0.15))
-	cards.append(_card("Reserva Titánica", "+20% resistencia máxima", epic, "energy_max", 0.20))
-	cards.append(_multi_card("Cosecha Abundante", "+15% recompensa mínima y máxima", epic, [{"type": "reward_min", "value": 0.15}, {"type": "reward_max", "value": 0.15}]))
-	cards.append(_multi_card("Fortuna Dorada", "+2% Jackpot y +0.5x multiplicador de Jackpot", epic, [{"type": "jackpot", "value": 0.02}, {"type": "jackpot_multiplier", "value": 0.5}]))
-	cards.append(_multi_card("Golpe Mortal", "+7% Crítico y +15% daño", epic, [{"type": "crit_chance", "value": 0.07}, {"type": "damage", "value": 0.15}]))
-	cards.append(_card("Mercado Dorado", "+15% multiplicador de ganancias", epic, "money", 0.15))
-	cards.append(_card("Tormenta de Frutas", "+15% frecuencia de lanzamiento", epic, "launch_rate", 0.15))
-	cards.append(_card("Fruta Frágil II", "-15% vida de las frutas", epic, "fruit_hp", -0.15))
-	cards.append(_multi_card("Cortes en Cadena", "+8% Crítico y +10% frecuencia de lanzamiento", epic, [{"type": "crit_chance", "value": 0.08}, {"type": "launch_rate", "value": 0.10}]))
-	cards.append(_multi_card("Viento a Favor", "+10% frecuencia de lanzamiento y +10% recompensa máxima", epic, [{"type": "launch_rate", "value": 0.10}, {"type": "reward_max", "value": 0.10}]))
+	# --------------------------------------------------------------------------
+	# Pool épico: 7 cartas de magnitud alta.
+	# --------------------------------------------------------------------------
+	cards.append(_card("Filo Supremo", "+18% daño", epic, "damage", 0.18))
+	cards.append(_card("Fortuna Suprema", "+1.5% probabilidad de Jackpot", epic, "jackpot", 0.015))
+	cards.append(_card("Golpe Perfecto", "+8% probabilidad de Crítico", epic, "crit_chance", 0.08))
+	cards.append(_card("Cosecha Torrencial", "+18% recompensa máxima", epic, "reward_max", 0.18))
+	cards.append(_card("Coloso", "+18% resistencia máxima", epic, "energy_max", 0.18))
+	cards.append(_card("Meteoro", "+18% frecuencia de lanzamiento", epic, "launch_rate", 0.18))
+	cards.append(_card("Leyenda Dorada", "+0.6% de Probabilidad de Fruta Dorada", epic, "golden_fruit_chance", 0.006))
 
-	# Legendary pool: 5 cards
-	cards.append(_card("Filo Supremo", "+30% daño", legendary, "damage", 0.30))
-	cards.append(_multi_card("Resistencia Titánica", "+35% resistencia máxima y +15% frecuencia de lanzamiento", legendary, [{"type": "energy_max", "value": 0.35}, {"type": "launch_rate", "value": 0.15}]))
-	cards.append(_multi_card("Fortuna Suprema", "+3% Jackpot y +1x multiplicador de Jackpot", legendary, [{"type": "jackpot", "value": 0.03}, {"type": "jackpot_multiplier", "value": 1.0}]))
-	cards.append(_multi_card("Golpe Perfecto", "+10% Crítico y +30% daño", legendary, [{"type": "crit_chance", "value": 0.10}, {"type": "damage", "value": 0.30}]))
-	cards.append(_multi_card("Cosecha Torrencial", "+30% frecuencia de lanzamiento, +20% recompensa y +20% ganancias", legendary, [{"type": "launch_rate", "value": 0.30}, {"type": "reward_min", "value": 0.20}, {"type": "reward_max", "value": 0.20}, {"type": "money", "value": 0.20}]))
+	# --------------------------------------------------------------------------
+	# Pool legendario: 3 cartas de magnitud muy alta.
+	# --------------------------------------------------------------------------
+	cards.append(_card("Filazo Épico", "+28% daño", legendary, "damage", 0.28))
+	cards.append(_card("Jackpot Legendario", "+1x multiplicador de Jackpot", legendary, "jackpot_multiplier", 1.0))
+	cards.append(_card("Tormenta Perfecta", "+28% frecuencia de lanzamiento", legendary, "launch_rate", 0.28))
 
-	# Golden fruit pool: 5 cards, including the requested Mythic card.
-	cards.append(_card("Brillo Dorado", "+0.0625% de Probabilidad de Fruta Dorada", common, "golden_fruit_chance", 0.000625))
-	cards.append(_card("Toque Dorado", "+0.125% de Probabilidad de Fruta Dorada", rare, "golden_fruit_chance", 0.00125))
-	cards.append(_card("Cosecha Dorada", "+0.25% de Probabilidad de Fruta Dorada", epic, "golden_fruit_chance", 0.0025))
-	cards.append(_card("Leyenda Dorada", "+0.5% de Probabilidad de Fruta Dorada", legendary, "golden_fruit_chance", 0.005))
-	cards.append(_card("Oro Puro", "+1% de Probabilidad de Fruta Dorada", "Mítico", "golden_fruit_chance", 0.01))
+	# --------------------------------------------------------------------------
+	# Pool mítico: 1 carta (la más poderosa del juego).
+	# --------------------------------------------------------------------------
+	cards.append(_card("Divinidad", "+12% probabilidad de Crítico", mythic, "crit_chance", 0.12))
 	return cards
 
 static func _card(title: String, desc: String, rarity: String, effect_type: String, effect_value: float) -> Dictionary:
@@ -105,11 +161,16 @@ static func _rarity_color(rarity: String) -> Color:
 		"Legendaria": return Color(1.0, 0.75, 0.1)
 		_: return Color(1.0, 0.4, 0.8)
 
+# Probabilidad por SIMPLE DISTRIBUCIÓN: como el pool está bien balanceado
+# (62 Común / 27 Rara / 7 Épica / 3 Legendaria / 1 Mítica), el azar puro ya
+# produce la distribución deseada de rarezas. Se elige cada carta uniformemente
+# al azar entre el total SIN pesos forzados.
 static func get_random_cards(count: int = 3) -> Array[Dictionary]:
-	var pool: Array[Dictionary] = ALL_CARDS.duplicate()
-	pool.shuffle()
 	var selected: Array[Dictionary] = []
-	var limit: int = min(count, pool.size())
-	for i in range(limit):
-		selected.append(pool[i])
+	var available: Array[Dictionary] = ALL_CARDS.duplicate()
+	var needed: int = mini(count, ALL_CARDS.size())
+	while selected.size() < needed and available.size() > 0:
+		var pick: Dictionary = available[randi() % available.size()]
+		selected.append(pick)
+		available.erase(pick)
 	return selected

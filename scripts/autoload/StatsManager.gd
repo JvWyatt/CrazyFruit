@@ -21,15 +21,14 @@ signal stats_updated
 # todo el gasto de un plumazo si hiciera falta (ej. puño 1.0 = 1 energía/golpe).
 const RESISTANCE_COST_MULTIPLIER: float = 1.0
 # Probabilidad base (0.0 a 1.0) de que aparezca una fruta dorada al generarse.
-# 1% base para que el mecánico de Fruta Dorada se vea sin depender de las
-# cartas; los comodines de "Fruta Dorada" suman encima (ver card_golden_fruit_chance).
-const GOLDEN_FRUIT_CHANCE: float = 0.01
+# 0%: la Fruta Dorada SOLO se activa mediante comodines (card_golden_fruit_chance).
+const GOLDEN_FRUIT_CHANCE: float = 0.0
 # Multiplicador aplicado a las recompensas mínima/máxima de las frutas para
 # ajustar el balance general de ganancias sin tocar cada fruta una por una.
 const REWARD_REBALANCE_MULTIPLIER: float = 1
-# Daño crítico: SIEMPRE multiplica el daño por 2. No se puede mejorar ni por
+# Daño crítico: SIEMPRE multiplica el daño por 1.5. No se puede mejorar ni por
 # mejoras del mercado ni por comodines (balance fijo).
-const CRITICAL_DAMAGE_MULTIPLIER: float = 2.0
+const CRITICAL_DAMAGE_MULTIPLIER: float = 1.5
 
 # ----------------------------------------------------------------------------
 # FRECUENCIA DE LANZAMIENTO (frutas/obstáculos por segundo)
@@ -46,14 +45,16 @@ const PRESTIGE_LAUNCH_BONUS_PER_LEVEL: float = 0.25
 # ----------------------------------------------------------------------------
 # OBSTÁCULOS (piedras...) - estilo Fruit Ninja
 # ----------------------------------------------------------------------------
-# Probabilidad de que un lanzamiento sea un obstáculo en vez de una fruta.
-const BASE_OBSTACLE_CHANCE: float = 0.08
-const OBSTACLE_CHANCE_PER_ORDER: float = 0.004
-const MAX_OBSTACLE_CHANCE: float = 0.30
+# Frecuencia de obstáculos COMPLETAMENTE SEPARADA de la frecuencia de frutas:
+# es una TASA FIJA de piedras por segundo, NO depende de la mejora/prestigio/
+# comodines de "frecuencia de lanzamiento" y NO es mejorable de ningún modo.
+# Se lanzan con un intervalo ALEATORIO entre 1 y 2 segundos para que no sean
+# predecibles.
+const OBSTACLE_INTERVAL_MIN: float = 1.0
+const OBSTACLE_INTERVAL_MAX: float = 2.0
 # Fracción de la resistencia MÁXIMA total que se pierde al golpear un
-# obstáculo (25% por golpe: las piedras son peligros y juntar 4 casi acaba la
-# ronda).
-const OBSTACLE_RESISTANCE_PENALTY_FRACTION: float = 0.25
+# obstáculo (10% por golpe: un peligro moderado y sostenido).
+const OBSTACLE_RESISTANCE_PENALTY_FRACTION: float = 0.10
 
 # ----------------------------------------------------------------------------
 # TABLA DE ARMAS (CUCHILLOS)
@@ -74,39 +75,39 @@ var knives_db: Dictionary = {
 	},
 	"weapon_fork": {
 		"id": "weapon_fork", "name": "Tenedor", "description": "Un pequeño avance en precisión.",
-		"damage": 10.0, "energy_cost": 0.9, "price": 40, "icon": "🍴"
+		"damage": 10.0, "energy_cost": 0.9, "price": 300, "icon": "🍴"
 	},
 	"weapon_table_knife": {
 		"id": "weapon_table_knife", "name": "Cuchillo de mesa", "description": "Un filo sencillo y práctico.",
-		"damage": 15.0, "energy_cost": 0.8, "price": 90, "icon": "🔪"
+		"damage": 15.0, "energy_cost": 0.8, "price": 600, "icon": "🔪"
 	},
 	"weapon_scissors": {
 		"id": "weapon_scissors", "name": "Tijera", "description": "Dos filos para cortes más rápidos.",
-		"damage": 20.0, "energy_cost": 0.7, "price": 180, "icon": "✂️"
+		"damage": 20.0, "energy_cost": 0.7, "price": 1200, "icon": "✂️"
 	},
 	"weapon_box_cutter": {
 		"id": "weapon_box_cutter", "name": "Cúter", "description": "Una hoja fina y sorprendentemente eficaz.",
-		"damage": 25.0, "energy_cost": 0.6, "price": 340, "icon": "🪒"
+		"damage": 25.0, "energy_cost": 0.6, "price": 2400, "icon": "🪒"
 	},
 	"weapon_knife": {
 		"id": "weapon_knife", "name": "Cuchillo", "description": "Un filo fiable para el trabajo diario.",
-		"damage": 35.0, "energy_cost": 0.5, "price": 650, "icon": "🔪"
+		"damage": 35.0, "energy_cost": 0.5, "price": 4800, "icon": "🔪"
 	},
 	"weapon_machete": {
 		"id": "weapon_machete", "name": "Machete", "description": "Fuerza y alcance en cada golpe.",
-		"damage": 50.0, "energy_cost": 0.4, "price": 1250, "icon": "🗡️"
+		"damage": 50.0, "energy_cost": 0.4, "price": 9500, "icon": "🗡️"
 	},
 	"weapon_axe": {
 		"id": "weapon_axe", "name": "Hacha", "description": "Un corte pesado que parte cualquier fruta.",
-		"damage": 70.0, "energy_cost": 0.3, "price": 2400, "icon": "🪓"
+		"damage": 70.0, "energy_cost": 0.3, "price": 19000, "icon": "🪓"
 	},
 	"weapon_sword": {
 		"id": "weapon_sword", "name": "Espada", "description": "Precisión y potencia de nivel superior.",
-		"damage": 95.0, "energy_cost": 0.2, "price": 4600, "icon": "⚔️"
+		"damage": 95.0, "energy_cost": 0.2, "price": 38000, "icon": "⚔️"
 	},
 	"weapon_chainsaw": {
 		"id": "weapon_chainsaw", "name": "Motosierra", "description": "La herramienta definitiva para cortar sin parar.",
-		"damage": 130.0, "energy_cost": 0.1, "price": 9000, "icon": "🪚"
+		"damage": 130.0, "energy_cost": 0.1, "price": 75000, "icon": "🪚"
 	}
 }
 
@@ -119,7 +120,7 @@ var knives_db: Dictionary = {
 var run_upgrade_levels: Dictionary = {
 	"damage": 0,       # +5% damage
 	"energy_max": 0,   # +5% max resistance
-	"luck": 0,         # +0.1% grand sale chance
+	"luck": 0,         # +0.5% grand sale chance
 	"money": 0,        # +5% money
 	"launch_rate": 0   # +10% launch frequency
 }
@@ -128,11 +129,13 @@ var run_upgrade_levels: Dictionary = {
 # cuánto sube el precio cada vez que se compra (cost_mult, ej. 1.35 = +35%).
 # Los base_cost están a la escala de lo que se gana por pedido (decenas):
 # permiten 1-2 compras los primeros días pero NO llenar la tienda de golpe.
+# Balance: daño/resistencia/ganancias reducidos proporcionalmente (10% -> 5%),
+# jackpot con su categoría propia (+0.5%), y frecuencia de frutas sin reducción.
 var run_upgrade_definitions: Dictionary = {
-	"damage": {"name": "Afilado de Hoja", "desc": "+10% daño", "base_cost": 10, "cost_mult": 1.35, "icon": "💥"},
-	"energy_max": {"name": "Resistencia", "desc": "+10% resistencia máxima", "base_cost": 15, "cost_mult": 1.35, "icon": "⚡"},
-	"luck": {"name": "Golpe de Suerte", "desc": "+0.3% probabilidad de Jackpot", "base_cost": 30, "cost_mult": 1.45, "icon": "🍀"},
-	"money": {"name": "Negociación", "desc": "+10% multiplicador de ganancias", "base_cost": 40, "cost_mult": 1.45, "icon": "💰"},
+	"damage": {"name": "Afilado de Hoja", "desc": "+5% daño", "base_cost": 10, "cost_mult": 1.35, "icon": "💥"},
+	"energy_max": {"name": "Resistencia", "desc": "+5% resistencia máxima", "base_cost": 15, "cost_mult": 1.35, "icon": "⚡"},
+	"luck": {"name": "Golpe de Suerte", "desc": "+0.5% probabilidad de Jackpot", "base_cost": 30, "cost_mult": 1.45, "icon": "🍀"},
+	"money": {"name": "Negociación", "desc": "+5% multiplicador de ganancias", "base_cost": 40, "cost_mult": 1.45, "icon": "💰"},
 	"launch_rate": {"name": "Cosecha Veloz", "desc": "+10% frecuencia de lanzamiento", "base_cost": 20, "cost_mult": 1.40, "icon": "🚀"}
 }
 
@@ -195,21 +198,21 @@ func get_equipped_knife_data() -> Dictionary:
 	return knives_db["weapon_fist"]
 
 # Daño final de un golpe = daño base del arma equipada
-#   x (1 + 10% por cada nivel de la mejora "damage" del mercado)
+#   x (1 + 5% por cada nivel de la mejora "damage" del mercado)
 #   x multiplicador de comodines
-#   x (1 + 20% por cada nivel de prestigio "experience")
+#   x (1 + 10% por cada nivel de prestigio "experience")
 func get_final_damage() -> float:
 	var knife: Dictionary = get_equipped_knife_data()
 	var base_dmg: float = float(knife.get("damage", 10.0))
-	var run_bonus: float = 1.0 + (run_upgrade_levels["damage"] * 0.10)
-	var prestige_bonus: float = 1.0 + (SaveManager.get_prestige_level("experience") * 0.20)
+	var run_bonus: float = 1.0 + (run_upgrade_levels["damage"] * 0.05)
+	var prestige_bonus: float = 1.0 + (SaveManager.get_prestige_level("experience") * 0.10)
 	return base_dmg * run_bonus * card_damage_multiplier * prestige_bonus
 
 # Resistencia máxima final = 100 base x mejoras del mercado x comodines x prestigio
 func get_final_max_energy() -> float:
 	var base_energy: float = 100.0
-	var run_bonus: float = 1.0 + (run_upgrade_levels["energy_max"] * 0.10)
-	var prestige_bonus: float = 1.0 + (SaveManager.get_prestige_level("expert_hand") * 0.20)
+	var run_bonus: float = 1.0 + (run_upgrade_levels["energy_max"] * 0.05)
+	var prestige_bonus: float = 1.0 + (SaveManager.get_prestige_level("expert_hand") * 0.10)
 	return base_energy * run_bonus * card_energy_multiplier * prestige_bonus
 
 # Cuánta resistencia se gasta por cada golpe con el arma equipada (ver
@@ -220,18 +223,18 @@ func get_final_energy_cost() -> float:
 
 # Multiplicador final aplicado al dinero ganado por cada fruta cortada.
 func get_final_money_multiplier() -> float:
-	var run_bonus: float = 1.0 + (run_upgrade_levels["money"] * 0.10)
-	var prestige_bonus: float = 1.0 + (SaveManager.get_prestige_level("good_provider") * 0.20)
+	var run_bonus: float = 1.0 + (run_upgrade_levels["money"] * 0.05)
+	var prestige_bonus: float = 1.0 + (SaveManager.get_prestige_level("good_provider") * 0.10)
 	return 1.0 * run_bonus * card_money_multiplier * prestige_bonus
 
 # Probabilidad extra (sumada, no multiplicada) de que una fruta sea "Gran Venta"/Jackpot.
 func get_final_jackpot_bonus() -> float:
-	var run_bonus: float = run_upgrade_levels["luck"] * 0.003
+	var run_bonus: float = run_upgrade_levels["luck"] * 0.005
 	var prestige_bonus: float = SaveManager.get_prestige_level("good_fortune") * 0.01
 	return run_bonus + card_jackpot_bonus + prestige_bonus
 
 func get_final_jackpot_multiplier() -> float:
-	return 5.0 + card_jackpot_multiplier_bonus
+	return 2.0 + card_jackpot_multiplier_bonus
 
 func get_golden_fruit_chance() -> float:
 	return GOLDEN_FRUIT_CHANCE + card_golden_fruit_chance
@@ -265,11 +268,10 @@ func get_final_launch_rate() -> float:
 	var prestige_bonus: float = 1.0 + (SaveManager.get_prestige_level("launch_speed") * PRESTIGE_LAUNCH_BONUS_PER_LEVEL)
 	return BASE_LAUNCH_RATE * run_bonus * card_launch_rate_multiplier * prestige_bonus
 
-# Probabilidad de que cada lanzamiento sea un obstáculo; crece con el pedido
-# actual pero nunca supera MAX_OBSTACLE_CHANCE.
-func get_obstacle_chance() -> float:
-	var extra: float = float(maxi(0, GameManager.current_order - 1)) * OBSTACLE_CHANCE_PER_ORDER
-	return minf(BASE_OBSTACLE_CHANCE + extra, MAX_OBSTACLE_CHANCE)
+# Intervalo ALEATORIO (en segundos) entre obstáculos: 1 a 2 s. Independiente
+# de la frecuencia de frutas y de todas las mejoras/comodines/prestigio.
+func get_obstacle_interval() -> float:
+	return randf_range(OBSTACLE_INTERVAL_MIN, OBSTACLE_INTERVAL_MAX)
 
 # Penalización de resistencia por golpear un obstáculo (fracción de la máxima).
 func get_obstacle_resistance_penalty() -> float:
@@ -353,21 +355,21 @@ func _apply_card_effect(effect_type: String, effect_value: float) -> void:
 var prestige_definitions: Dictionary = {
 	"experience": {
 		"name": "Maestría",
-		"desc": "+20% Daño inicial por nivel",
+		"desc": "+10% Daño inicial por nivel",
 		"base_cost": 10,
 		"mult": 2.2,
 		"icon": "⚔️"
 	},
 	"expert_hand": {
 		"name": "Experiencia",
-		"desc": "+20% Resistencia Máxima por nivel",
+		"desc": "+10% Resistencia Máxima por nivel",
 		"base_cost": 25,
 		"mult": 2.2,
 		"icon": "🧤"
 	},
 	"good_provider": {
 		"name": "Buen Proveedor",
-		"desc": "+20% Multiplicador de Ganancias por nivel",
+		"desc": "+10% Multiplicador de Ganancias por nivel",
 		"base_cost": 50,
 		"mult": 2.2,
 		"icon": "📦"

@@ -25,18 +25,19 @@ const OBSTACLE_SCENE: PackedScene = preload("res://scenes/game/Obstacle.tscn")
 # sea un poco distinto: los más lentos quedan a media altura y los más rápidos
 # se pierden por el borde superior y vuelven a caer. La gravedad y el punto de
 # desaparición viven en Ballistic.gd.
-# La velocidad inicial se bajó 20% (x0.8) y la gravedad se ajustó también
-# (x0.64, ver Fruit.gd/Obstacle.gd/Ballistic.gd) para que las frutas crucen la
-# pantalla más lentas pero alcancen la MISMA altura y alcance que antes
-# (la parábola mantiene su forma; el tiempo de vuelo es ~1.25x mayor).
-const LAUNCH_SPEED_MIN: float = 800.0
-const LAUNCH_SPEED_MAX: float = 1600.0
+# La velocidad inicial subió 10% (x1.1) y la gravedad se ajustó también
+# (x1.21, ver Fruit.gd/Obstacle.gd/Ballistic.gd) para que las frutas crucen la
+# pantalla un 10% más rápido pero alcancen la MISMA altura y alcance que antes
+# (la parábola mantiene su forma; el tiempo de vuelo es ~0.91x).
+const LAUNCH_SPEED_MIN: float = 880.0
+const LAUNCH_SPEED_MAX: float = 1760.0
 const LAUNCH_ANGLE_MAX_DEG: float = 20.0
 
 var active_fruits: Array[Fruit] = []
 var active_obstacles: Array[Obstacle] = []
 var is_spawning_enabled: bool = false
 var launch_timer: float = 0.0
+var obstacle_timer: float = 0.0
 
 func _ready() -> void:
 	call_deferred("_adapt_play_bounds")
@@ -75,8 +76,16 @@ func _process(delta: float) -> void:
 	var guard: int = 0
 	while launch_timer >= 1.0 and guard < 8:
 		launch_timer -= 1.0
-		_launch_projectile()
+		_launch_fruit()
 		guard += 1
+
+	# Obstáculos: intervalo ALEATORIO de 1-2 s, independiente de la frecuencia
+	# de frutas (ver StatsManager.get_obstacle_interval). No mejora con
+	# tiendas/comodines y es impredecible.
+	obstacle_timer -= delta
+	if obstacle_timer <= 0.0:
+		_launch_obstacle()
+		obstacle_timer = StatsManager.get_obstacle_interval()
 
 func _cleanup_stale() -> void:
 	var i: int = active_fruits.size() - 1
@@ -93,6 +102,7 @@ func _cleanup_stale() -> void:
 func enable_spawning() -> void:
 	is_spawning_enabled = true
 	launch_timer = 0.0
+	obstacle_timer = StatsManager.get_obstacle_interval()
 
 func disable_spawning() -> void:
 	is_spawning_enabled = false
@@ -107,14 +117,6 @@ func clear_all() -> void:
 			obstacle.queue_free()
 	active_obstacles.clear()
 
-func _launch_projectile() -> void:
-	if randf() < StatsManager.get_obstacle_chance():
-		_launch_obstacle()
-	else:
-		_launch_fruit()
-
-# Posición y velocidad inicial de cada lanzamiento: sale desde abajo del área
-# de juego y sube con una parábola (la gravedad lo devuelve hacia abajo).
 func _compute_launch() -> Dictionary:
 	var speed: float = randf_range(LAUNCH_SPEED_MIN, LAUNCH_SPEED_MAX)
 	var angle: float = deg_to_rad(randf_range(0.0, LAUNCH_ANGLE_MAX_DEG))
@@ -148,7 +150,7 @@ func _launch_obstacle() -> void:
 	var obstacle: Obstacle = OBSTACLE_SCENE.instantiate()
 	add_child(obstacle)
 	obstacle.add_to_group("obstacles")
-	obstacle.setup(randf_range(30.0, 44.0))
+	obstacle.setup(randf_range(34.5, 50.6))
 	obstacle.launch(launch["from"], launch["vel"], play_bounds.position.x, play_bounds.end.x, _escape_y())
 	active_obstacles.append(obstacle)
 

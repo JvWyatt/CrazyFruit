@@ -15,6 +15,10 @@ var last_touch_pos: Vector2 = Vector2.ZERO
 var trail_points: Array[Dictionary] = [] # {"pos": Vector2, "time": float}
 var low_energy_cooldown: float = 0.0
 var fruit_spawner: Node2D
+# Estado de "corte" por proyectil dentro del trazo actual: un objeto solo se
+# golpea CUANDO el dedo vuelve a ENTRAR de nuevo en su área (estilo slice),
+# no mientras lo sigues con el dedo. instance_id -> ya golpeado en esta entrada.
+var _stroke_hits: Dictionary = {}
 
 @onready var line_2d: Line2D = $Line2D
 
@@ -55,6 +59,7 @@ func _start_drag(pos: Vector2) -> void:
 	is_dragging = true
 	last_touch_pos = pos
 	trail_points.clear()
+	_stroke_hits.clear()
 	trail_points.append({"pos": pos, "time": trail_lifetime})
 
 func _process_drag(pos: Vector2) -> void:
@@ -72,6 +77,7 @@ func _process_drag(pos: Vector2) -> void:
 
 func _end_drag() -> void:
 	is_dragging = false
+	_stroke_hits.clear()
 
 func _process(delta: float) -> void:
 	if low_energy_cooldown > 0.0:
@@ -110,8 +116,22 @@ func _check_slice_segment(seg_a: Vector2, seg_b: Vector2) -> void:
 		# Radio efectivo: el de FruitData por la escala del nodo (Fruit.tscn usa
 		# scale 1.5). Asi el area de corte coincide con el modelo 3D.
 		var radius: float = (fruit.fruit_data.radius * fruit.scale.x) if fruit.fruit_data else 40.0 * fruit.scale.x
+		var fid: int = fruit.get_instance_id()
 
-		if _segment_intersects_circle(seg_a, seg_b, fruit_pos, radius):
+		# Comportamiento "slice": mientras el dedo siga DENTRO del área de la
+		# fruta no se cuenta otro golpe; solo se corta de nuevo cuando el dedo
+		# VOLVIÓ a entrar tras haber salido del hitbox. Asi no se rompe la fruta
+		# por seguirla con el dedo.
+		var inside: bool = seg_b.distance_to(fruit_pos) <= radius
+		var hit_fresh: bool = _segment_intersects_circle(seg_a, seg_b, fruit_pos, radius) and not bool(_stroke_hits.get(fid, false))
+
+		# El dedo salió del área: se prepara la fruta para un nuevo corte.
+		if not inside and not hit_fresh:
+			_stroke_hits[fid] = false
+			continue
+
+		if hit_fresh:
+			_stroke_hits[fid] = true
 			# Cada golpe gasta la resistencia que dicta el arma equipada
 			# (independiente de la fruta: ver StatsManager.get_final_energy_cost).
 			var energy_cost: float = StatsManager.get_final_energy_cost()
@@ -135,7 +155,14 @@ func _check_slice_segment(seg_a: Vector2, seg_b: Vector2) -> void:
 		var obstacle: Obstacle = node as Obstacle
 		if not obstacle.can_be_hit():
 			continue
-		if _segment_intersects_circle(seg_a, seg_b, obstacle.global_position, obstacle.radius):
+		var oid: int = obstacle.get_instance_id()
+		var o_inside: bool = seg_b.distance_to(obstacle.global_position) <= obstacle.radius
+		var o_hit_fresh: bool = _segment_intersects_circle(seg_a, seg_b, obstacle.global_position, obstacle.radius) and not bool(_stroke_hits.get(oid, false))
+		if not o_inside and not o_hit_fresh:
+			_stroke_hits[oid] = false
+			continue
+		if o_hit_fresh:
+			_stroke_hits[oid] = true
 			obstacle.on_hit()
 			hit_any = true
 			var penalty: float = GameManager.penalize_resistance()

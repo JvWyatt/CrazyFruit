@@ -30,6 +30,10 @@ class_name Fruit3D
 const WHOLE_MODELS_DIR: String = "res://assets/models/whole/"
 const BROKEN_MODELS_DIR: String = "res://assets/models/broken/"
 const ROCK_MODELS_DIR: String = "res://assets/models/"
+# Factor SOLO visual (0.75 = -25%): reduce el tamaño del modelo 3D un 25% sin
+# tocar el hitbox de corte (que fija fd.radius en Fruit.gd, 2D). Este espejo
+# 3D es puramente estético. Coherente con FruitVisual.VISUAL_SCALE.
+const VISUAL_SCALE: float = 0.75
 
 var is_rock: bool = false
 var _broken: bool = false
@@ -59,7 +63,7 @@ func set_pos2d(pos: Vector2) -> void:
 
 func setup_fruit(fd: FruitData, golden: bool, p_scale: float = 1.0) -> void:
 	is_rock = false
-	var radius: float = fd.radius * maxf(p_scale, 0.05)
+	var radius: float = fd.radius * VISUAL_SCALE * maxf(p_scale, 0.05)
 	_radius = radius
 
 	_clear_children(whole)

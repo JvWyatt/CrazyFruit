@@ -9,6 +9,23 @@ extends Node
 
 const FRUIT3D_WORLD_SCENE: PackedScene = preload("res://scenes/game/Fruit3DWorld.tscn")
 
+# Diagnóstico de cierres SOLO en móvil (no reproducibles en escritorio): cada
+# cambio de pantalla y un latido periódico se vuelcan a user://crashlog.txt.
+# Si la app muere, la última línea indica en qué pantalla/acción se quedó.
+const CRASH_LOG_PATH: String = "user://crashlog.txt"
+var _heartbeat_acc: float = 0.0
+
+func _log(_tag: String, _detail: String = "") -> void:
+	var f := FileAccess.open(CRASH_LOG_PATH, FileAccess.WRITE)
+	if f:
+		f.store_line("[%.2f] %s %s" % [Time.get_ticks_msec() / 1000.0, _tag, _detail])
+
+func _process(delta: float) -> void:
+	_heartbeat_acc += delta
+	if _heartbeat_acc >= 1.0:
+		_heartbeat_acc = 0.0
+		_log("heartbeat", _current_screen_tag())
+
 @onready var main_menu: Control = $MainMenu
 @onready var game_world: Node2D = $GameWorld
 @onready var fruit_spawner: Node2D = $GameWorld/FruitSpawner
@@ -24,6 +41,7 @@ var _fruit3d_viewport: SubViewport
 @onready var prestige_shop_modal: Control = $Modals/PrestigeShopModal
 @onready var progress_modal: Control = $Modals/ProgressModal
 @onready var cards_modal: Control = $Modals/CardsModal
+@onready var credits_modal: Control = $Modals/CreditsModal
 
 func _ready() -> void:
 	# Wire Main Menu events
@@ -43,6 +61,10 @@ func _ready() -> void:
 	run_upgrade_modal.start_next_order_requested.connect(_on_start_next_order_from_shop)
 	stats_modal.modal_closed.connect(_on_stats_modal_closed)
 	results_modal.return_to_menu_requested.connect(_on_return_to_menu_requested)
+
+	# Wire Credits (día 100) events
+	credits_modal.continue_requested.connect(_on_credits_continue_requested)
+	credits_modal.exit_requested.connect(_on_credits_exit_requested)
 
 	# Wire Modal events for completion flow
 	card_selection_modal.unpayable.connect(func(): GameManager.end_run_failed())
@@ -70,7 +92,24 @@ func _init_fruit3d_overlay() -> void:
 	if world.has_method("setup_fruit_spawner"):
 		world.setup_fruit_spawner(fruit_spawner)
 
+func _current_screen_tag() -> String:
+	if main_menu.visible and (settings_panel_visible()):
+		return "menu+settings"
+	if main_menu.visible:
+		if prestige_shop_modal.visible: return "menu+prestige"
+		if progress_modal.visible: return "menu+progress"
+		if cards_modal.visible: return "menu+cards"
+		if main_menu.get_node("ResetConfirmDialog").visible: return "menu+reset"
+		return "menu"
+	if game_world.visible:
+		return "game"
+	return "?"
+
+func settings_panel_visible() -> bool:
+	return main_menu.has_node("SettingsPanel") and main_menu.get_node("SettingsPanel").visible
+
 func _show_main_menu() -> void:
+	_log("show_menu")
 	main_menu.visible = true
 	SoundManager.play_menu_music()
 	game_world.visible = false
@@ -84,6 +123,7 @@ func _show_main_menu() -> void:
 	prestige_shop_modal.visible = false
 	progress_modal.visible = false
 	cards_modal.visible = false
+	credits_modal.visible = false
 
 func _on_start_game_requested() -> void:
 	main_menu.visible = false
@@ -94,12 +134,15 @@ func _on_start_game_requested() -> void:
 	GameManager.start_new_run()
 
 func _on_open_prestige_shop_requested() -> void:
+	_log("open", "prestige")
 	prestige_shop_modal.open_modal()
 
 func _on_open_progress_requested() -> void:
+	_log("open", "progress")
 	progress_modal.open_modal()
 
 func _on_open_cards_requested() -> void:
+	_log("open", "cards")
 	cards_modal.open_discovered_cards()
 
 func _on_open_active_cards_requested() -> void:
@@ -119,9 +162,23 @@ func _on_quit_run_requested() -> void:
 
 func _on_order_completed(order_num: int) -> void:
 	fruit_spawner.clear_all()
+	# Objetivo del juego: al completar el día WIN_DAY se muestran los CRÉDITOS
+	# en lugar del flujo normal de fin de día. Desde ahí se puede continuar
+	# (nuevos récords) o salir al menú.
+	if order_num >= GameManager.WIN_DAY:
+		credits_modal.open_modal(order_num)
+		return
 	# Resumen del día (conseguido/impuesto/ganancia) y comodines se muestran
 	# juntos en el CardSelectionModal (el impuesto se paga automáticamente ahí).
 	card_selection_modal.open_modal(order_num)
+
+func _on_credits_continue_requested() -> void:
+	# Tras los créditos, retomar el flujo normal de fin de día (comodín + tienda)
+	# para seguir haciendo récords a partir del día 100.
+	card_selection_modal.open_modal(GameManager.WIN_DAY)
+
+func _on_credits_exit_requested() -> void:
+	_show_main_menu()
 
 func _on_card_chosen(order_num: int) -> void:
 	# After choosing blessing card, open in-run upgrades shop between rounds

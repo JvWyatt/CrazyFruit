@@ -12,10 +12,25 @@ config_version=5
 
 config/name="Crazy Fruit"
 config/description="Crazy Fruit - Incremental 2D Fruit Cutting Mobile Game"
-config/version="0.007"
+config/version="0.012"
 run/main_scene="res://scenes/Main.tscn"
 config/features=PackedStringArray("4.5", "GL Compatibility")
 config/icon="res://icon.png"
+
+[audio]
+
+bus/1/name="Music"
+bus/1/solo=false
+bus/1/mute=false
+bus/1/bypass_fx=false
+bus/1/volume_db=0.0
+bus/1/send="Master"
+bus/2/name="SFX"
+bus/2/solo=false
+bus/2/mute=false
+bus/2/bypass_fx=false
+bus/2/volume_db=0.0
+bus/2/send="Master"
 
 [autoload]
 
@@ -37,23 +52,6 @@ window/handheld/orientation=1
 [input_devices]
 
 pointing/emulate_touch_from_mouse=true
-
-[audio]
-
-buses/default_bus_layout="res://default_bus_layout.tres"
-bus/1/name="Music"
-bus/1/solo=false
-bus/1/mute=false
-bus/1/bypass_fx=false
-bus/1/volume_db=0.0
-bus/1/send="Master"
-
-bus/2/name="SFX"
-bus/2/solo=false
-bus/2/mute=false
-bus/2/bypass_fx=false
-bus/2/volume_db=0.0
-bus/2/send="Master"
 
 [rendering]
 

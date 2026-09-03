@@ -101,12 +101,13 @@ text = "🍉 Frutas cortadas: 0"
 [node name="JackpotsLabel" type="Label" parent="Panel/VBox/StatsVBox"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 18
-text = "⭐ Grandes ventas conseguidas: 0"
+text = "⭐ Jackpots conseguidos: 0"
 
-[node name="BestOrderLabel" type="Label" parent="Panel/VBox/StatsVBox"]
+[node name="GoldenLabel" type="Label" parent="Panel/VBox/StatsVBox"]
 layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.9, 0.5, 1)
 theme_override_font_sizes/font_size = 18
-text = "🏆 Mejor día alcanzado: #1"
+text = "✨ Frutas doradas cortadas: 0"
 
 [node name="PrestigeContainer" type="PanelContainer" parent="Panel/VBox"]
 layout_mode = 2

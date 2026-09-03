@@ -55,11 +55,14 @@ func _ready() -> void:
 	_update_knife_display()
 	_update_launch_rate_display()
 
+func format_damage(value: float) -> String:
+	return str(snappedf(value, 0.1))
+
 func _update_knife_display() -> void:
 	var knife_data: Dictionary = StatsManager.get_equipped_knife_data()
 	var knife_name: String = str(knife_data.get("name", "Utensilio básico"))
 	var knife_icon: String = str(knife_data.get("icon", "🔪"))
-	knife_label.text = knife_icon + " " + knife_name + " (⚔️" + str(int(round(StatsManager.get_final_damage()))) + ")"
+	knife_label.text = knife_icon + " " + knife_name + " (⚔️" + format_damage(StatsManager.get_final_damage()) + ")"
 
 func _on_stats_updated() -> void:
 	_update_knife_display()

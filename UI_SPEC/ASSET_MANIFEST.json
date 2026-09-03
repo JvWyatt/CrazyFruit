@@ -1,0 +1,309 @@
+{
+  "version": "0.012",
+  "project": "Crazy Fruit",
+  "generated_from": "Godot 4.5 project analysis",
+  "note": "The project uses NO texture-based UI assets. All icons are emoji characters in text labels. All styling is done via code (UiTheme.gd) and inline StyleBoxFlat resources in .tscn files.",
+  "assets": [
+    {
+      "id": "icon_app",
+      "path": "res://icon.png",
+      "type": "texture",
+      "format": "png",
+      "category": "UI asset",
+      "used_by": ["project_icon"],
+      "nodes": ["ProjectSettings.application.config.icon"],
+      "dimensions": "UNKNOWN"
+    },
+    {
+      "id": "icon_android_main",
+      "path": "res://android/icons/main_192x192.png",
+      "type": "texture",
+      "format": "png",
+      "category": "UI asset",
+      "used_by": ["android_launcher_icon"],
+      "nodes": ["Android export"],
+      "dimensions": "192x192"
+    },
+    {
+      "id": "icon_android_adaptive_bg",
+      "path": "res://android/icons/adaptive_background_432x432.png",
+      "type": "texture",
+      "format": "png",
+      "category": "UI asset",
+      "used_by": ["android_adaptive_icon"],
+      "nodes": ["Android export"],
+      "dimensions": "432x432"
+    },
+    {
+      "id": "icon_android_adaptive_fg",
+      "path": "res://android/icons/adaptive_foreground_432x432.png",
+      "type": "texture",
+      "format": "png",
+      "category": "UI asset",
+      "used_by": ["android_adaptive_icon"],
+      "nodes": ["Android export"],
+      "dimensions": "432x432"
+    },
+    {
+      "id": "fruit_strawberry",
+      "path": "res://assets/fruits/strawberry.png",
+      "type": "texture",
+      "format": "png",
+      "category": "Game asset",
+      "used_by": ["Fruit3D", "FruitSpawner"],
+      "nodes": ["Fruit3D", "Fruit"],
+      "dimensions": "UNKNOWN"
+    },
+    {
+      "id": "fruit_banana",
+      "path": "res://assets/fruits/banana.png",
+      "type": "texture",
+      "format": "png",
+      "category": "Game asset",
+      "used_by": ["Fruit3D", "FruitSpawner"],
+      "nodes": ["Fruit3D", "Fruit"],
+      "dimensions": "UNKNOWN"
+    },
+    {
+      "id": "fruit_peach",
+      "path": "res://assets/fruits/peach.png",
+      "type": "texture",
+      "format": "png",
+      "category": "Game asset",
+      "used_by": ["Fruit3D", "FruitSpawner"],
+      "nodes": ["Fruit3D", "Fruit"],
+      "dimensions": "UNKNOWN"
+    },
+    {
+      "id": "fruit_cherry",
+      "path": "res://assets/fruits/cherry.png",
+      "type": "texture",
+      "format": "png",
+      "category": "Game asset",
+      "used_by": ["Fruit3D", "FruitSpawner"],
+      "nodes": ["Fruit3D", "Fruit"],
+      "dimensions": "UNKNOWN"
+    },
+    {
+      "id": "fruit_orange",
+      "path": "res://assets/fruits/orange.png",
+      "type": "texture",
+      "format": "png",
+      "category": "Game asset",
+      "used_by": ["Fruit3D", "FruitSpawner"],
+      "nodes": ["Fruit3D", "Fruit"],
+      "dimensions": "UNKNOWN"
+    },
+    {
+      "id": "fruit_apple",
+      "path": "res://assets/fruits/apple.png",
+      "type": "texture",
+      "format": "png",
+      "category": "Game asset",
+      "used_by": ["Fruit3D", "FruitSpawner"],
+      "nodes": ["Fruit3D", "Fruit"],
+      "dimensions": "UNKNOWN"
+    },
+    {
+      "id": "fruit_pear",
+      "path": "res://assets/fruits/pear.png",
+      "type": "texture",
+      "format": "png",
+      "category": "Game asset",
+      "used_by": ["Fruit3D", "FruitSpawner"],
+      "nodes": ["Fruit3D", "Fruit"],
+      "dimensions": "UNKNOWN"
+    },
+    {
+      "id": "fruit_kiwi",
+      "path": "res://assets/fruits/kiwi.png",
+      "type": "texture",
+      "format": "png",
+      "category": "Game asset",
+      "used_by": ["Fruit3D", "FruitSpawner"],
+      "nodes": ["Fruit3D", "Fruit"],
+      "dimensions": "UNKNOWN"
+    },
+    {
+      "id": "fruit_mango",
+      "path": "res://assets/fruits/mango.png",
+      "type": "texture",
+      "format": "png",
+      "category": "Game asset",
+      "used_by": ["Fruit3D", "FruitSpawner"],
+      "nodes": ["Fruit3D", "Fruit"],
+      "dimensions": "UNKNOWN"
+    },
+    {
+      "id": "fruit_lemon",
+      "path": "res://assets/fruits/lemon.png",
+      "type": "texture",
+      "format": "png",
+      "category": "Game asset",
+      "used_by": ["Fruit3D", "FruitSpawner"],
+      "nodes": ["Fruit3D", "Fruit"],
+      "dimensions": "UNKNOWN"
+    },
+    {
+      "id": "fruit_watermelon",
+      "path": "res://assets/fruits/watermelon.png",
+      "type": "texture",
+      "format": "png",
+      "category": "Game asset",
+      "used_by": ["Fruit3D", "FruitSpawner"],
+      "nodes": ["Fruit3D", "Fruit"],
+      "dimensions": "UNKNOWN"
+    },
+    {
+      "id": "fruit_melon",
+      "path": "res://assets/fruits/melon.png",
+      "type": "texture",
+      "format": "png",
+      "category": "Game asset",
+      "used_by": ["Fruit3D", "FruitSpawner"],
+      "nodes": ["Fruit3D", "Fruit"],
+      "dimensions": "UNKNOWN"
+    },
+    {
+      "id": "fruit_pineapple",
+      "path": "res://assets/fruits/pineapple.png",
+      "type": "texture",
+      "format": "png",
+      "category": "Game asset",
+      "used_by": ["Fruit3D", "FruitSpawner"],
+      "nodes": ["Fruit3D", "Fruit"],
+      "dimensions": "UNKNOWN"
+    },
+    {
+      "id": "fruit_papaya",
+      "path": "res://assets/fruits/papaya.png",
+      "type": "texture",
+      "format": "png",
+      "category": "Game asset",
+      "used_by": ["Fruit3D", "FruitSpawner"],
+      "nodes": ["Fruit3D", "Fruit"],
+      "dimensions": "UNKNOWN"
+    },
+    {
+      "id": "fruit_coconut",
+      "path": "res://assets/fruits/coconut.png",
+      "type": "texture",
+      "format": "png",
+      "category": "Game asset",
+      "used_by": ["Fruit3D", "FruitSpawner"],
+      "nodes": ["Fruit3D", "Fruit"],
+      "dimensions": "UNKNOWN"
+    },
+    {
+      "id": "fruit_avocado",
+      "path": "res://assets/fruits/avocado.png",
+      "type": "texture",
+      "format": "png",
+      "category": "Game asset",
+      "used_by": ["Fruit3D", "FruitSpawner"],
+      "nodes": ["Fruit3D", "Fruit"],
+      "dimensions": "UNKNOWN"
+    },
+    {
+      "id": "fruit_dragon_fruit",
+      "path": "res://assets/fruits/dragon_fruit.png",
+      "type": "texture",
+      "format": "png",
+      "category": "Game asset",
+      "used_by": ["Fruit3D", "FruitSpawner"],
+      "nodes": ["Fruit3D", "Fruit"],
+      "dimensions": "UNKNOWN"
+    },
+    {
+      "id": "fruit_guava",
+      "path": "res://assets/fruits/guava.png",
+      "type": "texture",
+      "format": "png",
+      "category": "Game asset",
+      "used_by": ["Fruit3D", "FruitSpawner"],
+      "nodes": ["Fruit3D", "Fruit"],
+      "dimensions": "UNKNOWN"
+    },
+    {
+      "id": "fruit_quince",
+      "path": "res://assets/fruits/quince.png",
+      "type": "texture",
+      "format": "png",
+      "category": "Game asset",
+      "used_by": ["Fruit3D", "FruitSpawner"],
+      "nodes": ["Fruit3D", "Fruit"],
+      "dimensions": "UNKNOWN"
+    },
+    {
+      "id": "fruit_pumpkin",
+      "path": "res://assets/fruits/pumpkin.png",
+      "type": "texture",
+      "format": "png",
+      "category": "Game asset",
+      "used_by": ["Fruit3D", "FruitSpawner"],
+      "nodes": ["Fruit3D", "Fruit"],
+      "dimensions": "UNKNOWN"
+    },
+    {
+      "id": "fruit_golden_ring",
+      "path": "res://assets/fruits/golden_ring.png",
+      "type": "texture",
+      "format": "png",
+      "category": "Game asset",
+      "used_by": ["Fruit3D"],
+      "nodes": ["Fruit3D"],
+      "dimensions": "UNKNOWN"
+    },
+    {
+      "id": "model_rock_base_color",
+      "path": "res://assets/models/rock_base_color.jpg",
+      "type": "texture",
+      "format": "jpg",
+      "category": "Game asset",
+      "used_by": ["Fruit3DWorld (obstacle rocks)"],
+      "nodes": ["Fruit3DWorld"],
+      "dimensions": "UNKNOWN"
+    },
+    {
+      "id": "model_rock_normal",
+      "path": "res://assets/models/rock_normal.jpg",
+      "type": "texture",
+      "format": "jpg",
+      "category": "Game asset",
+      "used_by": ["Fruit3DWorld (obstacle rocks)"],
+      "nodes": ["Fruit3DWorld"],
+      "dimensions": "UNKNOWN"
+    },
+    {
+      "id": "model_rock_metallic_roughness",
+      "path": "res://assets/models/rock_metallic_roughness.jpg",
+      "type": "texture",
+      "format": "jpg",
+      "category": "Game asset",
+      "used_by": ["Fruit3DWorld (obstacle rocks)"],
+      "nodes": ["Fruit3DWorld"],
+      "dimensions": "UNKNOWN"
+    }
+  ],
+  "fonts": {
+    "custom_fonts": [],
+    "note": "No custom font files (.ttf, .otf, .woff2) exist in the project. All text uses Godot's default built-in font."
+  },
+  "audio_assets": {
+    "music_files": [
+      {"path": "res://assets/music/main_loop.ogg", "exists": false, "note": "Referenced but not present - procedural fallback disabled on mobile"},
+      {"path": "res://assets/music/game_loop.ogg", "exists": false, "note": "Referenced but not present - procedural fallback disabled on mobile"}
+    ],
+    "sound_effects": "All generated procedurally by SoundManager.gd using AudioStreamWAV - no audio asset files",
+    "audio_bus_layout": "res://default_bus_layout.tres (Master, Music, SFX)"
+  },
+  "summary": {
+    "total_ui_texture_assets": 0,
+    "total_game_texture_assets": 22,
+    "total_model_texture_assets": 3,
+    "total_font_files": 0,
+    "total_audio_files": 0,
+    "ui_uses_emoji_icons": true,
+    "ui_styling_method": "Code-generated Theme + inline StyleBoxFlat"
+  }
+}

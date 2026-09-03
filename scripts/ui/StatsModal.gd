@@ -45,7 +45,7 @@ func _refresh_ui() -> void:
 
 	# Section 1: Combate y Corte
 	_add_header("⚔️ CORTE")
-	_add_stat_row("Daño del arma", str(int(round(dmg))), "Base: " + str(int(round(base_dmg))) + " | Bonus de mejoras: +" + str(dmg_bonus_pct) + "%", Color(1.0, 0.4, 0.4))
+	_add_stat_row("Daño del arma", str(snappedf(dmg, 0.1)), "Base: " + str(snappedf(base_dmg, 0.1)) + " | Bonus de mejoras: +" + str(dmg_bonus_pct) + "%", Color(1.0, 0.4, 0.4))
 	_add_stat_row("Coste de Resistencia por Golpe", str(snappedf(cost_en, 0.1)) + " ⚡", "Depende del utensilio en uso", Color(0.9, 0.9, 0.9))
 	_add_stat_row("Probabilidad de Crítico", str(int(round(crit_chance))) + "%", "Otorga daño multiplicado en cortes", Color(0.8, 0.5, 1.0))
 	_add_stat_row("Multiplicador de Crítico", "x" + str(snappedf(crit_mult, 0.1)), "Daño FIJO aplicado al asestar un crítico (x2)", Color(0.8, 0.5, 1.0))

@@ -1,0 +1,517 @@
+{
+  "id": "run_upgrade_modal",
+  "name": "RunUpgradeModal",
+  "scene": "res://scenes/ui/RunUpgradeModal.tscn",
+  "root_node": "RunUpgradeModal",
+  "script": "res://scripts/ui/RunUpgradeModal.gd",
+  "canvas_layer": 10,
+  "z_index": 30,
+  "default_visible": false,
+  "layout": {
+    "type": "full_screen_overlay",
+    "anchor_full_rect": true
+  },
+  "nodes": [
+    {
+      "id": "run_upgrade_modal",
+      "name": "RunUpgradeModal",
+      "type": "Control",
+      "parent": null,
+      "children": ["Dimmer", "Panel"],
+      "anchors": { "full_rect": true },
+      "size": { "x": 720, "y": 1280 },
+      "visible": false
+    },
+    {
+      "id": "dimmer",
+      "name": "Dimmer",
+      "type": "ColorRect",
+      "parent": "run_upgrade_modal",
+      "children": [],
+      "anchors": { "full_rect": true },
+      "size": { "x": 720, "y": 1280 },
+      "style": { "color": "#000000", "alpha": 0.6 },
+      "mouse_filter": 0
+    },
+    {
+      "id": "panel",
+      "name": "Panel",
+      "type": "PanelContainer",
+      "parent": "run_upgrade_modal",
+      "children": ["VBox"],
+      "anchors": {
+        "center_horizontal": true,
+        "center_vertical": true
+      },
+      "offsets": { "left": -320, "top": -420, "right": 320, "bottom": 420 },
+      "size": { "x": 640, "y": 840 },
+      "style": {
+        "sub_resources": {
+          "StyleBoxFlat_modal_bg": {
+            "type": "StyleBoxFlat",
+            "bg_color": "#141A2E",
+            "border_color": "#32406B",
+            "border_width_left": 2,
+            "border_width_top": 2,
+            "border_width_right": 2,
+            "border_width_bottom": 2,
+            "corner_radius_top_left": 18,
+            "corner_radius_top_right": 18,
+            "corner_radius_bottom_right": 18,
+            "corner_radius_bottom_left": 18,
+            "shadow_color": "#000000",
+            "shadow_size": 20,
+            "shadow_offset": { "x": 0, "y": 6 },
+            "content_margin_left": 20,
+            "content_margin_top": 20,
+            "content_margin_right": 20,
+            "content_margin_bottom": 20
+          }
+        },
+        "theme_override_styles_panel": "StyleBoxFlat_modal_bg"
+      }
+    },
+    {
+      "id": "vbox",
+      "name": "VBox",
+      "type": "VBoxContainer",
+      "parent": "panel",
+      "children": ["HeaderHBox", "HSeparator", "TabContainer", "BottomHBox"],
+      "style": { "separation": 16 }
+    },
+    {
+      "id": "header_hbox",
+      "name": "HeaderHBox",
+      "type": "HBoxContainer",
+      "parent": "vbox",
+      "children": ["TitleLabel", "MoneyLabel", "CloseButton"],
+      "style": { "separation": 12, "alignment": "center" }
+    },
+    {
+      "id": "title_label",
+      "name": "TitleLabel",
+      "type": "Label",
+      "parent": "header_hbox",
+      "children": [],
+      "size_flags_horizontal": 3,
+      "style": {
+        "colors": { "font_color": "#E6EDFB" },
+        "font_sizes": { "font_size": 22 }
+      },
+      "text": "🛒 Mercado de mejoras"
+    },
+    {
+      "id": "money_label",
+      "name": "MoneyLabel",
+      "type": "Label",
+      "parent": "header_hbox",
+      "children": [],
+      "style": {
+        "colors": { "font_color": "#4FD69E" },
+        "font_sizes": { "font_size": 20 }
+      },
+      "text": "💰 $0",
+      "data_binding": "GameManager.run_money"
+    },
+    {
+      "id": "close_button",
+      "name": "CloseButton",
+      "type": "Button",
+      "parent": "header_hbox",
+      "children": [],
+      "size": { "x": 36, "y": 36 },
+      "style": {
+        "colors": { "font_color": "#A6B8D1" },
+        "font_sizes": { "font_size": 18 },
+        "sub_resources": {
+          "StyleBoxFlat_circle": {
+            "type": "StyleBoxFlat",
+            "bg_color": "#1E233A",
+            "corner_radius_top_left": 18,
+            "corner_radius_top_right": 18,
+            "corner_radius_bottom_right": 18,
+            "corner_radius_bottom_left": 18
+          }
+        },
+        "theme_override_styles": { "normal": "StyleBoxFlat_circle" }
+      },
+      "text": "✖"
+    },
+    {
+      "id": "hseparator",
+      "name": "HSeparator",
+      "type": "HSeparator",
+      "parent": "vbox",
+      "children": [],
+      "style": {
+        "colors": { "separator_color": "#32406B" }
+      }
+    },
+    {
+      "id": "tab_container",
+      "name": "TabContainer",
+      "type": "TabContainer",
+      "parent": "vbox",
+      "children": ["MejorasTab", "FruteriaTab", "ArmasTab"],
+      "size_flags_vertical": 3,
+      "size_flags_horizontal": 3,
+      "style": {
+        "sub_resources": {
+          "StyleBoxFlat_tab_bg": {
+            "type": "StyleBoxFlat",
+            "bg_color": "#0E1320",
+            "corner_radius_top_left": 8,
+            "corner_radius_top_right": 8,
+            "corner_radius_bottom_right": 8,
+            "corner_radius_bottom_left": 8
+          },
+          "StyleBoxFlat_tab_selected": {
+            "type": "StyleBoxFlat",
+            "bg_color": "#141A2E",
+            "border_color": "#FFD54A",
+            "border_width_bottom": 2,
+            "corner_radius_top_left": 8,
+            "corner_radius_top_right": 8,
+            "corner_radius_bottom_right": 0,
+            "corner_radius_bottom_left": 0
+          }
+        },
+        "theme_override_styles_panel": "StyleBoxFlat_tab_bg",
+        "theme_override_styles_tab_selected": "StyleBoxFlat_tab_selected",
+        "theme_override_font_sizes": { "font_size": 14 },
+        "theme_override_colors": {
+          "font_color": "#A6B8D1",
+          "font_selected_color": "#FFD54A"
+        }
+      }
+    },
+    {
+      "id": "mejoras_tab",
+      "name": "MejorasTab",
+      "type": "ScrollContainer",
+      "parent": "tab_container",
+      "children": ["ItemsVBox"],
+      "size_flags_horizontal": 3,
+      "size_flags_vertical": 3,
+      "script": "TouchScrollContainer"
+    },
+    {
+      "id": "mejoras_items_vbox",
+      "name": "ItemsVBox",
+      "type": "VBoxContainer",
+      "parent": "mejoras_tab",
+      "children": [],
+      "size_flags_horizontal": 3,
+      "style": { "separation": 12 },
+      "dynamic_content": {
+        "description": "Built programmatically by _build_upgrade_rows()",
+        "item_type": "upgrade_row",
+        "item_template": {
+          "type": "PanelContainer",
+          "children": ["HBox"],
+          "style": {
+            "sub_resources": {
+              "StyleBoxFlat_card": {
+                "type": "StyleBoxFlat",
+                "bg_color": "#141A2E",
+                "border_color": "#32406B",
+                "border_width_left": 1,
+                "border_width_top": 1,
+                "border_width_right": 1,
+                "border_width_bottom": 1,
+                "corner_radius_top_left": 10,
+                "corner_radius_top_right": 10,
+                "corner_radius_bottom_right": 10,
+                "corner_radius_bottom_left": 10,
+                "content_margin_left": 12,
+                "content_margin_top": 10,
+                "content_margin_right": 12,
+                "content_margin_bottom": 10
+              }
+            }
+          },
+          "inner": {
+            "type": "HBoxContainer",
+            "children": [
+              { "type": "Label", "text": "🔧", "font_size": 24 },
+              {
+                "type": "VBoxContainer",
+                "children": [
+                  { "type": "Label", "font_size": 16, "color": "#E6EDFB", "property": "name" },
+                  { "type": "Label", "font_size": 13, "color": "#A6B8D1", "property": "description" }
+                ],
+                "size_flags_horizontal": 3
+              },
+              { "type": "Button", "size": { "x": 120, "y": 48 }, "property": "buy_button" }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": "fruteria_tab",
+      "name": "FruteriaTab",
+      "type": "ScrollContainer",
+      "parent": "tab_container",
+      "children": ["FruteriaItemsVBox"],
+      "size_flags_horizontal": 3,
+      "size_flags_vertical": 3,
+      "visible": false,
+      "script": "TouchScrollContainer"
+    },
+    {
+      "id": "fruteria_items_vbox",
+      "name": "FruteriaItemsVBox",
+      "type": "VBoxContainer",
+      "parent": "fruteria_tab",
+      "children": [],
+      "size_flags_horizontal": 3,
+      "style": { "separation": 12 },
+      "dynamic_content": {
+        "description": "Built programmatically by _build_fruit_rows()",
+        "item_type": "fruit_row",
+        "item_template": {
+          "type": "PanelContainer",
+          "children": ["HBox"],
+          "inner": {
+            "type": "HBoxContainer",
+            "children": [
+              { "type": "Label", "property": "fruit_emoji", "font_size": 24 },
+              {
+                "type": "VBoxContainer",
+                "children": [
+                  { "type": "Label", "font_size": 16, "property": "fruit_name" },
+                  { "type": "Label", "font_size": 13, "color": "#A6B8D1", "property": "fruit_stats" }
+                ],
+                "size_flags_horizontal": 3
+              },
+              { "type": "Button", "size": { "x": 130, "y": 48 }, "property": "buy_button" }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": "armas_tab",
+      "name": "ArmasTab",
+      "type": "ScrollContainer",
+      "parent": "tab_container",
+      "children": ["ArmasItemsVBox"],
+      "size_flags_horizontal": 3,
+      "size_flags_vertical": 3,
+      "visible": false,
+      "script": "TouchScrollContainer"
+    },
+    {
+      "id": "armas_items_vbox",
+      "name": "ArmasItemsVBox",
+      "type": "VBoxContainer",
+      "parent": "armas_tab",
+      "children": [],
+      "size_flags_horizontal": 3,
+      "style": { "separation": 12 },
+      "dynamic_content": {
+        "description": "Built programmatically by _build_weapon_rows()",
+        "item_type": "weapon_row",
+        "item_template": {
+          "type": "PanelContainer",
+          "children": ["HBox"],
+          "inner": {
+            "type": "HBoxContainer",
+            "children": [
+              { "type": "Label", "property": "weapon_icon", "font_size": 24 },
+              {
+                "type": "VBoxContainer",
+                "children": [
+                  { "type": "Label", "font_size": 16, "property": "weapon_name" },
+                  { "type": "Label", "font_size": 13, "color": "#A6B8D1", "property": "weapon_desc" }
+                ],
+                "size_flags_horizontal": 3
+              },
+              { "type": "Button", "size": { "x": 130, "y": 48 }, "property": "action_button" }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": "bottom_hbox",
+      "name": "BottomHBox",
+      "type": "HBoxContainer",
+      "parent": "vbox",
+      "children": ["StatsButton", "ContinueButton"],
+      "style": { "separation": 10 }
+    },
+    {
+      "id": "stats_button",
+      "name": "StatsButton",
+      "type": "Button",
+      "parent": "bottom_hbox",
+      "children": [],
+      "size": { "x": 130, "y": 56 },
+      "min_size": { "x": 130, "y": 56 },
+      "style": {
+        "colors": { "font_color": "#E6EDFB" },
+        "font_sizes": { "font_size": 18 },
+        "sub_resources": {
+          "StyleBoxFlat_pill": {
+            "type": "StyleBoxFlat",
+            "bg_color": "#141A2E",
+            "border_color": "#32406B",
+            "border_width_left": 2,
+            "border_width_top": 2,
+            "border_width_right": 2,
+            "border_width_bottom": 2,
+            "corner_radius_top_left": 18,
+            "corner_radius_top_right": 18,
+            "corner_radius_bottom_right": 18,
+            "corner_radius_bottom_left": 18,
+            "content_margin_left": 12,
+            "content_margin_top": 8,
+            "content_margin_right": 12,
+            "content_margin_bottom": 8
+          }
+        },
+        "theme_override_styles": { "normal": "StyleBoxFlat_pill" }
+      },
+      "text": "📊 Ver Stats"
+    },
+    {
+      "id": "continue_button",
+      "name": "ContinueButton",
+      "type": "Button",
+      "parent": "bottom_hbox",
+      "children": [],
+      "min_size": { "x": 0, "y": 86 },
+      "size_flags_horizontal": 3,
+      "style": {
+        "colors": { "font_color": "#0E1320" },
+        "font_sizes": { "font_size": 20 },
+        "sub_resources": {
+          "StyleBoxFlat_yellow_pill": {
+            "type": "StyleBoxFlat",
+            "bg_color": "#FFD54A",
+            "border_color": "#FFD54A",
+            "border_width_left": 2,
+            "border_width_top": 2,
+            "border_width_right": 2,
+            "border_width_bottom": 2,
+            "corner_radius_top_left": 18,
+            "corner_radius_top_right": 18,
+            "corner_radius_bottom_right": 18,
+            "corner_radius_bottom_left": 18,
+            "shadow_color": "#00000080",
+            "shadow_size": 8,
+            "shadow_offset": { "x": 0, "y": 3 },
+            "content_margin_left": 20,
+            "content_margin_top": 14,
+            "content_margin_right": 20,
+            "content_margin_bottom": 14
+          },
+          "StyleBoxFlat_yellow_pill_hover": {
+            "type": "StyleBoxFlat",
+            "bg_color": "#FFE066",
+            "border_color": "#FFE066",
+            "border_width_left": 2,
+            "border_width_top": 2,
+            "border_width_right": 2,
+            "border_width_bottom": 2,
+            "corner_radius_top_left": 18,
+            "corner_radius_top_right": 18,
+            "corner_radius_bottom_right": 18,
+            "corner_radius_bottom_left": 18,
+            "shadow_color": "#00000080",
+            "shadow_size": 8,
+            "shadow_offset": { "x": 0, "y": 3 },
+            "content_margin_left": 20,
+            "content_margin_top": 14,
+            "content_margin_right": 20,
+            "content_margin_bottom": 14
+          },
+          "StyleBoxFlat_yellow_pill_pressed": {
+            "type": "StyleBoxFlat",
+            "bg_color": "#E6B83A",
+            "border_color": "#E6B83A",
+            "border_width_left": 2,
+            "border_width_top": 2,
+            "border_width_right": 2,
+            "border_width_bottom": 2,
+            "corner_radius_top_left": 18,
+            "corner_radius_top_right": 18,
+            "corner_radius_bottom_right": 18,
+            "corner_radius_bottom_left": 18,
+            "shadow_size": 6,
+            "shadow_offset": { "x": 0, "y": 2 },
+            "content_margin_left": 20,
+            "content_margin_top": 14,
+            "content_margin_right": 20,
+            "content_margin_bottom": 14
+          }
+        },
+        "theme_override_styles": {
+          "normal": "StyleBoxFlat_yellow_pill",
+          "hover": "StyleBoxFlat_yellow_pill_hover",
+          "pressed": "StyleBoxFlat_yellow_pill_pressed"
+        }
+      },
+      "text": "⚔️ INICIAR SIGUIENTE DÍA"
+    }
+  ],
+  "interactions": [
+    {
+      "node": "close_button",
+      "signal": "pressed",
+      "action": "queue_free()"
+    },
+    {
+      "node": "continue_button",
+      "signal": "pressed",
+      "action": "emit_signal('continue_requested')"
+    },
+    {
+      "node": "stats_button",
+      "signal": "pressed",
+      "action": "emit_signal('open_stats_requested')"
+    }
+  ],
+  "signals": [
+    "continue_requested",
+    "open_stats_requested"
+  ],
+  "data_bindings": [
+    { "source": "GameManager.run_money", "target": "money_label.text", "format": "💰 $%s" }
+  ],
+  "dynamic_elements": [
+    {
+      "element": "mejoras_items_vbox",
+      "type": "programmatic_list",
+      "builder": "_build_upgrade_rows()",
+      "states": {
+        "locked": { "text": "🔒 BLOQUEADO", "color": "#A6B8D1" },
+        "available": { "text": "DISPONIBLE", "color": "#4FD69E" },
+        "equipped": { "text": "EN USO", "color": "#FFD54A" },
+        "normal": { "show_price": true, "button_text_format": "$%s" }
+      }
+    },
+    {
+      "element": "fruteria_items_vbox",
+      "type": "programmatic_list",
+      "builder": "_build_fruit_rows()",
+      "states": {
+        "locked": { "text": "🔒 BLOQUEADO" },
+        "available": { "text": "DISPONIBLE" },
+        "normal": { "show_price": true }
+      }
+    },
+    {
+      "element": "armas_items_vbox",
+      "type": "programmatic_list",
+      "builder": "_build_weapon_rows()",
+      "states": {
+        "locked": { "text": "🔒 BLOQUEADO" },
+        "available": { "text": "DISPONIBLE" },
+        "equipped": { "text": "EN USO" }
+      }
+    }
+  ]
+}

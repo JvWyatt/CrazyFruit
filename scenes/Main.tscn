@@ -12,6 +12,7 @@
 [ext_resource type="PackedScene" uid="uid://bwm82l5k4qaa1" path="res://scenes/ui/PrestigeShopModal.tscn" id="12_prestige_shop"]
 [ext_resource type="PackedScene" path="res://scenes/ui/ProgressModal.tscn" id="13_progress"]
 [ext_resource type="PackedScene" path="res://scenes/ui/CardsModal.tscn" id="14_cards"]
+[ext_resource type="PackedScene" path="res://scenes/ui/CreditsModal.tscn" id="15_credits"]
 
 [node name="Main" type="Node"]
 script = ExtResource("1_main")
@@ -76,4 +77,7 @@ visible = false
 visible = false
 
 [node name="CardsModal" parent="Modals" instance=ExtResource("14_cards")]
+visible = false
+
+[node name="CreditsModal" parent="Modals" instance=ExtResource("15_credits")]
 visible = false

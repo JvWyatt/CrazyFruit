@@ -1,0 +1,465 @@
+{
+  "id": "card_selection_modal",
+  "name": "CardSelectionModal",
+  "scene": "res://scenes/ui/CardSelectionModal.tscn",
+  "root_node": "CardSelectionModal",
+  "script": "res://scripts/ui/CardSelectionModal.gd",
+  "canvas_layer": 10,
+  "z_index": 35,
+  "default_visible": false,
+  "layout": {
+    "type": "full_screen_overlay",
+    "anchor_full_rect": true
+  },
+  "nodes": [
+    {
+      "id": "card_selection_modal",
+      "name": "CardSelectionModal",
+      "type": "Control",
+      "parent": null,
+      "children": ["Dimmer", "Panel"],
+      "anchors": { "full_rect": true },
+      "size": { "x": 720, "y": 1280 },
+      "visible": false
+    },
+    {
+      "id": "dimmer",
+      "name": "Dimmer",
+      "type": "ColorRect",
+      "parent": "card_selection_modal",
+      "children": [],
+      "anchors": { "full_rect": true },
+      "size": { "x": 720, "y": 1280 },
+      "style": { "color": "#000000", "alpha": 0.7 },
+      "mouse_filter": 0
+    },
+    {
+      "id": "panel",
+      "name": "Panel",
+      "type": "PanelContainer",
+      "parent": "card_selection_modal",
+      "children": ["VBox"],
+      "anchors": {
+        "center_horizontal": true,
+        "center_vertical": true
+      },
+      "offsets": { "left": -320, "top": -420, "right": 320, "bottom": 420 },
+      "size": { "x": 640, "y": 840 },
+      "style": {
+        "sub_resources": {
+          "StyleBoxFlat_modal_bg": {
+            "type": "StyleBoxFlat",
+            "bg_color": "#141A2E",
+            "border_color": "#FFD54A",
+            "border_width_left": 2,
+            "border_width_top": 2,
+            "border_width_right": 2,
+            "border_width_bottom": 2,
+            "corner_radius_top_left": 18,
+            "corner_radius_top_right": 18,
+            "corner_radius_bottom_right": 18,
+            "corner_radius_bottom_left": 18,
+            "shadow_color": "#000000",
+            "shadow_size": 20,
+            "shadow_offset": { "x": 0, "y": 6 },
+            "content_margin_left": 20,
+            "content_margin_top": 20,
+            "content_margin_right": 20,
+            "content_margin_bottom": 20
+          }
+        },
+        "theme_override_styles_panel": "StyleBoxFlat_modal_bg"
+      }
+    },
+    {
+      "id": "vbox",
+      "name": "VBox",
+      "type": "VBoxContainer",
+      "parent": "panel",
+      "children": ["TitleLabel", "SubtitleLabel", "SummaryPanel", "HSeparator", "CardsScroll"],
+      "style": { "separation": 16 }
+    },
+    {
+      "id": "title_label",
+      "name": "TitleLabel",
+      "type": "Label",
+      "parent": "vbox",
+      "children": [],
+      "style": {
+        "horizontal_alignment": "center",
+        "colors": {
+          "font_color": "#FFD54A",
+          "font_shadow_color": "#000000",
+          "shadow_offset_x": 2,
+          "shadow_offset_y": 2
+        },
+        "font_sizes": { "font_size": 24 }
+      },
+      "text": "🎉 ¡DÍA COMPLETADO!"
+    },
+    {
+      "id": "subtitle_label",
+      "name": "SubtitleLabel",
+      "type": "Label",
+      "parent": "vbox",
+      "children": [],
+      "style": {
+        "horizontal_alignment": "center",
+        "colors": { "font_color": "#E6EDFB" },
+        "font_sizes": { "font_size": 16 }
+      },
+      "text": "Selecciona 1 comodín para continuar..."
+    },
+    {
+      "id": "summary_panel",
+      "name": "SummaryPanel",
+      "type": "PanelContainer",
+      "parent": "vbox",
+      "children": ["SummaryVBox"],
+      "style": {
+        "sub_resources": {
+          "StyleBoxFlat_summary": {
+            "type": "StyleBoxFlat",
+            "bg_color": "#0F1E1A",
+            "border_color": "#59B380",
+            "border_width_left": 1,
+            "border_width_top": 1,
+            "border_width_right": 1,
+            "border_width_bottom": 1,
+            "corner_radius_top_left": 10,
+            "corner_radius_top_right": 10,
+            "corner_radius_bottom_right": 10,
+            "corner_radius_bottom_left": 10,
+            "content_margin_left": 16,
+            "content_margin_top": 12,
+            "content_margin_right": 16,
+            "content_margin_bottom": 12
+          }
+        },
+        "theme_override_styles_panel": "StyleBoxFlat_summary"
+      }
+    },
+    {
+      "id": "summary_vbox",
+      "name": "SummaryVBox",
+      "type": "VBoxContainer",
+      "parent": "summary_panel",
+      "children": ["SummaryTitle", "EarnedRow", "TaxRow", "ProfitRow", "NextTargetRow"],
+      "style": { "separation": 6 }
+    },
+    {
+      "id": "summary_title",
+      "name": "SummaryTitle",
+      "type": "Label",
+      "parent": "summary_vbox",
+      "children": [],
+      "style": {
+        "horizontal_alignment": "center",
+        "colors": { "font_color": "#4FD69E" },
+        "font_sizes": { "font_size": 16 }
+      },
+      "text": "📊 RESUMEN DEL DÍA"
+    },
+    {
+      "id": "earned_row",
+      "name": "EarnedRow",
+      "type": "HBoxContainer",
+      "parent": "summary_vbox",
+      "children": ["EarnedLabel", "EarnedValue"],
+      "style": { "alignment": "center" }
+    },
+    {
+      "id": "earned_label",
+      "name": "EarnedLabel",
+      "type": "Label",
+      "parent": "earned_row",
+      "children": [],
+      "size_flags_horizontal": 3,
+      "style": {
+        "colors": { "font_color": "#E6EDFB" },
+        "font_sizes": { "font_size": 15 }
+      },
+      "text": "Ingresos del día"
+    },
+    {
+      "id": "earned_value",
+      "name": "EarnedValue",
+      "type": "Label",
+      "parent": "earned_row",
+      "children": [],
+      "style": {
+        "horizontal_alignment": "right",
+        "colors": { "font_color": "#4FD69E" },
+        "font_sizes": { "font_size": 15 }
+      },
+      "text": "$0",
+      "data_binding": "GameManager.day_earnings"
+    },
+    {
+      "id": "tax_row",
+      "name": "TaxRow",
+      "type": "HBoxContainer",
+      "parent": "summary_vbox",
+      "children": ["TaxLabel", "TaxValue"],
+      "style": { "alignment": "center" }
+    },
+    {
+      "id": "tax_label",
+      "name": "TaxLabel",
+      "type": "Label",
+      "parent": "tax_row",
+      "children": [],
+      "size_flags_horizontal": 3,
+      "style": {
+        "colors": { "font_color": "#A6B8D1" },
+        "font_sizes": { "font_size": 15 }
+      },
+      "text": "Impuestos"
+    },
+    {
+      "id": "tax_value",
+      "name": "TaxValue",
+      "type": "Label",
+      "parent": "tax_row",
+      "children": [],
+      "style": {
+        "horizontal_alignment": "right",
+        "colors": { "font_color": "#FF5A5E" },
+        "font_sizes": { "font_size": 15 }
+      },
+      "text": "-$0",
+      "data_binding": "GameManager.day_tax"
+    },
+    {
+      "id": "profit_row",
+      "name": "ProfitRow",
+      "type": "HBoxContainer",
+      "parent": "summary_vbox",
+      "children": ["ProfitLabel", "ProfitValue"],
+      "style": { "alignment": "center" }
+    },
+    {
+      "id": "profit_label",
+      "name": "ProfitLabel",
+      "type": "Label",
+      "parent": "profit_row",
+      "children": [],
+      "size_flags_horizontal": 3,
+      "style": {
+        "colors": { "font_color": "#E6EDFB" },
+        "font_sizes": { "font_size": 15 }
+      },
+      "text": "Ganancia neta"
+    },
+    {
+      "id": "profit_value",
+      "name": "ProfitValue",
+      "type": "Label",
+      "parent": "profit_row",
+      "children": [],
+      "style": {
+        "horizontal_alignment": "right",
+        "colors": { "font_color": "#FFD54A" },
+        "font_sizes": { "font_size": 15 }
+      },
+      "text": "$0",
+      "data_binding": "GameManager.day_profit"
+    },
+    {
+      "id": "next_target_row",
+      "name": "NextTargetRow",
+      "type": "HBoxContainer",
+      "parent": "summary_vbox",
+      "children": ["NextTargetLabel", "NextTargetValue"],
+      "style": { "alignment": "center" }
+    },
+    {
+      "id": "next_target_label",
+      "name": "NextTargetLabel",
+      "type": "Label",
+      "parent": "next_target_row",
+      "children": [],
+      "size_flags_horizontal": 3,
+      "style": {
+        "colors": { "font_color": "#A6B8D1" },
+        "font_sizes": { "font_size": 14 }
+      },
+      "text": "Siguiente objetivo"
+    },
+    {
+      "id": "next_target_value",
+      "name": "NextTargetValue",
+      "type": "Label",
+      "parent": "next_target_row",
+      "children": [],
+      "style": {
+        "horizontal_alignment": "right",
+        "colors": { "font_color": "#BF7EFF" },
+        "font_sizes": { "font_size": 14 }
+      },
+      "text": "$200",
+      "data_binding": "GameManager.next_order_target"
+    },
+    {
+      "id": "hseparator",
+      "name": "HSeparator",
+      "type": "HSeparator",
+      "parent": "vbox",
+      "children": [],
+      "style": { "colors": { "separator_color": "#32406B" } }
+    },
+    {
+      "id": "cards_scroll",
+      "name": "CardsScroll",
+      "type": "ScrollContainer",
+      "parent": "vbox",
+      "children": ["CardsVBox"],
+      "size_flags_horizontal": 3,
+      "size_flags_vertical": 3,
+      "script": "TouchScrollContainer"
+    },
+    {
+      "id": "cards_vbox",
+      "name": "CardsVBox",
+      "type": "VBoxContainer",
+      "parent": "cards_scroll",
+      "children": [],
+      "size_flags_horizontal": 3,
+      "style": { "separation": 14 },
+      "alignment": "center",
+      "dynamic_content": {
+        "description": "Built programmatically by _build_card_choices()",
+        "item_type": "card_choice",
+        "rarity_colors": {
+          "common": "#A6B8D1",
+          "rare": "#5B9BF2",
+          "epic": "#BF7EFF",
+          "legendary": "#FFD54A"
+        },
+        "item_template": {
+          "type": "PanelContainer",
+          "property": "rarity_border_color",
+          "style": {
+            "sub_resources": {
+              "StyleBoxFlat_card_common": {
+                "type": "StyleBoxFlat",
+                "bg_color": "#141A2E",
+                "border_color": "#A6B8D1",
+                "border_width_left": 2,
+                "border_width_top": 2,
+                "border_width_right": 2,
+                "border_width_bottom": 2,
+                "corner_radius_top_left": 12,
+                "corner_radius_top_right": 12,
+                "corner_radius_bottom_right": 12,
+                "corner_radius_bottom_left": 12,
+                "content_margin_left": 16,
+                "content_margin_top": 14,
+                "content_margin_right": 16,
+                "content_margin_bottom": 14
+              },
+              "StyleBoxFlat_card_rare": {
+                "type": "StyleBoxFlat",
+                "bg_color": "#141A2E",
+                "border_color": "#5B9BF2",
+                "border_width_left": 2,
+                "border_width_top": 2,
+                "border_width_right": 2,
+                "border_width_bottom": 2,
+                "corner_radius_top_left": 12,
+                "corner_radius_top_right": 12,
+                "corner_radius_bottom_right": 12,
+                "corner_radius_bottom_left": 12,
+                "content_margin_left": 16,
+                "content_margin_top": 14,
+                "content_margin_right": 16,
+                "content_margin_bottom": 14
+              },
+              "StyleBoxFlat_card_epic": {
+                "type": "StyleBoxFlat",
+                "bg_color": "#1A1430",
+                "border_color": "#BF7EFF",
+                "border_width_left": 2,
+                "border_width_top": 2,
+                "border_width_right": 2,
+                "border_width_bottom": 2,
+                "corner_radius_top_left": 12,
+                "corner_radius_top_right": 12,
+                "corner_radius_bottom_right": 12,
+                "corner_radius_bottom_left": 12,
+                "content_margin_left": 16,
+                "content_margin_top": 14,
+                "content_margin_right": 16,
+                "content_margin_bottom": 14
+              },
+              "StyleBoxFlat_card_legendary": {
+                "type": "StyleBoxFlat",
+                "bg_color": "#1E1C10",
+                "border_color": "#FFD54A",
+                "border_width_left": 2,
+                "border_width_top": 2,
+                "border_width_right": 2,
+                "border_width_bottom": 2,
+                "corner_radius_top_left": 12,
+                "corner_radius_top_right": 12,
+                "corner_radius_bottom_right": 12,
+                "corner_radius_bottom_left": 12,
+                "content_margin_left": 16,
+                "content_margin_top": 14,
+                "content_margin_right": 16,
+                "content_margin_bottom": 14
+              }
+            }
+          },
+          "inner": {
+            "type": "HBoxContainer",
+            "style": { "separation": 14 },
+            "children": [
+              { "type": "Label", "property": "card_icon", "font_size": 38 },
+              {
+                "type": "VBoxContainer",
+                "size_flags_horizontal": 3,
+                "style": { "separation": 4 },
+                "children": [
+                  { "type": "Label", "property": "rarity_label", "font_size": 13, "property_color": "rarity_text_color" },
+                  { "type": "Label", "property": "card_title", "font_size": 20, "color": "#FFFFFF" },
+                  { "type": "Label", "property": "card_desc", "font_size": 15, "color": "#E6EDFB", "autowrap_mode": "word_wrapped" }
+                ]
+              },
+              { "type": "Button", "size": { "x": 120, "y": 56 }, "property": "choose_button", "font_size": 14, "text": "ELEGIR\nCOMODÍN" }
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "interactions": [
+    {
+      "description": "Choose button on each card calls _on_card_chosen(card_id)"
+    }
+  ],
+  "signals": [
+    "card_chosen"
+  ],
+  "data_bindings": [
+    { "source": "GameManager.day_earnings", "target": "earned_value.text", "format": "$%s" },
+    { "source": "GameManager.day_tax", "target": "tax_value.text", "format": "-$%s" },
+    { "source": "GameManager.day_profit", "target": "profit_value.text", "format": "$%s" },
+    { "source": "GameManager.next_order_target", "target": "next_target_value.text", "format": "$%s" }
+  ],
+  "dynamic_elements": [
+    {
+      "element": "cards_vbox",
+      "type": "programmatic_list",
+      "builder": "_build_card_choices()",
+      "description": "Builds card option rows with rarity-colored borders, icon, title, description, and choose button"
+    },
+    {
+      "element": "card_selection_modal",
+      "type": "animation",
+      "trigger": "on_open",
+      "animation": "confetti_burst",
+      "description": "Confetti particle burst animation plays when modal opens"
+    }
+  ]
+}

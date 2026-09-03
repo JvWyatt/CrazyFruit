@@ -75,39 +75,39 @@ var knives_db: Dictionary = {
 	},
 	"weapon_fork": {
 		"id": "weapon_fork", "name": "Tenedor", "description": "Un pequeño avance en precisión.",
-		"damage": 10.0, "energy_cost": 0.9, "price": 200, "icon": "🍴"
+		"damage": 10.0, "energy_cost": 0.9, "price": 1000, "icon": "🍴"
 	},
 	"weapon_table_knife": {
 		"id": "weapon_table_knife", "name": "Cuchillo de mesa", "description": "Un filo sencillo y práctico.",
-		"damage": 15.0, "energy_cost": 0.8, "price": 400, "icon": "🔪"
+		"damage": 15.0, "energy_cost": 0.8, "price": 1500, "icon": "🔪"
 	},
 	"weapon_scissors": {
 		"id": "weapon_scissors", "name": "Tijera", "description": "Dos filos para cortes más rápidos.",
-		"damage": 20.0, "energy_cost": 0.7, "price": 800, "icon": "✂️"
+		"damage": 20.0, "energy_cost": 0.7, "price": 2250, "icon": "✂️"
 	},
 	"weapon_box_cutter": {
 		"id": "weapon_box_cutter", "name": "Cúter", "description": "Una hoja fina y sorprendentemente eficaz.",
-		"damage": 25.0, "energy_cost": 0.6, "price": 1600, "icon": "🪒"
+		"damage": 25.0, "energy_cost": 0.6, "price": 3375, "icon": "🪒"
 	},
 	"weapon_knife": {
 		"id": "weapon_knife", "name": "Cuchillo", "description": "Un filo fiable para el trabajo diario.",
-		"damage": 35.0, "energy_cost": 0.5, "price": 3200, "icon": "🔪"
+		"damage": 35.0, "energy_cost": 0.5, "price": 5063, "icon": "🔪"
 	},
 	"weapon_machete": {
 		"id": "weapon_machete", "name": "Machete", "description": "Fuerza y alcance en cada golpe.",
-		"damage": 50.0, "energy_cost": 0.4, "price": 6300, "icon": "🗡️"
+		"damage": 50.0, "energy_cost": 0.4, "price": 7594, "icon": "🗡️"
 	},
 	"weapon_axe": {
 		"id": "weapon_axe", "name": "Hacha", "description": "Un corte pesado que parte cualquier fruta.",
-		"damage": 70.0, "energy_cost": 0.3, "price": 13000, "icon": "🪓"
+		"damage": 70.0, "energy_cost": 0.3, "price": 11391, "icon": "🪓"
 	},
 	"weapon_sword": {
 		"id": "weapon_sword", "name": "Espada", "description": "Precisión y potencia de nivel superior.",
-		"damage": 95.0, "energy_cost": 0.2, "price": 25000, "icon": "⚔️"
+		"damage": 95.0, "energy_cost": 0.2, "price": 17086, "icon": "⚔️"
 	},
 	"weapon_chainsaw": {
 		"id": "weapon_chainsaw", "name": "Motosierra", "description": "La herramienta definitiva para cortar sin parar.",
-		"damage": 130.0, "energy_cost": 0.1, "price": 50000, "icon": "🪚"
+		"damage": 130.0, "energy_cost": 0.1, "price": 25629, "icon": "🪚"
 	}
 }
 
@@ -129,14 +129,16 @@ var run_upgrade_levels: Dictionary = {
 # cuánto sube el precio cada vez que se compra (cost_mult, ej. 1.35 = +35%).
 # Los base_cost están a la escala de lo que se gana por pedido (decenas):
 # permiten 1-2 compras los primeros días pero NO llenar la tienda de golpe.
-# Balance: daño/resistencia/ganancias reducidos proporcionalmente (10% -> 5%),
-# jackpot con su categoría propia (+0.5%), y frecuencia de frutas sin reducción.
+# Balance: daño/resistencia/ganancias del mercado y de prestigio doblados
+# (mercado: 5% -> 10%; prestigio: 10% -> 20%), jackpot con su categoría propia
+# (+0.5% mercado / +1% prestigio, sin cambios), y frecuencia de frutas sin
+# cambios (mercado +10% / prestigio +25%).
 var run_upgrade_definitions: Dictionary = {
-	"damage": {"name": "Afilado de Hoja", "desc": "+5% daño", "base_cost": 10, "cost_mult": 1.35, "icon": "💥"},
-	"energy_max": {"name": "Resistencia", "desc": "+5% resistencia máxima", "base_cost": 15, "cost_mult": 1.35, "icon": "⚡"},
-	"luck": {"name": "Golpe de Suerte", "desc": "+0.5% probabilidad de Jackpot", "base_cost": 30, "cost_mult": 1.45, "icon": "🍀"},
-	"money": {"name": "Negociación", "desc": "+5% multiplicador de ganancias", "base_cost": 40, "cost_mult": 1.45, "icon": "💰"},
-	"launch_rate": {"name": "Cosecha Veloz", "desc": "+10% frecuencia de lanzamiento", "base_cost": 20, "cost_mult": 1.40, "icon": "🚀"}
+	"damage": {"name": "Afilado de Hoja", "desc": "+10% daño", "base_cost": 10, "cost_mult": 1.5, "icon": "💥"},
+	"energy_max": {"name": "Resistencia", "desc": "+10% resistencia máxima", "base_cost": 10, "cost_mult": 1.5, "icon": "⚡"},
+	"luck": {"name": "Golpe de Suerte", "desc": "+0.777% probabilidad de Jackpot", "base_cost": 10, "cost_mult": 1.5, "icon": "🍀"},
+	"money": {"name": "Negociación", "desc": "+10% multiplicador de ganancias", "base_cost": 10, "cost_mult": 1.5, "icon": "💰"},
+	"launch_rate": {"name": "Cosecha Veloz", "desc": "+10% frecuencia de lanzamiento", "base_cost": 10, "cost_mult": 1.5, "icon": "🚀"}
 }
 
 # ----------------------------------------------------------------------------
@@ -198,21 +200,27 @@ func get_equipped_knife_data() -> Dictionary:
 	return knives_db["weapon_fist"]
 
 # Daño final de un golpe = daño base del arma equipada
-#   x (1 + 5% por cada nivel de la mejora "damage" del mercado)
 #   x multiplicador de comodines
-#   x (1 + 10% por cada nivel de prestigio "experience")
+#   x (1 + 20% por cada nivel de prestigio "experience")
+# Para la mejora "Afilado de Hoja": mientras el daño esté por debajo de 20,
+# cada nivel suma +1 de daño (piso mínimo); al llegar a 20 o más se estabiliza
+# en el +10% por nivel. El valor devuelto siempre se entrega con un decimal.
 func get_final_damage() -> float:
 	var knife: Dictionary = get_equipped_knife_data()
 	var base_dmg: float = float(knife.get("damage", 10.0))
-	var run_bonus: float = 1.0 + (run_upgrade_levels["damage"] * 0.05)
-	var prestige_bonus: float = 1.0 + (SaveManager.get_prestige_level("experience") * 0.10)
-	return base_dmg * run_bonus * card_damage_multiplier * prestige_bonus
+	var level: int = run_upgrade_levels["damage"]
+	var prestige_bonus: float = 1.0 + (SaveManager.get_prestige_level("experience") * 0.20)
+	# Daño sin el bono de la mejora del mercado (base x comodines x prestigio).
+	var base_final: float = base_dmg * card_damage_multiplier * prestige_bonus
+	if base_final < 20.0 and level > 0:
+		return snappedf(base_final + (level * 1.0), 0.1)
+	return snappedf(base_dmg * (1.0 + (level * 0.10)) * card_damage_multiplier * prestige_bonus, 0.1)
 
 # Resistencia máxima final = 100 base x mejoras del mercado x comodines x prestigio
 func get_final_max_energy() -> float:
 	var base_energy: float = 100.0
-	var run_bonus: float = 1.0 + (run_upgrade_levels["energy_max"] * 0.05)
-	var prestige_bonus: float = 1.0 + (SaveManager.get_prestige_level("expert_hand") * 0.10)
+	var run_bonus: float = 1.0 + (run_upgrade_levels["energy_max"] * 0.10)
+	var prestige_bonus: float = 1.0 + (SaveManager.get_prestige_level("expert_hand") * 0.20)
 	return base_energy * run_bonus * card_energy_multiplier * prestige_bonus
 
 # Cuánta resistencia se gasta por cada golpe con el arma equipada (ver
@@ -223,14 +231,14 @@ func get_final_energy_cost() -> float:
 
 # Multiplicador final aplicado al dinero ganado por cada fruta cortada.
 func get_final_money_multiplier() -> float:
-	var run_bonus: float = 1.0 + (run_upgrade_levels["money"] * 0.05)
-	var prestige_bonus: float = 1.0 + (SaveManager.get_prestige_level("good_provider") * 0.10)
+	var run_bonus: float = 1.0 + (run_upgrade_levels["money"] * 0.10)
+	var prestige_bonus: float = 1.0 + (SaveManager.get_prestige_level("good_provider") * 0.20)
 	return 1.0 * run_bonus * card_money_multiplier * prestige_bonus
 
 # Probabilidad extra (sumada, no multiplicada) de que una fruta sea "Gran Venta"/Jackpot.
 func get_final_jackpot_bonus() -> float:
-	var run_bonus: float = run_upgrade_levels["luck"] * 0.005
-	var prestige_bonus: float = SaveManager.get_prestige_level("good_fortune") * 0.01
+	var run_bonus: float = run_upgrade_levels["luck"] * 0.00777
+	var prestige_bonus: float = SaveManager.get_prestige_level("good_fortune") * 0.0777
 	return run_bonus + card_jackpot_bonus + prestige_bonus
 
 func get_final_jackpot_multiplier() -> float:
@@ -277,14 +285,17 @@ func get_obstacle_interval() -> float:
 func get_obstacle_resistance_penalty() -> float:
 	return maxf(1.0, get_final_max_energy() * OBSTACLE_RESISTANCE_PENALTY_FRACTION)
 
-# Precio final de las mejoras del mercado: sube geométricamente con cada nivel
-# ya comprado (base_cost * cost_mult ^ nivel_actual).
+# Precio final de las mejoras del mercado: la primera compra (nivel 0) es
+# GRATIS y cada compra siguiente sube geométricamente +50% (base_cost * 1.5
+# ^ (nivel_actual - 1)).
 func get_run_upgrade_cost(upgrade_id: String) -> int:
 	if not run_upgrade_definitions.has(upgrade_id):
 		return 999999
 	var def: Dictionary = run_upgrade_definitions[upgrade_id]
 	var level: int = run_upgrade_levels[upgrade_id]
-	return int(round(def["base_cost"] * pow(def["cost_mult"], level) * card_upgrade_price_multiplier))
+	if level <= 0:
+		return 0
+	return int(round(def["base_cost"] * pow(def["cost_mult"], level - 1) * card_upgrade_price_multiplier))
 
 func get_order_target_multiplier() -> float:
 	return card_order_target_multiplier
@@ -355,37 +366,37 @@ func _apply_card_effect(effect_type: String, effect_value: float) -> void:
 var prestige_definitions: Dictionary = {
 	"experience": {
 		"name": "Maestría",
-		"desc": "+10% Daño inicial por nivel",
+		"desc": "+20% Daño inicial por nivel",
 		"base_cost": 10,
-		"mult": 2.2,
+		"mult": 1.5,
 		"icon": "⚔️"
 	},
 	"expert_hand": {
 		"name": "Experiencia",
-		"desc": "+10% Resistencia Máxima por nivel",
-		"base_cost": 25,
-		"mult": 2.2,
+		"desc": "+20% Resistencia Máxima por nivel",
+		"base_cost": 10,
+		"mult": 1.5,
 		"icon": "🧤"
 	},
 	"good_provider": {
 		"name": "Buen Proveedor",
-		"desc": "+10% Multiplicador de Ganancias por nivel",
-		"base_cost": 50,
-		"mult": 2.2,
+		"desc": "+20% Multiplicador de Ganancias por nivel",
+		"base_cost": 10,
+		"mult": 1.5,
 		"icon": "📦"
 	},
 	"good_fortune": {
 		"name": "Buena Fortuna",
-		"desc": "+1% Probabilidad de Jackpot por nivel",
-		"base_cost": 100,
-		"mult": 2.2,
+		"desc": "+7.77% Probabilidad de Jackpot por nivel",
+		"base_cost": 10,
+		"mult": 1.5,
 		"icon": "⭐"
 	},
 	"launch_speed": {
 		"name": "Ritmo Veloz",
 		"desc": "+25% Frecuencia de Lanzamiento por nivel",
-		"base_cost": 60,
-		"mult": 2.2,
+		"base_cost": 10,
+		"mult": 1.5,
 		"icon": "🚀"
 	},
 }

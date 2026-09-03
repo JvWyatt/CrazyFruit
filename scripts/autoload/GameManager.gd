@@ -33,27 +33,36 @@ signal run_knife_equipped(knife_id: String)
 # último de la lista se usa una fórmula (ver get_order_target_for). Editar
 # estos números cambia la dificultad temprana.
 const ORDER_TARGETS: Array[float] = [
-	30.0,        # Pedido 1
-	52.0,        # Pedido 2
-	92.0,        # Pedido 3
-	160.0,       # Pedido 4
-	280.0,       # Pedido 5
-	490.0,       # Pedido 6
-	860.0,       # Pedido 7
-	1500.0,      # Pedido 8
-	2625.0,      # Pedido 9
-	4600.0,      # Pedido 10
-	8050.0,      # Pedido 11
-	14090.0,     # Pedido 12
-	24660.0,     # Pedido 13
-	43150.0,     # Pedido 14
-	75520.0,     # Pedido 15
-	132160.0,    # Pedido 16
-	231280.0,    # Pedido 17
-	404740.0,    # Pedido 18
-	708300.0,    # Pedido 19
-	1239500.0,   # Pedido 20
+	0.0,         # Día 1
+	10.0,        # Día 2
+	20.0,        # Día 3
+	40.0,        # Día 4
+	80.0,        # Día 5
+	160.0,       # Día 6
+	320.0,       # Día 7
+	640.0,       # Día 8
+	1280.0,      # Día 9
+	2560.0,      # Día 10
+	5120.0,      # Día 11
+	10240.0,     # Día 12
+	20480.0,     # Día 13
+	40960.0,     # Día 14
+	81920.0,     # Día 15
+	163840.0,    # Día 16
+	327680.0,    # Día 17
+	655360.0,    # Día 18
+	1310720.0,   # Día 19
+	2621440.0,   # Día 20
 ]
+
+# OBJETIVO DEL JUEGO: llegar a 100 días. Al completar este día se muestra la
+# pantalla de créditos (con un "Continuar" para seguir haciendo récords).
+const WIN_DAY: int = 100
+
+# Crecimiento de la cuota por día MÁS ALLÁ del día 20 (donde acaba la tabla).
+# Se mantiene el x2 diario de la tabla para que la progresión sea coherente
+# con el resto de las cuotas (día 1 = 0, día 2 = 10, y x2 cada día siguiente).
+const POST_TABLE_DAILY_GROWTH: float = 2.0
 
 # Estados posibles de la partida: qué pantalla/momento del flujo estamos.
 enum GameState {
@@ -76,6 +85,7 @@ var run_money: float = 0.0        # Dinero disponible para gastar en la tienda (
 var total_money_generated_run: float = 0.0
 var total_fruits_cut_run: int = 0
 var total_jackpots_run: int = 0
+var total_golden_fruits_run: int = 0
 
 # Duración máxima de cada ronda en segundos. Es un límite FIJO: no depende de
 # mejoras (no se puede mejorar), solo se rellena en start_new_run/advance_to_next_order.
@@ -105,8 +115,10 @@ func _ready() -> void:
 func get_order_target_for(order_num: int) -> float:
 	if order_num <= ORDER_TARGETS.size():
 		return ORDER_TARGETS[order_num - 1] * StatsManager.get_order_target_multiplier()
-	# Scaling formula for orders beyond 20
-	return 1239500.0 * pow(1.75, order_num - 20) * StatsManager.get_order_target_multiplier()
+	# Más allá del día 20: crecimiento suave y sostenido (POST_TABLE_DAILY_GROWTH)
+	# para que el DÍA 100 tenga una cuota alcanzable y siga creciendo para récords.
+	var base_tail: float = ORDER_TARGETS[ORDER_TARGETS.size() - 1] * pow(POST_TABLE_DAILY_GROWTH, order_num - ORDER_TARGETS.size())
+	return base_tail * StatsManager.get_order_target_multiplier()
 
 # Empieza un negocio nuevo desde cero: reinicia dinero, pedido, energía y
 # TAMBIÉN las frutas/armas desbloqueadas de la partida anterior (solo el
@@ -120,6 +132,7 @@ func start_new_run() -> void:
 	total_money_generated_run = 0.0
 	total_fruits_cut_run = 0
 	total_jackpots_run = 0
+	total_golden_fruits_run = 0
 	current_energy = StatsManager.get_final_max_energy()
 	current_state = GameState.PLAYING
 	run_unlocked_fruits = ["strawberry"]
@@ -171,7 +184,7 @@ func penalize_resistance() -> float:
 # Se llama cada vez que un jugador corta una fruta con éxito. Calcula la
 # recompensa final (aplicando el multiplicador de dinero) y actualiza el
 # progreso del pedido y el dinero disponible en la tienda.
-func register_fruit_cut(fruit_data: FruitData, base_reward: float, is_jackpot: bool) -> float:
+func register_fruit_cut(fruit_data: FruitData, base_reward: float, is_jackpot: bool, is_golden: bool = false) -> float:
 	var final_reward: float = base_reward * StatsManager.get_final_money_multiplier()
 	run_money += final_reward
 	order_progress += final_reward
@@ -179,6 +192,8 @@ func register_fruit_cut(fruit_data: FruitData, base_reward: float, is_jackpot: b
 	total_fruits_cut_run += 1
 	if is_jackpot:
 		total_jackpots_run += 1
+	if is_golden:
+		total_golden_fruits_run += 1
 
 	emit_signal("money_changed", run_money)
 	emit_signal("order_progress_changed", order_progress, order_target)
@@ -260,6 +275,7 @@ func end_run_failed() -> void:
 		"money_generated": total_money_generated_run,
 		"fruits_cut": total_fruits_cut_run,
 		"jackpots": total_jackpots_run,
+		"golden_fruits": total_golden_fruits_run,
 		"best_order": current_order,
 		"earned_prestige": earned_prestige,
 		"total_prestige": SaveManager.get_prestige_points()

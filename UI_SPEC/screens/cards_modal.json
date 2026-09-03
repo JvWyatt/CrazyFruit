@@ -1,0 +1,273 @@
+{
+  "id": "cards_modal",
+  "name": "CardsModal",
+  "scene": "res://scenes/ui/CardsModal.tscn",
+  "root_node": "CardsModal",
+  "script": "res://scripts/ui/CardsModal.gd",
+  "canvas_layer": 10,
+  "z_index": 40,
+  "default_visible": false,
+  "layout": {
+    "type": "full_screen_overlay",
+    "anchor_full_rect": true
+  },
+  "nodes": [
+    {
+      "id": "cards_modal",
+      "name": "CardsModal",
+      "type": "Control",
+      "parent": null,
+      "children": ["Dimmer", "Panel"],
+      "anchors": { "full_rect": true },
+      "size": { "x": 720, "y": 1280 },
+      "visible": false
+    },
+    {
+      "id": "dimmer",
+      "name": "Dimmer",
+      "type": "ColorRect",
+      "parent": "cards_modal",
+      "children": [],
+      "anchors": { "full_rect": true },
+      "size": { "x": 720, "y": 1280 },
+      "style": { "color": "#000000", "alpha": 0.65 },
+      "mouse_filter": 0
+    },
+    {
+      "id": "panel",
+      "name": "Panel",
+      "type": "PanelContainer",
+      "parent": "cards_modal",
+      "children": ["VBox"],
+      "anchors": {
+        "center_horizontal": true,
+        "center_vertical": true
+      },
+      "offsets": { "left": -320, "top": -430, "right": 320, "bottom": 430 },
+      "size": { "x": 640, "y": 860 },
+      "style": {
+        "sub_resources": {
+          "StyleBoxFlat_modal_bg": {
+            "type": "StyleBoxFlat",
+            "bg_color": "#141A2E",
+            "border_color": "#BF7EFF",
+            "border_width_left": 2,
+            "border_width_top": 2,
+            "border_width_right": 2,
+            "border_width_bottom": 2,
+            "corner_radius_top_left": 18,
+            "corner_radius_top_right": 18,
+            "corner_radius_bottom_right": 18,
+            "corner_radius_bottom_left": 18,
+            "shadow_color": "#000000",
+            "shadow_size": 20,
+            "shadow_offset": { "x": 0, "y": 6 },
+            "content_margin_left": 20,
+            "content_margin_top": 20,
+            "content_margin_right": 20,
+            "content_margin_bottom": 20
+          }
+        },
+        "theme_override_styles_panel": "StyleBoxFlat_modal_bg"
+      }
+    },
+    {
+      "id": "vbox",
+      "name": "VBox",
+      "type": "VBoxContainer",
+      "parent": "panel",
+      "children": ["HeaderHBox", "HSeparator", "ScrollContainer", "ContinueButton"],
+      "style": { "separation": 14 }
+    },
+    {
+      "id": "header_hbox",
+      "name": "HeaderHBox",
+      "type": "HBoxContainer",
+      "parent": "vbox",
+      "children": ["TitleLabel", "CloseButton"],
+      "style": { "separation": 12, "alignment": "center" }
+    },
+    {
+      "id": "title_label",
+      "name": "TitleLabel",
+      "type": "Label",
+      "parent": "header_hbox",
+      "children": [],
+      "size_flags_horizontal": 3,
+      "style": {
+        "colors": {
+          "font_color": "#FFD54A",
+          "font_shadow_color": "#000000",
+          "shadow_offset_x": 2,
+          "shadow_offset_y": 2
+        },
+        "font_sizes": { "font_size": 24 }
+      },
+      "text": "🃏 Comodines"
+    },
+    {
+      "id": "close_button",
+      "name": "CloseButton",
+      "type": "Button",
+      "parent": "header_hbox",
+      "children": [],
+      "size": { "x": 40, "y": 40 },
+      "style": {
+        "colors": { "font_color": "#A6B8D1" },
+        "font_sizes": { "font_size": 18 },
+        "sub_resources": {
+          "StyleBoxFlat_circle": {
+            "type": "StyleBoxFlat",
+            "bg_color": "#1E233A",
+            "corner_radius_top_left": 20,
+            "corner_radius_top_right": 20,
+            "corner_radius_bottom_right": 20,
+            "corner_radius_bottom_left": 20
+          }
+        },
+        "theme_override_styles": { "normal": "StyleBoxFlat_circle" }
+      },
+      "text": "✖"
+    },
+    {
+      "id": "hseparator",
+      "name": "HSeparator",
+      "type": "HSeparator",
+      "parent": "vbox",
+      "children": [],
+      "style": { "colors": { "separator_color": "#BF7EFF" } }
+    },
+    {
+      "id": "scroll_container",
+      "name": "ScrollContainer",
+      "type": "ScrollContainer",
+      "parent": "vbox",
+      "children": ["CardsVBox"],
+      "size_flags_horizontal": 3,
+      "size_flags_vertical": 3,
+      "script": "TouchScrollContainer"
+    },
+    {
+      "id": "cards_vbox",
+      "name": "CardsVBox",
+      "type": "VBoxContainer",
+      "parent": "scroll_container",
+      "children": [],
+      "size_flags_horizontal": 3,
+      "style": { "separation": 10 },
+      "dynamic_content": {
+        "description": "Built programmatically by _refresh_ui()",
+        "rarity_colors": {
+          "common": "#A6B8D1",
+          "rare": "#5B9BF2",
+          "epic": "#BF7EFF",
+          "legendary": "#FFD54A"
+        },
+        "empty_state": {
+          "type": "Label",
+          "font_size": 17,
+          "color": "#A6B8D1",
+          "horizontal_alignment": "center",
+          "text": "Todavía no hay comodines para mostrar."
+        },
+        "section_template": {
+          "type": "Label",
+          "font_size": 18,
+          "property": "rarity_header_color"
+        },
+        "card_template": {
+          "type": "PanelContainer",
+          "property": "rarity_border_color",
+          "style": {
+            "sub_resources": {
+              "StyleBoxFlat_card": {
+                "type": "StyleBoxFlat",
+                "bg_color": "#141A2E",
+                "border_color": "#32406B",
+                "border_width_left": 2,
+                "border_width_top": 2,
+                "border_width_right": 2,
+                "border_width_bottom": 2,
+                "corner_radius_top_left": 10,
+                "corner_radius_top_right": 10,
+                "corner_radius_bottom_right": 10,
+                "corner_radius_bottom_left": 10,
+                "content_margin_left": 14,
+                "content_margin_top": 10,
+                "content_margin_right": 14,
+                "content_margin_bottom": 10
+              }
+            }
+          },
+          "inner": {
+            "type": "VBoxContainer",
+            "style": { "separation": 2 },
+            "children": [
+              { "type": "Label", "property": "card_title", "font_size": 15, "color": "#E6EDFB", "autowrap_mode": "word_wrapped" },
+              { "type": "Label", "property": "card_rarity", "font_size": 13, "property_color": "rarity_text_color" },
+              { "type": "Label", "property": "card_desc", "font_size": 15, "color": "#A6B8D1", "autowrap_mode": "word_wrapped" }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": "continue_button",
+      "name": "ContinueButton",
+      "type": "Button",
+      "parent": "vbox",
+      "children": [],
+      "min_size": { "x": 0, "y": 82 },
+      "style": {
+        "colors": { "font_color": "#E6EDFB" },
+        "font_sizes": { "font_size": 20 },
+        "sub_resources": {
+          "StyleBoxFlat_pill": {
+            "type": "StyleBoxFlat",
+            "bg_color": "#141A2E",
+            "border_color": "#32406B",
+            "border_width_left": 2,
+            "border_width_top": 2,
+            "border_width_right": 2,
+            "border_width_bottom": 2,
+            "corner_radius_top_left": 18,
+            "corner_radius_top_right": 18,
+            "corner_radius_bottom_right": 18,
+            "corner_radius_bottom_left": 18,
+            "shadow_color": "#00000060",
+            "shadow_size": 8,
+            "shadow_offset": { "x": 0, "y": 3 },
+            "content_margin_left": 20,
+            "content_margin_top": 12,
+            "content_margin_right": 20,
+            "content_margin_bottom": 12
+          }
+        },
+        "theme_override_styles": { "normal": "StyleBoxFlat_pill" }
+      },
+      "text": "CERRAR"
+    }
+  ],
+  "interactions": [
+    {
+      "node": "close_button",
+      "signal": "pressed",
+      "action": "queue_free()"
+    },
+    {
+      "node": "continue_button",
+      "signal": "pressed",
+      "action": "queue_free()"
+    }
+  ],
+  "signals": [],
+  "data_bindings": [],
+  "dynamic_elements": [
+    {
+      "element": "cards_vbox",
+      "type": "programmatic_content",
+      "builder": "_refresh_ui()",
+      "description": "Builds rarity-colored section headers followed by card labels grouped by rarity. Shows empty state text if no cards collected."
+    }
+  ]
+}

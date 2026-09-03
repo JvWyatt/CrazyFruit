@@ -26,7 +26,7 @@ signal open_cards_requested
 @onready var settings_section: SettingsSection = $SettingsPanel/SettingsCard/VBox/SettingsSection
 @onready var back_button: Button = $SettingsPanel/SettingsCard/VBox/BackButton
 
-var _last_anim_time: int = -10000
+var _anim_started: bool = false
 
 func _ready() -> void:
 	version_label.text = "v%s" % ProjectSettings.get_setting("application/config/version")
@@ -41,15 +41,18 @@ func _ready() -> void:
 	call_deferred("_maybe_animate")
 
 func _notification(what: int) -> void:
-	if what == NOTIFICATION_VISIBILITY_CHANGED and is_visible_in_tree():
-		_maybe_animate()
+	# La animación de entrada corre UNA sola vez. Repetirla en cada
+	# NOTIFICATION_VISIBILITY_CHANGED (muy frecuente en Android al superponer
+	# modales) creaba tweens en colisión sobre el menú, que seguía visible tras
+	# los botones (Prestigio/Progreso/Comodines/Ajustes). Al no re-disparchar,
+	# se elimina ese churn de animaciones que solo se daba en el menú principal.
+	if what == NOTIFICATION_VISIBILITY_CHANGED and is_visible_in_tree() and not _anim_started:
+		_anim_started = true
+		call_deferred("_maybe_animate")
 
 func _maybe_animate() -> void:
 	if not is_visible_in_tree():
 		return
-	if Time.get_ticks_msec() < _last_anim_time + 400:
-		return
-	_last_anim_time = Time.get_ticks_msec()
 	animate_in()
 
 func animate_in() -> void:

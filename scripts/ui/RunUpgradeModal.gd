@@ -22,32 +22,29 @@ signal open_stats_requested
 @onready var continue_button: Button = $Panel/VBox/BottomHBox/ContinueButton
 
 var fruit_prices: Dictionary = {
-	# Progresión rebalanceada (curva MÁS empinada que antes): cada fruta cuesta
-	# ~2x la anterior. Las primeras se siguen comprando en los primeros días,
-	# pero las de gama media/alta requieren correr mucho más profundo en el
-	# negocio, para que no puedas comprar casi todo en las primeras runs.
-	# La Frutería está bloqueada en cadena: no puedes comprar una fruta sin
-	# haber comprado la anterior (ver _get_prev_fruit_id).
-	# La primera fruta (plátano) cuesta 100 y suben progresivamente (~2x).
-	"banana": 100,
-	"peach": 210,
-	"cherry": 450,
-	"orange": 900,
-	"apple": 1800,
-	"pear": 3500,
-	"kiwi": 6700,
-	"mango": 12000,
-	"lemon": 25000,
-	"watermelon": 50000,
-	"melon": 100000,
-	"pineapple": 200000,
-	"papaya": 400000,
-	"coconut": 790000,
-	"avocado": 1600000,
-	"dragon_fruit": 3200000,
-	"guava": 6200000,
-	"quince": 12000000,
-	"pumpkin": 25000000
+	# Progresión rebalanceada: cada fruta cuesta ~1.5x la anterior, empezando
+	# por la Banana en 500. La Fresa (primera) es gratis. La Frutería está
+	# bloqueada en cadena: no puedes comprar una fruta sin haber comprado la
+	# anterior (ver _get_prev_fruit_id).
+	"banana": 500,
+	"peach": 750,
+	"cherry": 1125,
+	"orange": 1688,
+	"apple": 2531,
+	"pear": 3797,
+	"kiwi": 5695,
+	"mango": 8543,
+	"lemon": 12814,
+	"watermelon": 19222,
+	"melon": 28833,
+	"pineapple": 43249,
+	"papaya": 64873,
+	"coconut": 97310,
+	"avocado": 145965,
+	"dragon_fruit": 218947,
+	"guava": 328420,
+	"quince": 492630,
+	"pumpkin": 738945
 }
 
 # Cached row refs so purchases can update in place instead of rebuilding the whole shop

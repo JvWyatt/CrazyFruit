@@ -155,7 +155,7 @@ func die() -> void:
 		var text: String = "+$" + str(int(round(base_reward * StatsManager.get_final_money_multiplier())))
 		_spawn_floating_text(text, Color(0.3, 1.0, 0.4), 1.15, 0.8)
 
-	GameManager.register_fruit_cut(fruit_data, base_reward, is_jackpot)
+	GameManager.register_fruit_cut(fruit_data, base_reward, is_jackpot, is_golden)
 
 	# Burst Out Animation (highly optimized)
 	if visual_node and is_instance_valid(visual_node):

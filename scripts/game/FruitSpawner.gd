@@ -144,6 +144,14 @@ func _launch_fruit() -> void:
 	fruit.launch(launch["from"], launch["vel"], play_bounds.position.x, play_bounds.end.x, _escape_y())
 	fruit.fruit_destroyed.connect(_on_fruit_destroyed)
 	active_fruits.append(fruit)
+	# Logro "Combinador Dorado": tener 2 frutas doradas vivas en pantalla a la vez.
+	if fruit.is_golden:
+		var golden_alive: int = 0
+		for f in active_fruits:
+			if is_instance_valid(f) and f.is_golden and not f.is_dying:
+				golden_alive += 1
+		if golden_alive >= 2:
+			AchievementManager.set_metric("golden_on_screen_2", 1)
 
 func _launch_obstacle() -> void:
 	var launch: Dictionary = _compute_launch()

@@ -3,13 +3,12 @@ class_name ConfirmDialog
 # ============================================================================
 # ConfirmDialog: popup de confirmacion estilizado, en linea con el diseno de
 # tarjetas del juego (scrim + tarjeta con borde). Reemplaza a los feos
-# ConfirmationDialog nativos de Godot. Emite confirmed/canceled.
+# ConfirmationDialog nativos de Godot. Emite confirmed.
 #
 # Uso: confirm_dialog.open(titulo, mensaje, texto_aceptar, texto_cancelar).
 # ============================================================================
 
 signal confirmed
-signal canceled
 
 @onready var card: PanelContainer = $Card
 @onready var title_label: Label = $Card/VBox/TitleLabel
@@ -27,7 +26,6 @@ func _ready() -> void:
 	cancel_button.pressed.connect(func():
 		SoundManager.play_click()
 		visible = false
-		emit_signal("canceled")
 	)
 
 func open(title: String, message: String, ok_text: String = "ACEPTAR", cancel_text: String = "CANCELAR", ok_font_color: Color = UiTheme.COLOR_DANGER) -> void:

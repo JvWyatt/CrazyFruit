@@ -149,7 +149,7 @@ horizontal_alignment = 1
 layout_mode = 2
 theme_override_colors/font_color = Color(0.55, 0.92, 0.62, 1)
 theme_override_font_sizes/font_size = 16
-text = "🎯 Objetivo: llegar al día 100 y batir récords"
+text = "🎯 100 días, ¿eso está pelado?"
 horizontal_alignment = 1
 
 [node name="ButtonsVBox" type="VBoxContainer" parent="CenterVBox"]
@@ -178,6 +178,12 @@ custom_minimum_size = Vector2(0, 52)
 layout_mode = 2
 theme_override_font_sizes/font_size = 18
 text = "🏆 VER PROGRESO"
+
+[node name="AchievementsButton" type="Button" parent="CenterVBox/ButtonsVBox"]
+custom_minimum_size = Vector2(0, 52)
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "🎖️ LOGROS"
 
 [node name="CardsButton" type="Button" parent="CenterVBox/ButtonsVBox"]
 custom_minimum_size = Vector2(0, 52)

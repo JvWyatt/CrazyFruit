@@ -134,11 +134,11 @@ var run_upgrade_levels: Dictionary = {
 # (+0.5% mercado / +1% prestigio, sin cambios), y frecuencia de frutas sin
 # cambios (mercado +10% / prestigio +25%).
 var run_upgrade_definitions: Dictionary = {
-	"damage": {"name": "Afilado de Hoja", "desc": "+10% daño", "base_cost": 10, "cost_mult": 1.5, "icon": "💥"},
-	"energy_max": {"name": "Resistencia", "desc": "+10% resistencia máxima", "base_cost": 10, "cost_mult": 1.5, "icon": "⚡"},
-	"luck": {"name": "Golpe de Suerte", "desc": "+0.777% probabilidad de Jackpot", "base_cost": 10, "cost_mult": 1.5, "icon": "🍀"},
-	"money": {"name": "Negociación", "desc": "+10% multiplicador de ganancias", "base_cost": 10, "cost_mult": 1.5, "icon": "💰"},
-	"launch_rate": {"name": "Cosecha Veloz", "desc": "+10% frecuencia de lanzamiento", "base_cost": 10, "cost_mult": 1.5, "icon": "🚀"}
+	"damage": {"name": "Afilado de Hoja", "desc": "+10% daño", "base_cost": 5, "cost_mult": 2.0, "icon": "💥"},
+	"energy_max": {"name": "Resistencia", "desc": "+10% resistencia máxima", "base_cost": 5, "cost_mult": 2.0, "icon": "⚡"},
+	"luck": {"name": "Golpe de Suerte", "desc": "+0.777% probabilidad de Jackpot", "base_cost": 5, "cost_mult": 2.0, "icon": "🍀"},
+	"money": {"name": "Negociación", "desc": "+10% multiplicador de ganancias", "base_cost": 5, "cost_mult": 2.0, "icon": "💰"},
+	"launch_rate": {"name": "Cosecha Veloz", "desc": "+10% frecuencia de lanzamiento", "base_cost": 5, "cost_mult": 2.0, "icon": "🚀"}
 }
 
 # ----------------------------------------------------------------------------
@@ -285,32 +285,49 @@ func get_obstacle_interval() -> float:
 func get_obstacle_resistance_penalty() -> float:
 	return maxf(1.0, get_final_max_energy() * OBSTACLE_RESISTANCE_PENALTY_FRACTION)
 
-# Precio final de las mejoras del mercado: la primera compra (nivel 0) es
-# GRATIS y cada compra siguiente sube geométricamente +50% (base_cost * 1.5
-# ^ (nivel_actual - 1)).
+# Precio final de las mejoras del mercado: la primera compra (nivel 0) cuesta
+# 5 y cada compra siguiente se duplica (x2): 5, 10, 20, 40...
 func get_run_upgrade_cost(upgrade_id: String) -> int:
 	if not run_upgrade_definitions.has(upgrade_id):
 		return 999999
 	var def: Dictionary = run_upgrade_definitions[upgrade_id]
 	var level: int = run_upgrade_levels[upgrade_id]
-	if level <= 0:
-		return 0
-	return int(round(def["base_cost"] * pow(def["cost_mult"], level - 1) * card_upgrade_price_multiplier))
+	return int(round(def["base_cost"] * pow(def["cost_mult"], level) * card_upgrade_price_multiplier))
 
 func get_order_target_multiplier() -> float:
 	return card_order_target_multiplier
 
-func can_buy_run_upgrade(upgrade_id: String, current_money: float) -> bool:
-	return current_money >= get_run_upgrade_cost(upgrade_id)
-
 func buy_run_upgrade(upgrade_id: String) -> void:
 	if run_upgrade_levels.has(upgrade_id):
 		run_upgrade_levels[upgrade_id] += 1
+		GameManager._upgrades_bought_this_run += 1
+		AchievementManager.record_metric("upgrades_bought_run", 1)
+		if upgrade_id == "launch_rate" and run_upgrade_levels["launch_rate"] >= 3:
+			AchievementManager.set_metric("launch_upgrades_run", 3)
+		if run_upgrade_levels["damage"] >= 1 and run_upgrade_levels["energy_max"] >= 1 and run_upgrade_levels["luck"] >= 1 and run_upgrade_levels["money"] >= 1:
+			AchievementManager.set_flag("bought_all_upgrade_types")
 		emit_signal("stats_updated")
 
 func apply_card_upgrade(card_id: String, effect_type: String, effect_value: Variant, card_title: String = "") -> void:
 	active_cards.append({"id": card_id, "title": card_title})
 	SaveManager.discover_card(card_id)
+	# Logros de comodines descubiertos.
+	var rarity: String = "Común"
+	for card in CardDatabase.ALL_CARDS:
+		if str(card["id"]) == str(card_id):
+			rarity = str(card["rarity"])
+			break
+	var discovered_count: int = SaveManager.get_discovered_cards().size()
+	AchievementManager.set_metric("cards_discovered", discovered_count)
+	match rarity:
+		"Rara":
+			AchievementManager.record_metric("cards_rare", 1)
+		"Épica":
+			AchievementManager.record_metric("cards_epic", 1)
+		"Legendaria":
+			AchievementManager.record_metric("cards_legendary", 1)
+		"Mítico":
+			AchievementManager.set_flag("discover_mythic")
 	if effect_type == "multi":
 		for effect in effect_value:
 			_apply_card_effect(str(effect["type"]), float(effect["value"]))
@@ -361,42 +378,44 @@ func _apply_card_effect(effect_type: String, effect_value: float) -> void:
 # MEJORAS DE PRESTIGIO (permanentes, compradas con reputación/estrellas)
 # ----------------------------------------------------------------------------
 # A diferencia de las mejoras del mercado, estas NO se resetean nunca. Se
-# guardan en SaveManager (prestige_levels) y su costo también sube con cada
-# nivel (base_cost * mult ^ nivel_actual), igual que las mejoras del mercado.
+# guardan en SaveManager (prestige_levels). Cada mejora se compra UNA sola
+# vez (max_level = 1) y tiene un costo FIJO de reputación. Las 3 primeras
+# cuestan 1 ⭐ y las 2 últimas 10 ⭐. Al comprarse, el bono de ×1.5 (20%
+# por nivel) se aplica de forma permanente.
 var prestige_definitions: Dictionary = {
 	"experience": {
 		"name": "Maestría",
-		"desc": "+20% Daño inicial por nivel",
-		"base_cost": 10,
-		"mult": 1.5,
+		"desc": "+20% Daño inicial",
+		"cost": 1,
+		"max_level": 1,
 		"icon": "⚔️"
 	},
 	"expert_hand": {
 		"name": "Experiencia",
-		"desc": "+20% Resistencia Máxima por nivel",
-		"base_cost": 10,
-		"mult": 1.5,
+		"desc": "+20% Resistencia Máxima",
+		"cost": 1,
+		"max_level": 1,
 		"icon": "🧤"
 	},
 	"good_provider": {
 		"name": "Buen Proveedor",
-		"desc": "+20% Multiplicador de Ganancias por nivel",
-		"base_cost": 10,
-		"mult": 1.5,
+		"desc": "+20% Multiplicador de Ganancias",
+		"cost": 1,
+		"max_level": 1,
 		"icon": "📦"
 	},
 	"good_fortune": {
 		"name": "Buena Fortuna",
-		"desc": "+7.77% Probabilidad de Jackpot por nivel",
-		"base_cost": 10,
-		"mult": 1.5,
+		"desc": "+7.77% Probabilidad de Jackpot",
+		"cost": 10,
+		"max_level": 1,
 		"icon": "⭐"
 	},
 	"launch_speed": {
 		"name": "Ritmo Veloz",
-		"desc": "+25% Frecuencia de Lanzamiento por nivel",
-		"base_cost": 10,
-		"mult": 1.5,
+		"desc": "+25% Frecuencia de Lanzamiento",
+		"cost": 10,
+		"max_level": 1,
 		"icon": "🚀"
 	},
 }
@@ -406,13 +425,27 @@ func get_prestige_upgrade_cost(upgrade_id: String) -> int:
 		return 999999
 	var def: Dictionary = prestige_definitions[upgrade_id]
 	var current_lvl: int = SaveManager.get_prestige_level(upgrade_id)
-	return int(round(def["base_cost"] * pow(def["mult"], current_lvl)))
+	var max_lvl: int = int(def.get("max_level", 1))
+	if current_lvl >= max_lvl:
+		return 999999
+	return int(def.get("cost", 1))
+
+func is_prestige_upgrade_maxed(upgrade_id: String) -> bool:
+	if not prestige_definitions.has(upgrade_id):
+		return true
+	var def: Dictionary = prestige_definitions[upgrade_id]
+	var current_lvl: int = SaveManager.get_prestige_level(upgrade_id)
+	return current_lvl >= int(def.get("max_level", 1))
 
 func buy_prestige_upgrade(upgrade_id: String) -> bool:
+	if is_prestige_upgrade_maxed(upgrade_id):
+		return false
 	var cost: int = get_prestige_upgrade_cost(upgrade_id)
 	if SaveManager.spend_prestige_points(cost):
 		var new_lvl: int = SaveManager.get_prestige_level(upgrade_id) + 1
 		SaveManager.set_prestige_level(upgrade_id, new_lvl)
+		AchievementManager.record_metric("prestige_spent", cost)
+		AchievementManager.record_metric("prestige_bought", 1)
 		emit_signal("stats_updated")
 		return true
 	return false

@@ -83,18 +83,6 @@ func play_menu_music() -> void:
 func play_game_music() -> void:
 	_play_context("game")
 
-func stop_music() -> void:
-	if music_player != null:
-		music_player.stop()
-	_current_context = ""
-
-func set_music_stream(stream: AudioStream) -> void:
-	if music_player == null:
-		return
-	music_player.stream = stream
-	if stream != null:
-		music_player.play()
-
 func _play_context(context: String) -> void:
 	if music_player == null:
 		return
@@ -244,4 +232,12 @@ func play_game_over() -> void:
 	var p := _get_available_player()
 	p.stream = stream
 	p.volume_db = -2.0
+	p.play()
+
+func play_achievement() -> void:
+	if not is_sound_enabled: return
+	var stream := _cached_stream("achievement", func(): return _generate_tone_stream(880.0, 1560.0, 0.35, "sine", 3.0))
+	var p := _get_available_player()
+	p.stream = stream
+	p.volume_db = -3.0
 	p.play()

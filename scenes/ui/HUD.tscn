@@ -238,6 +238,107 @@ layout_mode = 2
 theme_override_font_sizes/font_size = 18
 text = "⏸ Pausa"
 
+[node name="AchToast" type="PanelContainer" parent="."]
+visible = false
+modulate = Color(1, 1, 1, 0)
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -340.0
+offset_top = 200.0
+offset_right = 340.0
+offset_bottom = 292.0
+grow_horizontal = 2
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
+
+[node name="HBox" type="HBoxContainer" parent="AchToast"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="AchIcon" type="Label" parent="AchToast/HBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 34
+text = "🏆"
+
+[node name="VBox" type="VBoxContainer" parent="AchToast/HBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 2
+
+[node name="AchTitle" type="Label" parent="AchToast/HBox/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.88, 0.3, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.9)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 20
+text = "Logro Desbloqueado"
+
+[node name="AchDesc" type="Label" parent="AchToast/HBox/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9, 0.95, 1, 1)
+theme_override_font_sizes/font_size = 14
+text = "¡Desbloqueado!"
+
+[node name="StreakPanel" type="PanelContainer" parent="."]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -260.0
+offset_top = 195.0
+offset_right = -20.0
+offset_bottom = 285.0
+grow_horizontal = 0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
+
+[node name="VBox" type="VBoxContainer" parent="StreakPanel"]
+layout_mode = 2
+theme_override_constants/separation = 2
+
+[node name="StreakLabel" type="Label" parent="StreakPanel/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.45, 0.3, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.9)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 22
+text = "🔥 Racha: 0"
+horizontal_alignment = 2
+
+[node name="StreakBarLabel" type="Label" parent="StreakPanel/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.88, 0.5, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.9)
+theme_override_constants/outline_size = 3
+theme_override_font_sizes/font_size = 16
+text = "[░░░░░░░░░░] → 5  (x1.00)"
+horizontal_alignment = 2
+
+[node name="MilestoneLabel" type="Label" parent="."]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -350.0
+offset_top = -80.0
+offset_right = 350.0
+offset_bottom = 20.0
+grow_horizontal = 2
+grow_vertical = 2
+modulate = Color(1, 1, 1, 0)
+mouse_filter = 2
+theme_override_colors/font_color = Color(1, 0.78, 0.25, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.95)
+theme_override_constants/outline_size = 8
+theme_override_font_sizes/font_size = 40
+text = "¡YA PICASTE!"
+horizontal_alignment = 1
+vertical_alignment = 1
+
 [node name="PausePanel" type="Control" parent="."]
 visible = false
 layout_mode = 1

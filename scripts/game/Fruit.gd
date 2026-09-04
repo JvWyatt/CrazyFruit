@@ -136,9 +136,11 @@ func die() -> void:
 	if ballistic:
 		ballistic.stop()
 
-	# Gran venta calculation: probabilidad = jackpot_chance de la fruta + bono
-	# de mejoras/comodines/prestigio (StatsManager.get_final_jackpot_bonus).
-	var total_jackpot_chance: float = fruit_data.jackpot_chance + StatsManager.get_final_jackpot_bonus()
+	# Gran venta calculation: la probabilidad de Jackpot la gestiona SOLO la
+	# stat pura global (StatsManager.get_final_jackpot_bonus), procedente de la
+	# suerte: mejoras del mercado + comodines + prestigio. Las frutas en sí ya
+	# no aportan probabilidad base (todas tienen jackpot_chance = 0).
+	var total_jackpot_chance: float = StatsManager.get_final_jackpot_bonus()
 	var is_jackpot: bool = is_golden or randf() < total_jackpot_chance
 	var base_reward: float = 0.0
 
@@ -147,12 +149,12 @@ func die() -> void:
 		if is_golden:
 			base_reward *= 2.0
 		SoundManager.play_jackpot()
-		var text: String = ("✨ FRUTA DORADA ✨\n" if is_golden else "") + "⭐ JACKPOT! ⭐\n+$" + str(int(round(base_reward * StatsManager.get_final_money_multiplier())))
+		var text: String = ("✨ FRUTA DORADA ✨\n" if is_golden else "") + "⭐ JACKPOT! ⭐\n+$" + UiTheme.format_money(base_reward * StatsManager.get_final_money_multiplier() * GameManager.get_streak_multiplier())
 		_spawn_floating_text(text, Color(1.0, 0.88, 0.2), 1.6, 1.2)
 	else:
 		base_reward = randf_range(fruit_data.min_reward, fruit_data.max_reward)
 		SoundManager.play_coin()
-		var text: String = "+$" + str(int(round(base_reward * StatsManager.get_final_money_multiplier())))
+		var text: String = "+$" + UiTheme.format_money(base_reward * StatsManager.get_final_money_multiplier() * GameManager.get_streak_multiplier())
 		_spawn_floating_text(text, Color(0.3, 1.0, 0.4), 1.15, 0.8)
 
 	GameManager.register_fruit_cut(fruit_data, base_reward, is_jackpot, is_golden)

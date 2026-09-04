@@ -19,17 +19,16 @@ const SAVE_FILE_PATH: String = "user://fruit_cutter_save.json"
 signal data_loaded
 signal data_saved
 signal prestige_changed(new_amount: int)
-signal equipped_knife_changed(knife_id: String)
 
 # Estructura por defecto del guardado. Si agregas una clave nueva aquí,
 # load_data() la fusiona automáticamente con partidas guardadas antiguas.
 var save_data: Dictionary = {
 	"prestige_points": 0,
 	"prestige_levels": {
-		"experience": 0,       # +10% starting damage / lvl
-		"expert_hand": 0,      # +10% max energy / lvl
-		"good_provider": 0,    # +10% money / lvl
-		"good_fortune": 0,     # +1% jackpot chance / lvl
+		"experience": 0,       # +20% starting damage / lvl
+		"expert_hand": 0,      # +20% max energy / lvl
+		"good_provider": 0,    # +20% money / lvl
+		"good_fortune": 0,     # +7.77% jackpot chance / lvl
 		"launch_speed": 0,     # +25% launch frequency / lvl
 	},
 	"unlocked_knives": ["weapon_fist"],
@@ -130,9 +129,6 @@ func get_unlocked_knives() -> Array:
 func get_unlocked_fruits() -> Array:
 	return save_data.get("unlocked_fruits", ["strawberry"])
 
-func is_fruit_unlocked(fruit_id: String) -> bool:
-	return fruit_id in get_unlocked_fruits()
-
 func unlock_fruit(fruit_id: String) -> void:
 	var unlocked: Array = get_unlocked_fruits()
 	if not (fruit_id in unlocked):
@@ -150,27 +146,12 @@ func discover_card(card_id: String) -> void:
 		save_data["discovered_cards"] = discovered
 		save_to_disk()
 
-func is_knife_unlocked(knife_id: String) -> bool:
-	var unlocked: Array = get_unlocked_knives()
-	return knife_id in unlocked
-
 func unlock_knife(knife_id: String) -> void:
 	var unlocked: Array = get_unlocked_knives()
 	if not (knife_id in unlocked):
 		unlocked.append(knife_id)
 		save_data["unlocked_knives"] = unlocked
 		save_to_disk()
-
-func get_equipped_knife() -> String:
-	var equipped_id: String = str(save_data.get("equipped_knife", "weapon_fist"))
-	if equipped_id in ["knife_basic", "knife_kitchen", "knife_pro"]:
-		return "weapon_fist"
-	return equipped_id
-
-func set_equipped_knife(knife_id: String) -> void:
-	save_data["equipped_knife"] = knife_id
-	save_to_disk()
-	emit_signal("equipped_knife_changed", knife_id)
 
 func record_run_stats(completed_order: int, fruits_cut: int) -> void:
 	if completed_order > int(save_data.get("high_score_order", 0)):
@@ -209,3 +190,6 @@ func reset_save() -> void:
 	}
 	save_to_disk()
 	emit_signal("prestige_changed", 0)
+	# Los autoloads NO son singletons de engine (Engine.has_singleton daria
+	# false): AchievementManager existe siempre como autoload, llamada directa.
+	AchievementManager.reset_all()

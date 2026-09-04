@@ -40,6 +40,7 @@ SoundManager="*res://scripts/autoload/SoundManager.gd"
 GameManager="*res://scripts/autoload/GameManager.gd"
 UiTheme="*res://scripts/autoload/UiTheme.gd"
 SettingsManager="*res://scripts/autoload/SettingsManager.gd"
+AchievementManager="*res://scripts/autoload/AchievementManager.gd"
 
 [display]
 

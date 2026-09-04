@@ -42,12 +42,14 @@ var _fruit3d_viewport: SubViewport
 @onready var progress_modal: Control = $Modals/ProgressModal
 @onready var cards_modal: Control = $Modals/CardsModal
 @onready var credits_modal: Control = $Modals/CreditsModal
+@onready var achievements_modal: Control = $Modals/AchievementsModal
 
 func _ready() -> void:
 	# Wire Main Menu events
 	main_menu.start_game_requested.connect(_on_start_game_requested)
 	main_menu.open_prestige_shop_requested.connect(_on_open_prestige_shop_requested)
 	main_menu.open_progress_requested.connect(_on_open_progress_requested)
+	main_menu.open_achievements_requested.connect(_on_open_achievements_requested)
 	main_menu.open_cards_requested.connect(_on_open_cards_requested)
 
 	# Wire HUD events
@@ -98,6 +100,7 @@ func _current_screen_tag() -> String:
 	if main_menu.visible:
 		if prestige_shop_modal.visible: return "menu+prestige"
 		if progress_modal.visible: return "menu+progress"
+		if achievements_modal.visible: return "menu+achievements"
 		if cards_modal.visible: return "menu+cards"
 		if main_menu.get_node("ResetConfirmDialog").visible: return "menu+reset"
 		return "menu"
@@ -124,6 +127,7 @@ func _show_main_menu() -> void:
 	progress_modal.visible = false
 	cards_modal.visible = false
 	credits_modal.visible = false
+	achievements_modal.visible = false
 
 func _on_start_game_requested() -> void:
 	main_menu.visible = false
@@ -140,6 +144,10 @@ func _on_open_prestige_shop_requested() -> void:
 func _on_open_progress_requested() -> void:
 	_log("open", "progress")
 	progress_modal.open_modal()
+
+func _on_open_achievements_requested() -> void:
+	_log("open", "achievements")
+	achievements_modal.open_modal()
 
 func _on_open_cards_requested() -> void:
 	_log("open", "cards")

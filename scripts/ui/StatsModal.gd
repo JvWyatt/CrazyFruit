@@ -70,7 +70,7 @@ func _refresh_ui() -> void:
 
 	# Section 5: Suerte
 	_add_header("🍀 SUERTE")
-	_add_stat_row("Probabilidad de Jackpot", "+" + str(int(round(jackpot_bonus))) + "% extra", "Multiplica la recompensa máxima", Color(1.0, 0.75, 0.2))
+	_add_stat_row("Probabilidad de Jackpot", str(int(round(jackpot_bonus))) + "%", "Stat pura y global (suerte): mejoras + comodines + prestigio", Color(1.0, 0.75, 0.2))
 	_add_stat_row("Multiplicador de Jackpot", "x" + str(snappedf(jackpot_multiplier, 0.1)), "Recompensa de un Jackpot", Color(1.0, 0.75, 0.2))
 	_add_stat_row("Probabilidad de Fruta Dorada", str(int(round(golden_fruit_chance))) + "%", "Probabilidad activa de fruta dorada", Color(1.0, 0.85, 0.2))
 

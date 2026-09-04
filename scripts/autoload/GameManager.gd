@@ -25,34 +25,37 @@ signal run_started
 signal run_ended(summary: Dictionary)
 signal fruit_destroyed_event(fruit_data: FruitData, reward: float, is_jackpot: bool)
 signal run_knife_equipped(knife_id: String)
+signal streak_changed(current_streak: int, multiplier: float)
+signal streak_milestone(milestone: int)
+signal streak_broken
 
 # Cuánto dinero hay que ganar para completar cada día/pedido (pedido 1, 2, 3...).
-# Progresión geométrica COHERENTE con los premios de las frutas (~x1.75 por
-# pedido): cada día es alcanzable con la fruta/arma del día anterior y deja
-# un excedente para comprar mejoras en el mercado. Para pedidos más allá del
-# último de la lista se usa una fórmula (ver get_order_target_for). Editar
-# estos números cambia la dificultad temprana.
+# Progresión geométrica ×1.21 diaria desde $10 (día 1): el día 100 ronda los
+# ~$1.57B. Cada día es alcanzable con la fruta/arma del día anterior y deja un
+# excedente para comprar mejoras en el mercado. Para pedidos más allá del último
+# de la lista se usa una fórmula (ver get_order_target_for). Editar estos
+# números cambia la dificultad temprana.
 const ORDER_TARGETS: Array[float] = [
-	0.0,         # Día 1
-	10.0,        # Día 2
-	20.0,        # Día 3
-	40.0,        # Día 4
-	80.0,        # Día 5
-	160.0,       # Día 6
-	320.0,       # Día 7
-	640.0,       # Día 8
-	1280.0,      # Día 9
-	2560.0,      # Día 10
-	5120.0,      # Día 11
-	10240.0,     # Día 12
-	20480.0,     # Día 13
-	40960.0,     # Día 14
-	81920.0,     # Día 15
-	163840.0,    # Día 16
-	327680.0,    # Día 17
-	655360.0,    # Día 18
-	1310720.0,   # Día 19
-	2621440.0,   # Día 20
+	10.0,        # Día 1
+	12.1,        # Día 2
+	14.6,        # Día 3
+	17.7,        # Día 4
+	21.4,        # Día 5
+	25.9,        # Día 6
+	31.4,        # Día 7
+	38.0,        # Día 8
+	45.9,        # Día 9
+	55.6,        # Día 10
+	67.3,        # Día 11
+	81.4,        # Día 12
+	98.5,        # Día 13
+	119.2,       # Día 14
+	144.2,       # Día 15
+	174.5,       # Día 16
+	211.1,       # Día 17
+	255.5,       # Día 18
+	309.2,       # Día 19
+	374.0,       # Día 20
 ]
 
 # OBJETIVO DEL JUEGO: llegar a 100 días. Al completar este día se muestra la
@@ -60,9 +63,9 @@ const ORDER_TARGETS: Array[float] = [
 const WIN_DAY: int = 100
 
 # Crecimiento de la cuota por día MÁS ALLÁ del día 20 (donde acaba la tabla).
-# Se mantiene el x2 diario de la tabla para que la progresión sea coherente
-# con el resto de las cuotas (día 1 = 0, día 2 = 10, y x2 cada día siguiente).
-const POST_TABLE_DAILY_GROWTH: float = 2.0
+# Se mantiene el ×1.21 diario de la tabla para que la progresión sea coherente
+# con el resto de las cuotas (día 1 = $10, y ×1.21 cada día siguiente).
+const POST_TABLE_DAILY_GROWTH: float = 1.21
 
 # Estados posibles de la partida: qué pantalla/momento del flujo estamos.
 enum GameState {
@@ -109,6 +112,67 @@ var run_unlocked_fruits: Array[String] = ["strawberry"]
 var run_unlocked_knives: Array[String] = ["weapon_fist"]
 var run_equipped_knife: String = "weapon_fist"
 
+# ----------------------------------------------------------------------------
+# RACHA DE FRUTAS
+# ----------------------------------------------------------------------------
+# La racha sube de 1 por cada fruta cortada y se REINICIA a 0 si el jugador
+# toca una piedra/obstáculo. El multiplicador de monedas aplicado corresponde
+# al último hito alcanzado (y se queda en x2.00 tras superar 50).
+var current_streak: int = 0
+
+# --- Tracking de logros por día/negocio (se resetea) -----------------------
+var _stones_hit_this_day: int = 0
+var _crits_this_day: int = 0
+var _golden_fruits_this_day: int = 0
+var _normal_fruits_this_day: int = 0
+var _fruits_this_day_set: Dictionary = {}
+var _upgrades_bought_this_run: int = 0
+var _fist_cuts_this_run: int = 0
+# "Hachero Total": se marca al cambiar de arma y se evalúa al completar el día
+# (la ventana cubre también la tienda entre días: ver _on_day_completed).
+var _weapon_changed_this_day: bool = false
+
+# Hitos de racha -> multiplicador de monedas. El multiplicador activo es el del
+# mayor hito alcanzado (ver get_streak_multiplier).
+const STREAK_MILESTONES: Dictionary = {
+	5: 1.10,
+	10: 1.20,
+	20: 1.30,
+	30: 1.50,
+	50: 2.00,
+}
+const MAX_STREAK_MULTIPLIER: float = 2.00
+
+# Multiplicador según el número de frutas consecutivas cortadas.
+func get_streak_multiplier() -> float:
+	var mult: float = 1.0
+	for m in STREAK_MILESTONES:
+		if current_streak >= int(m):
+			mult = STREAK_MILESTONES[m]
+	return maxf(mult, 1.0)
+
+# Incrementa la racha al cortar una fruta (llamado desde register_fruit_cut).
+func _increment_streak() -> void:
+	var next_streak: int = current_streak + 1
+	var reached_milestone: bool = STREAK_MILESTONES.has(next_streak)
+	current_streak = next_streak
+	var mult: float = get_streak_multiplier()
+	emit_signal("streak_changed", current_streak, mult)
+	if reached_milestone:
+		emit_signal("streak_milestone", next_streak)
+	if current_streak > AchievementManager.get_metric("max_streak"):
+		AchievementManager.set_metric("max_streak", current_streak)
+	if current_streak == 15:
+		AchievementManager.set_flag("blind_streak")
+
+# Reinicia la racha a 0 y el multiplicador a x1.00 (al tocar una piedra).
+func break_streak() -> void:
+	if current_streak != 0:
+		current_streak = 0
+		emit_signal("streak_changed", 0, 1.0)
+		emit_signal("streak_broken")
+		AchievementManager.record_metric("streak_broke", 1)
+
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 
@@ -138,6 +202,16 @@ func start_new_run() -> void:
 	run_unlocked_fruits = ["strawberry"]
 	run_unlocked_knives = ["weapon_fist"]
 	run_equipped_knife = "weapon_fist"
+	current_streak = 0
+	_stones_hit_this_day = 0
+	_crits_this_day = 0
+	_golden_fruits_this_day = 0
+	_normal_fruits_this_day = 0
+	_fruits_this_day_set = {}
+	_upgrades_bought_this_run = 0
+	_fist_cuts_this_run = 0
+	_weapon_changed_this_day = false
+	emit_signal("streak_changed", 0, 1.0)
 	emit_signal("run_knife_equipped", run_equipped_knife)
 	SaveManager.record_day_started()
 	
@@ -185,15 +259,50 @@ func penalize_resistance() -> float:
 # recompensa final (aplicando el multiplicador de dinero) y actualiza el
 # progreso del pedido y el dinero disponible en la tienda.
 func register_fruit_cut(fruit_data: FruitData, base_reward: float, is_jackpot: bool, is_golden: bool = false) -> float:
-	var final_reward: float = base_reward * StatsManager.get_final_money_multiplier()
+	_increment_streak()
+	var streak_mult: float = get_streak_multiplier()
+	var final_reward: float = base_reward * StatsManager.get_final_money_multiplier() * streak_mult
+	var target_unreached: bool = order_progress < order_target
 	run_money += final_reward
 	order_progress += final_reward
+	# Logro "Rápido y Furioso": ALCANZAR la cuota del día faltando 5s o menos.
+	if target_unreached and order_progress >= order_target and round_time_left <= 5.0:
+		AchievementManager.set_flag("beat_day_rushed")
 	total_money_generated_run += final_reward
 	total_fruits_cut_run += 1
 	if is_jackpot:
 		total_jackpots_run += 1
 	if is_golden:
 		total_golden_fruits_run += 1
+
+	# Logros: métricas globales y por fruta.
+	AchievementManager.record_metric("fruits_cut", 1)
+	AchievementManager.record_metric("money_total", final_reward)
+	var fruit_id: String = str(fruit_data.id) if fruit_data else ""
+	if fruit_id != "":
+		AchievementManager.record_metric("cut_" + fruit_id, 1)
+		_fruits_this_day_set[fruit_id] = true
+	if is_jackpot:
+		AchievementManager.record_metric("jackpots", 1)
+		if is_golden:
+			AchievementManager.set_flag("golden_jackpot")
+	# "Fruta y Pan": dorada Y normal en el mismo día, en CUALQUIER orden.
+	if is_golden:
+		AchievementManager.record_metric("golden_fruits", 1)
+		_golden_fruits_this_day += 1
+		if _golden_fruits_this_day >= 2:
+			AchievementManager.set_metric("golden_fruits_in_one_day", 2)
+		if _normal_fruits_this_day > 0:
+			AchievementManager.set_flag("golden_and_normal_day")
+	else:
+		_normal_fruits_this_day += 1
+		if _golden_fruits_this_day > 0:
+			AchievementManager.set_flag("golden_and_normal_day")
+	# Logro "Origen": equipar el Puño y cortar 5 frutas con él en el negocio.
+	if run_equipped_knife == "weapon_fist":
+		_fist_cuts_this_run += 1
+		if _fist_cuts_this_run >= 5:
+			AchievementManager.set_flag("started_with_fist")
 
 	emit_signal("money_changed", run_money)
 	emit_signal("order_progress_changed", order_progress, order_target)
@@ -217,6 +326,7 @@ func unlock_fruit_this_run(fruit_id: String) -> void:
 	if not (fruit_id in run_unlocked_fruits):
 		run_unlocked_fruits.append(fruit_id)
 		SaveManager.unlock_fruit(fruit_id) # keeps lifetime discovery record for Progress stats
+		AchievementManager.set_metric("fruits_unlocked", SaveManager.get_unlocked_fruits().size())
 
 func is_knife_unlocked_this_run(knife_id: String) -> bool:
 	return knife_id in run_unlocked_knives
@@ -225,9 +335,15 @@ func unlock_knife_this_run(knife_id: String) -> void:
 	if not (knife_id in run_unlocked_knives):
 		run_unlocked_knives.append(knife_id)
 		SaveManager.unlock_knife(knife_id) # keeps lifetime discovery record for Progress stats
+		AchievementManager.set_metric("knives_owned", SaveManager.get_unlocked_knives().size())
 
 func set_equipped_knife_this_run(knife_id: String) -> void:
+	# Equipar el MISMO arma no cuenta como cambio para "Hachero Total".
+	if knife_id != run_equipped_knife:
+		_weapon_changed_this_day = true
 	run_equipped_knife = knife_id
+	if knife_id == "weapon_chainsaw":
+		AchievementManager.set_flag("used_chainsaw")
 	emit_signal("run_knife_equipped", knife_id)
 
 func _end_round_and_validate() -> void:
@@ -236,18 +352,66 @@ func _end_round_and_validate() -> void:
 		# Objective met - round won, continue to comodines/shop
 		current_state = GameState.ORDER_CLEARED_CARD_SELECT
 		SoundManager.play_victory()
+		_on_day_completed()
 		emit_signal("order_completed", current_order)
 	else:
 		# Objective not met - round lost, business ends
 		end_run_failed()
 
+# Registra los logros ligados a completar un día (días, perfecto, estilo).
+func _on_day_completed() -> void:
+	AchievementManager.set_metric("best_day", maxf(AchievementManager.get_metric("best_day"), current_order))
+	AchievementManager.record_metric("days_completed_total", 1)
+	if _stones_hit_this_day == 0:
+		AchievementManager.record_metric("clean_days", 1)
+	# Logros por arma equipada al completar el día.
+	match run_equipped_knife:
+		"weapon_fist":
+			AchievementManager.set_flag("day_with_fist")
+		"weapon_fork":
+			AchievementManager.set_flag("day_with_fork")
+		"weapon_knife":
+			AchievementManager.set_flag("day_with_knife")
+		"weapon_axe":
+			AchievementManager.set_flag("day_with_axe")
+		"weapon_sword":
+			AchievementManager.set_flag("day_with_sword")
+		"weapon_chainsaw":
+			AchievementManager.set_flag("day_with_top_knife")
+	# Logros de día perfecto por estilo.
+	# "Deuda Cero": terminar el día con la energía EXACTAMENTE en 0.
+	if current_energy <= 0.0:
+		AchievementManager.set_flag("day_finished_empty")
+	if _fresa_and_naranja_today():
+		AchievementManager.set_flag("fresa_y_naranja_day")
+	# "Hachero Total": día completado sin cambiar de arma. La ventana va de fin
+	# de día a fin de día, asi que cambiar en la tienda cuenta para el día que
+	# empieza (por eso el reset es AQUÍ y no en advance_to_next_order).
+	if not _weapon_changed_this_day:
+		AchievementManager.set_flag("day_unchanged_weapon")
+	_weapon_changed_this_day = false
+	# "Astuta Economía": superar un día (a partir del 2º, cuando la tienda ya
+	# pudo usarse) sin haber comprado NINGUNA mejora del mercado en el negocio.
+	if _upgrades_bought_this_run == 0 and current_order >= 2:
+		AchievementManager.set_flag("no_prestige_spent_run")
+
+func _fresa_and_naranja_today() -> bool:
+	return _fruits_this_day_set.has("strawberry") and _fruits_this_day_set.has("orange")
+
 func advance_to_next_order() -> void:
 	current_energy = StatsManager.get_final_max_energy()
 	emit_signal("energy_changed", current_energy, StatsManager.get_final_max_energy())
 	current_order += 1
+	if current_order > 100:
+		AchievementManager.set_flag("surpassed_day_100")
 	order_target = get_order_target_for(current_order)
 	order_progress = 0.0
 	current_state = GameState.PLAYING
+	_stones_hit_this_day = 0
+	_crits_this_day = 0
+	_golden_fruits_this_day = 0
+	_normal_fruits_this_day = 0
+	_fruits_this_day_set = {}
 	
 	round_time_left = ROUND_TIME_SECONDS
 	emit_signal("round_time_changed", round_time_left)
@@ -269,6 +433,11 @@ func end_run_failed() -> void:
 
 	SaveManager.add_prestige_points(earned_prestige)
 	SaveManager.record_run_stats(completed_orders_count, total_fruits_cut_run)
+
+	# Logros ligados al final del negocio.
+	AchievementManager.record_metric("runs_bankrupt", 1)
+	AchievementManager.record_metric("prestige_earned", earned_prestige)
+	AchievementManager.set_metric("run_money_total", maxf(AchievementManager.get_metric("run_money_total"), total_money_generated_run))
 
 	var summary: Dictionary = {
 		"completed_orders": completed_orders_count,

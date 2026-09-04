@@ -19,6 +19,9 @@ var fruit_spawner: Node2D
 # golpea CUANDO el dedo vuelve a ENTRAR de nuevo en su área (estilo slice),
 # no mientras lo sigues con el dedo. instance_id -> ya golpeado en esta entrada.
 var _stroke_hits: Dictionary = {}
+# Frutas DESTRUIDAS dentro del trazo actual (para el logro "Cinco en Uno":
+# cortar 5 frutas con un solo trazo). Se reinicia al empezar cada arrastre.
+var _destroyed_this_stroke: int = 0
 
 @onready var line_2d: Line2D = $Line2D
 
@@ -60,6 +63,7 @@ func _start_drag(pos: Vector2) -> void:
 	last_touch_pos = pos
 	trail_points.clear()
 	_stroke_hits.clear()
+	_destroyed_this_stroke = 0
 	trail_points.append({"pos": pos, "time": trail_lifetime})
 
 func _process_drag(pos: Vector2) -> void:
@@ -143,6 +147,20 @@ func _check_slice_segment(seg_a: Vector2, seg_b: Vector2) -> void:
 				var is_crit: bool = randf() < StatsManager.get_final_critical_chance()
 				var dmg: float = StatsManager.get_final_damage() * (StatsManager.get_final_critical_multiplier() if is_crit else 1.0)
 				fruit.take_damage(dmg, is_crit, seg_b - seg_a)
+				if is_crit:
+					AchievementManager.record_metric("crits", 1)
+					GameManager._crits_this_day += 1
+					if GameManager._crits_this_day >= 3:
+						AchievementManager.set_metric("crits_in_one_day", 3)
+					# Logro secreto "Estado Mental": crítico sin haber tocado
+					# ninguna piedra en lo que va de día.
+					if GameManager._stones_hit_this_day == 0:
+						AchievementManager.set_flag("esoteric_calm")
+				# Logro "Cinco en Uno": 5 frutas destruidas con un mismo trazo.
+				if fruit.is_dying:
+					_destroyed_this_stroke += 1
+					if _destroyed_this_stroke >= 5:
+						AchievementManager.record_metric("multi_cut_5", 1)
 			else:
 				_trigger_low_energy_feedback(fruit_pos)
 
@@ -165,6 +183,9 @@ func _check_slice_segment(seg_a: Vector2, seg_b: Vector2) -> void:
 			_stroke_hits[oid] = true
 			obstacle.on_hit()
 			hit_any = true
+			GameManager.break_streak()
+			AchievementManager.record_metric("stones_hit", 1)
+			GameManager._stones_hit_this_day += 1
 			var penalty: float = GameManager.penalize_resistance()
 			SoundManager.play_thud()
 			_spawn_obstacle_feedback(obstacle.global_position + Vector2(0, -30), penalty)

@@ -217,7 +217,7 @@ func _rebuild_fruit_shop() -> void:
 		name_lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		name_lbl.add_theme_font_size_override("font_size", 18)
 		var stats_lbl := Label.new()
-		stats_lbl.text = "Vida: " + str(int(fruit_data["max_hp"])) + "  |  Ganancias: $" + str(fruit_data["min_reward"]) + " - $" + str(fruit_data["max_reward"])
+		stats_lbl.text = "Vida: " + str(int(fruit_data["max_hp"])) + "  |  Ganancias: $" + UiTheme.format_money(float(fruit_data["min_reward"])) + " - $" + UiTheme.format_money(float(fruit_data["max_reward"]))
 		if not chain_ok:
 			var prev_data: Dictionary = FruitDatabase.get_fruit_data(prev_id)
 			stats_lbl.text += "\n🔒 Requisito: comprar " + str(prev_data["name"])

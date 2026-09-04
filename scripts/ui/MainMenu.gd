@@ -11,10 +11,12 @@ signal start_game_requested
 signal open_prestige_shop_requested
 signal open_progress_requested
 signal open_cards_requested
+signal open_achievements_requested
 
 @onready var play_button: Button = $CenterVBox/ButtonsVBox/PlayButton
 @onready var prestige_shop_button: Button = $CenterVBox/ButtonsVBox/PrestigeShopButton
 @onready var progress_button: Button = $CenterVBox/ButtonsVBox/ProgressButton
+@onready var achievements_button: Button = $CenterVBox/ButtonsVBox/AchievementsButton
 @onready var cards_button: Button = $CenterVBox/ButtonsVBox/CardsButton
 @onready var settings_button: Button = $CenterVBox/ButtonsVBox/SettingsButton
 @onready var reset_button: Button = $CenterVBox/ButtonsVBox/ResetButton
@@ -25,14 +27,31 @@ signal open_cards_requested
 @onready var settings_card: PanelContainer = $SettingsPanel/SettingsCard
 @onready var settings_section: SettingsSection = $SettingsPanel/SettingsCard/VBox/SettingsSection
 @onready var back_button: Button = $SettingsPanel/SettingsCard/VBox/BackButton
+@onready var goal_label: Label = $CenterVBox/TitleVBox/GoalLabel
 
 var _anim_started: bool = false
+
+# Pool de frases retadoras que rotan en el menú principal mientras el jugador
+# intenta llegar a los 100 días.
+const CHALLENGE_PHRASES: Array[String] = [
+	"100 días, ¿eso está pelado?",
+	"100 días, pan comido... ¿o fruta?",
+	"100 días, mucha fruta, poco tiempo.",
+	"100 días y ni una excusa.",
+	"100 días para pelar este problema.",
+	"100 días sin acabar hecho puré.",
+	"100 días sin perder el filo.",
+	"100 días para no hacerte papilla.",
+	"100 días y ni una fruta podrida.",
+]
+var _phrase_index: int = 0
 
 func _ready() -> void:
 	version_label.text = "v%s" % ProjectSettings.get_setting("application/config/version")
 	play_button.pressed.connect(_on_play_pressed)
 	prestige_shop_button.pressed.connect(_on_prestige_shop_pressed)
 	progress_button.pressed.connect(_on_progress_pressed)
+	achievements_button.pressed.connect(_on_achievements_pressed)
 	cards_button.pressed.connect(_on_cards_pressed)
 	settings_button.pressed.connect(_on_settings_pressed)
 	reset_button.pressed.connect(_on_reset_pressed)
@@ -46,9 +65,18 @@ func _notification(what: int) -> void:
 	# modales) creaba tweens en colisión sobre el menú, que seguía visible tras
 	# los botones (Prestigio/Progreso/Comodines/Ajustes). Al no re-disparchar,
 	# se elimina ese churn de animaciones que solo se daba en el menú principal.
-	if what == NOTIFICATION_VISIBILITY_CHANGED and is_visible_in_tree() and not _anim_started:
-		_anim_started = true
-		call_deferred("_maybe_animate")
+	if what == NOTIFICATION_VISIBILITY_CHANGED and is_visible_in_tree():
+		_rotate_phrase()
+		if not _anim_started:
+			_anim_started = true
+			call_deferred("_maybe_animate")
+
+func _rotate_phrase() -> void:
+	if goal_label == null or CHALLENGE_PHRASES.is_empty():
+		return
+	var phrase: String = CHALLENGE_PHRASES[_phrase_index % CHALLENGE_PHRASES.size()]
+	_phrase_index += 1
+	goal_label.text = "🎯 " + phrase
 
 func _maybe_animate() -> void:
 	if not is_visible_in_tree():
@@ -69,6 +97,10 @@ func _on_prestige_shop_pressed() -> void:
 func _on_progress_pressed() -> void:
 	SoundManager.play_click()
 	emit_signal("open_progress_requested")
+
+func _on_achievements_pressed() -> void:
+	SoundManager.play_click()
+	emit_signal("open_achievements_requested")
 
 func _on_cards_pressed() -> void:
 	SoundManager.play_click()

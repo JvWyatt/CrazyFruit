@@ -28,8 +28,9 @@ func _refresh_ui() -> void:
 	for key in StatsManager.prestige_definitions.keys():
 		var def: Dictionary = StatsManager.prestige_definitions[key]
 		var level: int = SaveManager.get_prestige_level(key)
+		var maxed: bool = StatsManager.is_prestige_upgrade_maxed(key)
 		var cost: int = StatsManager.get_prestige_upgrade_cost(key)
-		var can_buy: bool = SaveManager.get_prestige_points() >= cost
+		var can_buy: bool = not maxed and SaveManager.get_prestige_points() >= cost
 
 		var panel := PanelContainer.new()
 		UiTheme.apply_card(panel)
@@ -45,7 +46,10 @@ func _refresh_ui() -> void:
 		text_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 
 		var name_lbl := Label.new()
-		name_lbl.text = str(def["name"]) + " (x" + str(level) + ")"
+		if maxed:
+			name_lbl.text = str(def["name"]) + " ✓"
+		else:
+			name_lbl.text = str(def["name"])
 		name_lbl.add_theme_font_size_override("font_size", 18)
 		name_lbl.modulate = Color(1.0, 0.88, 0.3)
 
@@ -59,9 +63,13 @@ func _refresh_ui() -> void:
 
 		var buy_btn := Button.new()
 		buy_btn.custom_minimum_size = Vector2(130, 48)
-		buy_btn.text = str(cost) + " ⭐"
+		if maxed:
+			buy_btn.text = "COMPRADO"
+			buy_btn.disabled = true
+		else:
+			buy_btn.text = str(cost) + " ⭐"
+			buy_btn.disabled = not can_buy
 		buy_btn.add_theme_font_size_override("font_size", 17)
-		buy_btn.disabled = not can_buy
 
 		var captured_key = key
 		buy_btn.pressed.connect(func():

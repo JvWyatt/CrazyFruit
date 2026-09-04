@@ -136,16 +136,20 @@ func card_style(border_color: Color = COLOR_BORDER, bg_color: Color = COLOR_ROW)
 func apply_card(panel: PanelContainer, border_color: Color = COLOR_BORDER, bg_color: Color = COLOR_ROW) -> void:
 	panel.add_theme_stylebox_override("panel", card_style(border_color, bg_color))
 
-# Formato de dinero consistente: enteros simplificados con sufijos K/M para
-# cantidades grandes (ej: 1250 -> "1.2K", 2500000 -> "2.5M"). Usado en TODA
-# la UI (HUD, tiendas, resúmenes) para evitar formatos dispersos.
+# Formato de dinero consistente: enteros simplificados con sufijos de letras
+# para cantidades grandes (ej: 1250 -> "1.2K", 2500000 -> "2.5M",
+# 3500000000 -> "3.5B", 4000000000000 -> "4T"). Usado en TODA la UI (HUD,
+# tiendas, resúmenes) para evitar formatos dispersos.
 func format_money(value: float) -> String:
-	var v: int = int(round(value))
-	if v >= 1000000:
-		return str(snappedf(float(v) / 1000000.0, 0.1)) + "M"
-	elif v >= 1000:
-		return str(snappedf(float(v) / 1000.0, 0.1)) + "K"
-	return str(v)
+	var v: float = float(value)
+	var suffixes: Array = ["", "K", "M", "B", "T", "Qa", "Qi", "Sx", "Sp"]
+	var idx: int = 0
+	while v >= 1000.0 and idx < suffixes.size() - 1:
+		v /= 1000.0
+		idx += 1
+	if idx > 0:
+		return str(snappedf(v, 0.1)) + suffixes[idx]
+	return str(int(round(v)))
 
 # Entrada suave de modales/paneles: fade + escala con rebote suave.
 func pop_in(control: Control) -> void:

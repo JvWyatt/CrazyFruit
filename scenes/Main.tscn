@@ -13,6 +13,7 @@
 [ext_resource type="PackedScene" path="res://scenes/ui/ProgressModal.tscn" id="13_progress"]
 [ext_resource type="PackedScene" path="res://scenes/ui/CardsModal.tscn" id="14_cards"]
 [ext_resource type="PackedScene" path="res://scenes/ui/CreditsModal.tscn" id="15_credits"]
+[ext_resource type="PackedScene" path="res://scenes/ui/AchievementsModal.tscn" id="16_ach"]
 
 [node name="Main" type="Node"]
 script = ExtResource("1_main")
@@ -80,4 +81,7 @@ visible = false
 visible = false
 
 [node name="CreditsModal" parent="Modals" instance=ExtResource("15_credits")]
+visible = false
+
+[node name="AchievementsModal" parent="Modals" instance=ExtResource("16_ach")]
 visible = false

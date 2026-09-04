@@ -36,6 +36,24 @@ signal quit_run_requested
 @onready var settings_section: SettingsSection = $PausePanel/Card/SettingsVBox/SettingsSection
 @onready var settings_back_btn: Button = $PausePanel/Card/SettingsVBox/SettingsBackButton
 @onready var pause_confirm_dialog: ConfirmDialog = $PauseConfirmDialog
+@onready var streak_label: Label = $StreakPanel/VBox/StreakLabel
+@onready var streak_bar_label: Label = $StreakPanel/VBox/StreakBarLabel
+@onready var milestone_label: Label = $MilestoneLabel
+@onready var ach_toast: PanelContainer = $AchToast
+@onready var ach_icon: Label = $AchToast/HBox/AchIcon
+@onready var ach_title: Label = $AchToast/HBox/VBox/AchTitle
+@onready var ach_desc: Label = $AchToast/HBox/VBox/AchDesc
+
+# Pool de frases que se muestran en el centro al alcanzar un hito de racha.
+const STREAK_PHRASES: Array[String] = [
+	"¡YA PICASTE!",
+	"¡BUEN CORTE!",
+	"¡ESTO YA ES ENSALADA!",
+	"¿TÚ DUERMES?",
+	"¡DEJA ALGO PARA MAÑANA!",
+	"¡FRUTALMENTE INSANO!",
+]
+var _milestone_tween: Tween
 
 func _ready() -> void:
 	GameManager.money_changed.connect(_on_money_changed)
@@ -44,6 +62,9 @@ func _ready() -> void:
 	GameManager.round_time_changed.connect(_on_round_time_changed)
 	StatsManager.stats_updated.connect(_on_stats_updated)
 	GameManager.run_knife_equipped.connect(func(_id): _update_knife_display())
+	GameManager.streak_changed.connect(_on_streak_changed)
+	GameManager.streak_milestone.connect(_on_streak_milestone)
+	AchievementManager.achievement_unlocked.connect(_on_achievement_unlocked)
 
 	stats_btn.pressed.connect(_on_stats_button_pressed)
 	pause_btn.pressed.connect(_on_pause_button_pressed)
@@ -54,6 +75,7 @@ func _ready() -> void:
 	pause_confirm_dialog.confirmed.connect(_on_quit_confirmed)
 	_update_knife_display()
 	_update_launch_rate_display()
+	_on_streak_changed(GameManager.current_streak, GameManager.get_streak_multiplier())
 
 func format_damage(value: float) -> String:
 	return str(snappedf(value, 0.1))
@@ -100,6 +122,95 @@ func _on_round_time_changed(time_left: float) -> void:
 func _on_stats_button_pressed() -> void:
 	SoundManager.play_click()
 	emit_signal("open_stats_requested")
+
+# --- Racha de frutas --------------------------------------------------------
+
+# Hitos ordenados ascendentemente para calcular progreso entre hitos.
+const STREAK_ORDER: Array[int] = [5, 10, 20, 30, 50]
+
+func _on_streak_changed(streak: int, multiplier: float) -> void:
+	streak_label.text = "🔥 Racha: " + str(streak)
+	streak_bar_label.text = _build_streak_bar(streak, multiplier)
+
+func _build_streak_bar(streak: int, multiplier: float) -> String:
+	var bars: int = 10
+	var filled: int = 0
+	var next_target: int = 0
+	if streak >= STREAK_ORDER[STREAK_ORDER.size() - 1]:
+		# Racha máxima alcanzada: barra llena, sin objetivo siguiente.
+		filled = bars
+		next_target = 0
+	else:
+		var prev: int = 0
+		var next: int = STREAK_ORDER[0]
+		for m in STREAK_ORDER:
+			if streak < m:
+				next = m
+				break
+			prev = m
+		var progress: float = 0.0 if next == prev else float(streak - prev) / float(next - prev)
+		filled = int(round(progress * bars))
+		next_target = next
+	var filled_str: String = "█".repeat(filled) + "░".repeat(bars - filled)
+	var tail: String = ("→ " + str(next_target)) if next_target > 0 else "→ MAX"
+	return "[" + filled_str + "] " + tail + "  (x" + str(snappedf(multiplier, 0.01)) + ")"
+
+func _on_streak_milestone(_milestone: int) -> void:
+	if STREAK_PHRASES.is_empty():
+		return
+	var phrase: String = STREAK_PHRASES[randi() % STREAK_PHRASES.size()]
+	milestone_label.text = "🔥 " + phrase
+	milestone_label.modulate = Color(1, 1, 1, 1)
+	milestone_label.scale = Vector2(0.8, 0.8)
+	if _milestone_tween and _milestone_tween.is_valid():
+		_milestone_tween.kill()
+	_milestone_tween = create_tween()
+	_milestone_tween.set_parallel(true)
+	_milestone_tween.tween_property(milestone_label, "scale", Vector2(1.15, 1.15), 0.3).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	_milestone_tween.tween_property(milestone_label, "scale", Vector2(1.0, 1.0), 0.35).set_delay(0.3).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	_milestone_tween.tween_property(milestone_label, "modulate:a", 0.0, 0.5).set_delay(1.2).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+
+# --- Notificación de logros -------------------------------------------------
+
+var _ach_toast_tween: Tween
+# Cola de logros pendientes de mostrar: si saltan varios a la vez (típico al
+# completar un día), se muestran uno tras otro sin pisarse ni perderse.
+var _ach_queue: Array[Dictionary] = []
+var _ach_showing: bool = false
+
+func _on_achievement_unlocked(_id: String, def: Dictionary) -> void:
+	_ach_queue.append(def)
+	if not _ach_showing:
+		_show_next_achievement()
+
+func _show_next_achievement() -> void:
+	if _ach_queue.is_empty():
+		_ach_showing = false
+		return
+	_ach_showing = true
+	var def: Dictionary = _ach_queue.pop_front()
+	ach_icon.text = str(def.get("icon", "🏆"))
+	ach_title.text = "🎉 Logro desbloqueado"
+	ach_desc.text = str(def.get("name", "¡Logro conseguido!"))
+	# Entrada y salida discretas sin cortar la partida (fade + escala suave,
+	# sin mover la posición para no chocar con los anchors del panel).
+	if _ach_toast_tween and _ach_toast_tween.is_valid():
+		_ach_toast_tween.kill()
+	ach_toast.visible = true
+	ach_toast.modulate = Color(1, 1, 1, 0)
+	ach_toast.scale = Vector2(0.9, 0.9)
+	ach_toast.pivot_offset = ach_toast.size * 0.5
+	_ach_toast_tween = create_tween()
+	_ach_toast_tween.set_parallel(true)
+	_ach_toast_tween.tween_property(ach_toast, "modulate:a", 1.0, 0.22).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	_ach_toast_tween.tween_property(ach_toast, "scale", Vector2.ONE * 1.04, 0.28).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	_ach_toast_tween.chain().tween_interval(2.4)
+	_ach_toast_tween.chain().tween_property(ach_toast, "modulate:a", 0.0, 0.4).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+	_ach_toast_tween.chain().tween_callback(func():
+		ach_toast.visible = false
+		_show_next_achievement()
+	)
+	SoundManager.play_achievement()
 
 # --- Pausa --------------------------------------------------------------
 

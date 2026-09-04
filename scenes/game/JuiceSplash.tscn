@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://b6ab7ws5vvh6"]
 
-[ext_resource type="Script" uid="uid://c3n7w5r8j4s2z" path="res://scripts/game/JuiceSplash.gd" id="1_j4e"]
+[ext_resource type="Script" uid="uid://dp4poxmfiyj85" path="res://scripts/game/JuiceSplash.gd" id="1_j4e"]
 
 [node name="JuiceSplash" type="CPUParticles2D"]
 z_index = 5

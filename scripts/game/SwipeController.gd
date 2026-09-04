@@ -183,12 +183,37 @@ func _check_slice_segment(seg_a: Vector2, seg_b: Vector2) -> void:
 			_stroke_hits[oid] = true
 			obstacle.on_hit()
 			hit_any = true
-			GameManager.break_streak()
 			AchievementManager.record_metric("stones_hit", 1)
 			GameManager._stones_hit_this_day += 1
-			var penalty: float = GameManager.penalize_resistance()
-			SoundManager.play_thud()
-			_spawn_obstacle_feedback(obstacle.global_position + Vector2(0, -30), penalty)
+
+			# Comodín de probabilidad: ¿se ROMPE la piedra? (desaparece, no
+			# penaliza resistencia ni rompe la racha).
+			if StatsManager.get_stone_break_chance() > 0.0 and randf() < StatsManager.get_stone_break_chance():
+				SoundManager.play_slice()
+				UiTheme.dust_burst(get_parent(), obstacle.global_position, Color(0.5, 0.52, 0.57))
+				obstacle.break_stone()
+				_spawn_obstacle_broken_feedback(obstacle.global_position + Vector2(0, -30))
+				continue
+
+			# Comodín raro "primera piedra del día gratis": la primera piedra
+			# del día NO quita resistencia (pero sigue rompiendo la racha).
+			var free_stone: bool = (
+				StatsManager.has_first_stone_free()
+				and not GameManager._first_stone_consumed_this_day
+			)
+			if free_stone:
+				GameManager._first_stone_consumed_this_day = true
+
+			# La piedra SIEMPRE rompe la racha (incluso con comodín mítico).
+			GameManager.break_streak()
+
+			if free_stone:
+				SoundManager.play_thud()
+				_spawn_obstacle_free_feedback(obstacle.global_position + Vector2(0, -30))
+			else:
+				var penalty: float = GameManager.penalize_resistance()
+				SoundManager.play_thud()
+				_spawn_obstacle_feedback(obstacle.global_position + Vector2(0, -30), penalty)
 
 	if hit_any:
 		SoundManager.play_slice()
@@ -218,3 +243,15 @@ func _spawn_obstacle_feedback(pos: Vector2, penalty: float) -> void:
 	get_parent().add_child(ft)
 	var penalty_text: String = "¡PIEDRA! -%s ⚡" % snappedf(penalty, 0.1)
 	ft.setup(penalty_text, Color(0.75, 0.3, 0.3), 1.2, 0.6)
+
+func _spawn_obstacle_free_feedback(pos: Vector2) -> void:
+	var ft = FLOATING_TEXT_SCENE.instantiate()
+	ft.position = pos
+	get_parent().add_child(ft)
+	ft.setup("🛡️ PIEDRA BLOQUEADA", Color(0.3, 0.8, 1.0), 1.2, 0.6)
+
+func _spawn_obstacle_broken_feedback(pos: Vector2) -> void:
+	var ft = FLOATING_TEXT_SCENE.instantiate()
+	ft.position = pos
+	get_parent().add_child(ft)
+	ft.setup("💥 PIEDRA ROTA", Color(0.6, 0.7, 0.8), 1.2, 0.6)

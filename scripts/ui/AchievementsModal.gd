@@ -20,6 +20,17 @@ func open_modal() -> void:
 	UiTheme.pop_in($Panel)
 	_refresh_ui()
 
+# ---------------------------------------------------------------------------
+# Acceso / desbloqueo según progreso (6.2)
+# ---------------------------------------------------------------------------
+# La Lista COMPLETA de logros (con los pendientes a la vista) se revela SOLO
+# tras cruzar la meta del juego (día WIN_DAY). Antes, la sección muestra
+# únicamente los logros ya conseguidos, sin spoilear los que faltan.
+var _game_completed: bool = false
+
+func _is_game_completed() -> bool:
+	return AchievementManager.is_unlocked("centenario")
+
 # Construcción incremental asíncrona --------------------------------------------------
 # El listado completo de logros implica ~120 filas anidadas; añadirlas de golpe a un
 # TabContainer ya visible dispara un layout muy costoso (~2.7s, congelando la UI). Para
@@ -35,7 +46,11 @@ func _refresh_ui() -> void:
 	# Resumen general.
 	var unlocked_count: int = AchievementManager.get_unlocked_ids().size()
 	var total_count: int = AchievementManager.DEFINITIONS.size()
-	summary_label.text = "🏆 " + str(unlocked_count) + " / " + str(total_count) + " logros desbloqueados"
+	_game_completed = _is_game_completed()
+	if _game_completed:
+		summary_label.text = "🏆 " + str(unlocked_count) + " / " + str(total_count) + " logros desbloqueados"
+	else:
+		summary_label.text = "🏆 " + str(unlocked_count) + " logros conseguidos (la lista completa se desbloquea al superar el objetivo) 🤫"
 
 	# Cancela cualquier construcción previa en curso.
 	_build_in_progress = false
@@ -46,35 +61,32 @@ func _refresh_ui() -> void:
 	for child in tabs.get_children():
 		child.queue_free()
 
-	# Agrupa por categoría manteniendo el orden de aparición.
-	var by_cat: Dictionary = {}
-	var cat_order: Array[String] = []
+	# Todos los logros en UNA sola lista, sin dividir por categoría (el campo
+	# "cat" es solo interno para crearlos, no se muestra). Antes de completar
+	# el juego (6.2) se filtran los logros aún NO conseguidos para no spoilearlos.
+	var all_defs: Array = []
 	for def in AchievementManager.DEFINITIONS:
-		var cat: String = str(def.get("cat", "cantidad"))
-		if not by_cat.has(cat):
-			by_cat[cat] = []
-			cat_order.append(cat)
-		by_cat[cat].append(def)
-
-	# Orden preferido de las categorías conocidas; el resto van al final.
-	var preferred: Array[String] = ["cantidad", "objetivo", "estilo", "gracioso", "secreto", "easter_egg", "aleatorio"]
-	var final_order: Array[String] = []
-	for cat in preferred:
-		if by_cat.has(cat) and not (cat in final_order):
-			final_order.append(cat)
-	for cat in cat_order:
-		if not (cat in final_order):
-			final_order.append(cat)
-
-	for cat in final_order:
-		_pending_categories.append({
-			"cat": cat,
-			"tag": AchievementManager.get_category_label(cat),
-			"icon": str(AchievementManager.CATEGORY_ICONS.get(cat, "🏆")),
-			"defs": by_cat[cat],
-		})
+		if not _game_completed and not AchievementManager.is_unlocked(str(def.get("id", ""))):
+			continue
+		all_defs.append(def)
 
 	_build_in_progress = true
+	if all_defs.is_empty():
+		# Sin logros aún y sin completar el juego: muestra un aviso.
+		_pending_categories.append({
+			"cat": "",
+			"tag": "Aún no hay logros",
+			"icon": "🤫",
+			"defs": [{"id": "", "name": "Consigue tu primer logro durante la partida. ¡La lista completa se desbloqueará al superar el objetivo!", "desc": "", "icon": "", "cat": "", "kind": "flag", "flag": ""}],
+			"placeholder": true,
+		})
+	else:
+		_pending_categories.append({
+			"cat": "todos",
+			"tag": "TODOS LOS LOGROS",
+			"icon": "🏆",
+			"defs": all_defs,
+		})
 
 func _pump_tab_build() -> void:
 	if not _build_in_progress:
@@ -108,7 +120,10 @@ func _next_tab() -> bool:
 	scroll.add_child(vbox)
 
 	var header := Label.new()
-	header.text = str(info["icon"]) + " " + str(info["tag"]) + "  (" + str(cat_unlocked) + "/" + str(_current_defs.size()) + ")"
+	if info.get("placeholder", false):
+		header.text = str(info["icon"]) + " " + str(info["tag"])
+	else:
+		header.text = str(info["icon"]) + " " + str(info["tag"]) + "  (" + str(cat_unlocked) + "/" + str(_current_defs.size()) + ")"
 	header.add_theme_font_size_override("font_size", 16)
 	header.modulate = Color(1.0, 0.85, 0.3)
 	vbox.add_child(header)

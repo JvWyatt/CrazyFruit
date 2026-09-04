@@ -92,6 +92,7 @@ static func _build_cards() -> Array[Dictionary]:
 	cards.append(_card("Brillo Dorado", "+0.05% de Probabilidad de Fruta Dorada", common, "golden_fruit_chance", 0.0005))
 	cards.append(_card("Toque Brillante", "+0.1% de Probabilidad de Fruta Dorada", common, "golden_fruit_chance", 0.001))
 	cards.append(_card("Filo del Experto", "+6.5% daño", common, "damage", 0.065))
+	cards.append(_card("Cadena de Cortes", "+x0.1 al multiplicador de racha", common, "streak_bonus", 0.1))
 
 	# --------------------------------------------------------------------------
 	# Pool raro: 27 cartas de efecto único y magnitud mayor.
@@ -123,6 +124,8 @@ static func _build_cards() -> Array[Dictionary]:
 	cards.append(_card("Mayorista de Armas", "-8% precio de armas", rare, "weapon_price", -0.08))
 	cards.append(_card("Cesta de Ofertas", "-8% precio de frutas", rare, "fruit_price", -0.08))
 	cards.append(_card("Tecnología de Punta", "-8% precio de mejoras", rare, "upgrade_price", -0.08))
+	cards.append(_card("Ritmo de Campeón", "+x0.2 al multiplicador de racha", rare, "streak_bonus", 0.2))
+	cards.append(_card("Pie Firme", "La primera piedra del día no quita resistencia", rare, "first_stone_free", 1))
 
 	# --------------------------------------------------------------------------
 	# Pool épico: 7 cartas de magnitud alta.
@@ -134,6 +137,8 @@ static func _build_cards() -> Array[Dictionary]:
 	cards.append(_card("Coloso", "+18% resistencia máxima", epic, "energy_max", 0.18))
 	cards.append(_card("Meteoro", "+18% frecuencia de lanzamiento", epic, "launch_rate", 0.18))
 	cards.append(_card("Leyenda Dorada", "+0.6% de Probabilidad de Fruta Dorada", epic, "golden_fruit_chance", 0.006))
+	cards.append(_card("Furia de la Racha", "+x0.5 al multiplicador de racha", epic, "streak_bonus", 0.5))
+	cards.append(_card("Rompepiedras", "+1% probabilidad de romper una piedra", epic, "stone_break_chance", 0.01))
 
 	# --------------------------------------------------------------------------
 	# Pool legendario: 3 cartas de magnitud muy alta.
@@ -141,11 +146,14 @@ static func _build_cards() -> Array[Dictionary]:
 	cards.append(_card("Filazo Épico", "+28% daño", legendary, "damage", 0.28))
 	cards.append(_card("Jackpot Legendario", "+1x multiplicador de Jackpot", legendary, "jackpot_multiplier", 1.0))
 	cards.append(_card("Tormenta Perfecta", "+28% frecuencia de lanzamiento", legendary, "launch_rate", 0.28))
+	cards.append(_card("Racha Infinita", "+x1.0 al multiplicador de racha", legendary, "streak_bonus", 1.0))
+	cards.append(_card("Demoledor", "+3% probabilidad de romper una piedra", legendary, "stone_break_chance", 0.03))
 
 	# --------------------------------------------------------------------------
 	# Pool mítico: 1 carta (la más poderosa del juego).
 	# --------------------------------------------------------------------------
 	cards.append(_card("Divinidad", "+12% probabilidad de Crítico", mythic, "crit_chance", 0.12))
+	cards.append(_card("Racha Eterna", "Mantiene el conteo de racha entre días", mythic, "streak_keep", 1))
 	return cards
 
 static func _card(title: String, desc: String, rarity: String, effect_type: String, effect_value: float) -> Dictionary:

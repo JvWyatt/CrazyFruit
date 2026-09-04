@@ -51,6 +51,14 @@ func on_hit() -> void:
 	_flash_tween.tween_property(self, "scale", Vector2(1.3, 0.85), 0.06)
 	_flash_tween.tween_property(self, "scale", Vector2(1.0, 1.0), 0.1)
 
+# Rompe la piedra (tiró el comodín de probabilidad): la deja invisible y la
+# libera. No penaliza ni rompe la racha; el llamador gestiona el feedback.
+func break_stone() -> void:
+	set_process(false)
+	hide()
+	collision_shape.set_deferred("disabled", true)
+	queue_free()
+
 func _draw() -> void:
 	var pts: PackedVector2Array = PackedVector2Array([
 		Vector2(-radius * 0.9, radius * 0.3),

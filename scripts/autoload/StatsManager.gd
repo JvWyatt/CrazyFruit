@@ -126,19 +126,21 @@ var run_upgrade_levels: Dictionary = {
 }
 
 # Definición de cada mejora: nombre, descripción, costo inicial (base_cost) y
-# cuánto sube el precio cada vez que se compra (cost_mult, ej. 1.35 = +35%).
-# Los base_cost están a la escala de lo que se gana por pedido (decenas):
-# permiten 1-2 compras los primeros días pero NO llenar la tienda de golpe.
+# cuánto sube el precio cada vez que se compra (cost_mult, ej. 1.1x = +10%).
+# Son ACUMULATIVAS e infinitas: cada compra sube el nivel y el precio crece con
+# la fórmula (base_cost × cost_mult^nivel), sin tabla de valores fija.
+# Los base_cost están a la escala de lo que se gana por pedido: permiten
+# algunas compras los primeros días pero no llenar la tienda de golpe.
 # Balance: daño/resistencia/ganancias del mercado y de prestigio doblados
 # (mercado: 5% -> 10%; prestigio: 10% -> 20%), jackpot con su categoría propia
 # (+0.5% mercado / +1% prestigio, sin cambios), y frecuencia de frutas sin
 # cambios (mercado +10% / prestigio +25%).
 var run_upgrade_definitions: Dictionary = {
-	"damage": {"name": "Afilado de Hoja", "desc": "+10% daño", "base_cost": 5, "cost_mult": 2.0, "icon": "💥"},
-	"energy_max": {"name": "Resistencia", "desc": "+10% resistencia máxima", "base_cost": 5, "cost_mult": 2.0, "icon": "⚡"},
-	"luck": {"name": "Golpe de Suerte", "desc": "+0.777% probabilidad de Jackpot", "base_cost": 5, "cost_mult": 2.0, "icon": "🍀"},
-	"money": {"name": "Negociación", "desc": "+10% multiplicador de ganancias", "base_cost": 5, "cost_mult": 2.0, "icon": "💰"},
-	"launch_rate": {"name": "Cosecha Veloz", "desc": "+10% frecuencia de lanzamiento", "base_cost": 5, "cost_mult": 2.0, "icon": "🚀"}
+	"damage": {"name": "Afilado de Hoja", "desc": "+10% daño", "base_cost": 3, "cost_mult": 1.1, "icon": "💥"},
+	"energy_max": {"name": "Resistencia", "desc": "+10% resistencia máxima", "base_cost": 3, "cost_mult": 1.1, "icon": "⚡"},
+	"luck": {"name": "Golpe de Suerte", "desc": "+0.777% probabilidad de Jackpot", "base_cost": 3, "cost_mult": 1.1, "icon": "🍀"},
+	"money": {"name": "Negociación", "desc": "+10% multiplicador de ganancias", "base_cost": 3, "cost_mult": 1.1, "icon": "💰"},
+	"launch_rate": {"name": "Cosecha Veloz", "desc": "+10% frecuencia de lanzamiento", "base_cost": 3, "cost_mult": 1.1, "icon": "🚀"}
 }
 
 # ----------------------------------------------------------------------------
@@ -163,6 +165,16 @@ var card_fruit_price_multiplier: float = 1.0
 var card_upgrade_price_multiplier: float = 1.0
 var card_order_target_multiplier: float = 1.0
 var card_golden_fruit_chance: float = 0.0
+# Bonus ADITIVO al multiplicador de racha (se suma al que dé la racha actual).
+# Cada comodín de racha suma su valor (Común +0.1, Rara +0.2, Épica +0.5, Legendaria +1.0).
+var card_streak_bonus: float = 0.0
+# Probabilidad adicional (sumada, 0.0 a 1.0) de ROMPER una piedra al golpearla
+# (desaparece, no penaliza). Épica +0.01 / Legendaria +0.03.
+var card_stone_break_chance: float = 0.0
+# Contador de comodines "primera piedra del día no quita resistencia" (Rara).
+var card_first_stone_free: int = 0
+# Contador de comodines míticos "mantener la racha entre días".
+var card_streak_keep: int = 0
 var active_cards: Array = []
 
 func _ready() -> void:
@@ -190,6 +202,10 @@ func reset_run_stats() -> void:
 	card_upgrade_price_multiplier = 1.0
 	card_order_target_multiplier = 1.0
 	card_golden_fruit_chance = 0.0
+	card_streak_bonus = 0.0
+	card_stone_break_chance = 0.0
+	card_first_stone_free = 0
+	card_streak_keep = 0
 	active_cards.clear()
 	emit_signal("stats_updated")
 
@@ -247,6 +263,23 @@ func get_final_jackpot_multiplier() -> float:
 func get_golden_fruit_chance() -> float:
 	return GOLDEN_FRUIT_CHANCE + card_golden_fruit_chance
 
+# Bonus ADITIVO acumulado por comodines de racha (p.ej. +0.5 con un Épico).
+func get_streak_bonus() -> float:
+	return card_streak_bonus
+
+# Probabilidad total (0.0 a 1.0) de romper una piedra al golpearla.
+func get_stone_break_chance() -> float:
+	return card_stone_break_chance
+
+# True si el jugador tiene al menos un comodín "primera piedra del día gratis".
+func has_first_stone_free() -> bool:
+	return card_first_stone_free > 0
+
+# True si el jugador tiene al menos un comodín mítico que mantiene la racha
+# entre días.
+func has_streak_keep() -> bool:
+	return card_streak_keep > 0
+
 func get_fruit_max_hp_multiplier() -> float:
 	return card_fruit_hp_multiplier
 
@@ -286,7 +319,8 @@ func get_obstacle_resistance_penalty() -> float:
 	return maxf(1.0, get_final_max_energy() * OBSTACLE_RESISTANCE_PENALTY_FRACTION)
 
 # Precio final de las mejoras del mercado: la primera compra (nivel 0) cuesta
-# 5 y cada compra siguiente se duplica (x2): 5, 10, 20, 40...
+# el base_cost (3) y cada compra siguiente crece ×1.1 (base 3): 3, 3.3 → 3, y
+# así sucesivamente (fórmula base_cost × cost_mult^nivel, sin tabla fija).
 func get_run_upgrade_cost(upgrade_id: String) -> int:
 	if not run_upgrade_definitions.has(upgrade_id):
 		return 999999
@@ -373,74 +407,73 @@ func _apply_card_effect(effect_type: String, effect_value: float) -> void:
 			card_weapon_price_multiplier += effect_value
 			card_fruit_price_multiplier += effect_value
 			card_upgrade_price_multiplier += effect_value
+		"streak_bonus":
+			card_streak_bonus += effect_value
+		"stone_break_chance":
+			card_stone_break_chance += effect_value
+		"first_stone_free":
+			card_first_stone_free += int(effect_value)
+		"streak_keep":
+			card_streak_keep += int(effect_value)
 
 # ----------------------------------------------------------------------------
 # MEJORAS DE PRESTIGIO (permanentes, compradas con reputación/estrellas)
 # ----------------------------------------------------------------------------
-# A diferencia de las mejoras del mercado, estas NO se resetean nunca. Se
-# guardan en SaveManager (prestige_levels). Cada mejora se compra UNA sola
-# vez (max_level = 1) y tiene un costo FIJO de reputación. Las 3 primeras
-# cuestan 1 ⭐ y las 2 últimas 10 ⭐. Al comprarse, el bono de ×1.5 (20%
-# por nivel) se aplica de forma permanente.
+# Se guardan en SaveManager (prestige_levels) y NO se resetean nunca. Son
+# ACUMULATIVAS e infinitas (no tienen max_level): cada compra sube el nivel y
+# el efecto crece con él. El precio sube ×1.5 por nivel (base_cost × 1.5^nivel).
+# Se genera 1 ⭐ de reputación por cada día completado (ver GameManager).
 var prestige_definitions: Dictionary = {
 	"experience": {
 		"name": "Maestría",
 		"desc": "+20% Daño inicial",
 		"cost": 1,
-		"max_level": 1,
 		"icon": "⚔️"
 	},
 	"expert_hand": {
 		"name": "Experiencia",
 		"desc": "+20% Resistencia Máxima",
 		"cost": 1,
-		"max_level": 1,
 		"icon": "🧤"
 	},
 	"good_provider": {
 		"name": "Buen Proveedor",
 		"desc": "+20% Multiplicador de Ganancias",
 		"cost": 1,
-		"max_level": 1,
 		"icon": "📦"
 	},
 	"good_fortune": {
 		"name": "Buena Fortuna",
 		"desc": "+7.77% Probabilidad de Jackpot",
-		"cost": 10,
-		"max_level": 1,
+		"cost": 3,
 		"icon": "⭐"
 	},
 	"launch_speed": {
 		"name": "Ritmo Veloz",
 		"desc": "+25% Frecuencia de Lanzamiento",
-		"cost": 10,
-		"max_level": 1,
+		"cost": 3,
 		"icon": "🚀"
 	},
 }
 
-func get_prestige_upgrade_cost(upgrade_id: String) -> int:
+# Factor de crecimiento del precio de prestigio por nivel adquirido (×1.5).
+const PRESTIGE_PRICE_GROWTH: float = 1.5
+
+func get_prestige_upgrade_cost(upgrade_id: String) -> float:
 	if not prestige_definitions.has(upgrade_id):
-		return 999999
+		return 999999.0
 	var def: Dictionary = prestige_definitions[upgrade_id]
 	var current_lvl: int = SaveManager.get_prestige_level(upgrade_id)
-	var max_lvl: int = int(def.get("max_level", 1))
-	if current_lvl >= max_lvl:
-		return 999999
-	return int(def.get("cost", 1))
+	# Los valores no se hardcodean por nivel: el precio crece con la fórmula.
+	return snappedf(float(def.get("cost", 1)) * pow(PRESTIGE_PRICE_GROWTH, current_lvl), 0.01)
 
 func is_prestige_upgrade_maxed(upgrade_id: String) -> bool:
-	if not prestige_definitions.has(upgrade_id):
-		return true
-	var def: Dictionary = prestige_definitions[upgrade_id]
-	var current_lvl: int = SaveManager.get_prestige_level(upgrade_id)
-	return current_lvl >= int(def.get("max_level", 1))
+	return not prestige_definitions.has(upgrade_id)
 
 func buy_prestige_upgrade(upgrade_id: String) -> bool:
 	if is_prestige_upgrade_maxed(upgrade_id):
 		return false
-	var cost: int = get_prestige_upgrade_cost(upgrade_id)
+	var cost: float = get_prestige_upgrade_cost(upgrade_id)
 	if SaveManager.spend_prestige_points(cost):
 		var new_lvl: int = SaveManager.get_prestige_level(upgrade_id) + 1
 		SaveManager.set_prestige_level(upgrade_id, new_lvl)

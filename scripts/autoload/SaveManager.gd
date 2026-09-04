@@ -18,7 +18,7 @@ const SAVE_FILE_PATH: String = "user://fruit_cutter_save.json"
 
 signal data_loaded
 signal data_saved
-signal prestige_changed(new_amount: int)
+signal prestige_changed(new_amount: float)
 
 # Estructura por defecto del guardado. Si agregas una clave nueva aquí,
 # load_data() la fusiona automáticamente con partidas guardadas antiguas.
@@ -90,22 +90,25 @@ func save_to_disk() -> void:
 	file.close()
 	emit_signal("data_saved")
 
-func get_prestige_points() -> int:
-	return int(save_data.get("prestige_points", 0))
+func get_prestige_points() -> float:
+	return snappedf(float(save_data.get("prestige_points", 0)), 0.01)
 
 # Reputación ganada al quebrar un negocio (ver GameManager.end_run_failed).
-# Es la "moneda" permanente que se gasta en la Tienda de Prestigio.
-func add_prestige_points(amount: int) -> void:
-	save_data["prestige_points"] = get_prestige_points() + amount
-	save_data["total_reputation_earned"] = int(save_data.get("total_reputation_earned", 0)) + amount
+# Es la "moneda" permanente que se gasta en la Tienda de Prestigio. Se guarda
+# con 2 decimales exactos para no arrastrar errores de redondeo de float.
+func add_prestige_points(amount: float) -> void:
+	var new_value: float = snappedf(get_prestige_points() + float(amount), 0.01)
+	save_data["prestige_points"] = new_value
+	save_data["total_reputation_earned"] = snappedf(float(save_data.get("total_reputation_earned", 0)) + float(amount), 0.01)
 	save_to_disk()
-	emit_signal("prestige_changed", save_data["prestige_points"])
+	emit_signal("prestige_changed", new_value)
 
-func spend_prestige_points(amount: int) -> bool:
-	if get_prestige_points() >= amount:
-		save_data["prestige_points"] = get_prestige_points() - amount
+func spend_prestige_points(amount: float) -> bool:
+	if get_prestige_points() >= float(amount):
+		var new_value: float = snappedf(get_prestige_points() - float(amount), 0.01)
+		save_data["prestige_points"] = new_value
 		save_to_disk()
-		emit_signal("prestige_changed", save_data["prestige_points"])
+		emit_signal("prestige_changed", new_value)
 		return true
 	return false
 

@@ -74,6 +74,14 @@ func _refresh_ui() -> void:
 	_add_stat_row("Multiplicador de Jackpot", "x" + str(snappedf(jackpot_multiplier, 0.1)), "Recompensa de un Jackpot", Color(1.0, 0.75, 0.2))
 	_add_stat_row("Probabilidad de Fruta Dorada", str(int(round(golden_fruit_chance))) + "%", "Probabilidad activa de fruta dorada", Color(1.0, 0.85, 0.2))
 
+	# Section 6: Racha y piedra
+	_add_header("🔥 RACHA Y PIEDRA")
+	var streak_bonus: float = StatsManager.get_streak_bonus()
+	_add_stat_row("Bonus de racha por comodines", ("+x" + str(snappedf(streak_bonus, 0.01)) if streak_bonus > 0.0 else "x1.0"), "Suma de los multiplicadores de racha de tus comodines", Color(1.0, 0.6, 0.3))
+	var stone_break: float = StatsManager.get_stone_break_chance()
+	_add_stat_row("Probabilidad de romper piedra", (str(int(round(stone_break * 100.0))) + "%" if stone_break > 0.0 else "0%"), "Probabilidad de destruir una piedra al golpearla", Color(0.7, 0.75, 0.85))
+	_add_stat_row("Primera piedra gratis", ("SÍ" if StatsManager.has_first_stone_free() else "No"), "La primera piedra del día no quita resistencia", Color(0.3, 0.8, 1.0))
+
 	_add_header("🃏 COMODINES ACTIVOS")
 	if StatsManager.active_cards.is_empty():
 		_add_stat_row("Comodines", "Ninguno", "Se obtienen al completar días", Color(0.6, 0.65, 0.75))

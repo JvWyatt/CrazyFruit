@@ -20,7 +20,7 @@ func open_modal() -> void:
 	_refresh_ui()
 
 func _refresh_ui() -> void:
-	prestige_label.text = "⭐ " + str(SaveManager.get_prestige_points()) + " Rep."
+	prestige_label.text = "⭐ " + ("%.2f" % SaveManager.get_prestige_points()) + " Rep."
 
 	for child in items_container.get_children():
 		child.queue_free()
@@ -28,9 +28,8 @@ func _refresh_ui() -> void:
 	for key in StatsManager.prestige_definitions.keys():
 		var def: Dictionary = StatsManager.prestige_definitions[key]
 		var level: int = SaveManager.get_prestige_level(key)
-		var maxed: bool = StatsManager.is_prestige_upgrade_maxed(key)
-		var cost: int = StatsManager.get_prestige_upgrade_cost(key)
-		var can_buy: bool = not maxed and SaveManager.get_prestige_points() >= cost
+		var cost: float = StatsManager.get_prestige_upgrade_cost(key)
+		var can_buy: bool = SaveManager.get_prestige_points() >= cost
 
 		var panel := PanelContainer.new()
 		UiTheme.apply_card(panel)
@@ -46,10 +45,7 @@ func _refresh_ui() -> void:
 		text_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 
 		var name_lbl := Label.new()
-		if maxed:
-			name_lbl.text = str(def["name"]) + " ✓"
-		else:
-			name_lbl.text = str(def["name"])
+		name_lbl.text = str(def["name"]) + "  (Nivel " + str(level) + ")"
 		name_lbl.add_theme_font_size_override("font_size", 18)
 		name_lbl.modulate = Color(1.0, 0.88, 0.3)
 
@@ -63,12 +59,8 @@ func _refresh_ui() -> void:
 
 		var buy_btn := Button.new()
 		buy_btn.custom_minimum_size = Vector2(130, 48)
-		if maxed:
-			buy_btn.text = "COMPRADO"
-			buy_btn.disabled = true
-		else:
-			buy_btn.text = str(cost) + " ⭐"
-			buy_btn.disabled = not can_buy
+		buy_btn.text = ("%.2f" % cost) + " ⭐"
+		buy_btn.disabled = not can_buy
 		buy_btn.add_theme_font_size_override("font_size", 17)
 
 		var captured_key = key

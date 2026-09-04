@@ -23,8 +23,9 @@ signal achievement_unlocked(id: String, def: Dictionary)
 
 const SAVE_KEY := "achievements"
 
-# Cuando es true, los desbloqueos se registran PERO no emiten la señal (se usa
-# para el desbloqueo retroactivo silencioso al arrancar: ver _ready).
+# Cuando es true, los desbloqueos se registran PERO no emiten la señal. Se
+# gestiona de forma pareada en evaluate_all(suppress_notifications) para
+# cubrir el desbloqueo retroactivo silencioso al arrancar.
 var _suppress_notifications: bool = false
 
 # ---------------------------------------------------------------------------
@@ -39,46 +40,54 @@ var _suppress_notifications: bool = false
 #   flag: para kind=="flag", nombre del flag que lo desbloquea.
 const DEFINITIONS: Array[Dictionary] = [
 	# --- CANTIDAD: Frutas cortadas -----------------------------------------
-	{"id":"primera_fruta","name":"Primera Fruta","desc":"Corta tu primera fruta.","icon":"🍓","cat":"cantidad","kind":"counter","metric":"fruits_cut","target":1},
-	{"id":"aprendiz_de_corte","name":"Aprendiz de Corte","desc":"Corta 100 frutas en total.","icon":"🍊","cat":"cantidad","kind":"counter","metric":"fruits_cut","target":100},
+	{"id":"aprendiz_de_corte","name":"Aprendiz de Corte","desc":"Corta 250 frutas en total.","icon":"🍊","cat":"cantidad","kind":"counter","metric":"fruits_cut","target":250},
 	{"id":"recolector","name":"Recolector de Frutas","desc":"Corta 1.000 frutas.","icon":"🍉","cat":"cantidad","kind":"counter","metric":"fruits_cut","target":1000},
+	{"id":"cosechador_experto","name":"Cosechador Experto","desc":"Corta 5.000 frutas.","icon":"🥝","cat":"cantidad","kind":"counter","metric":"fruits_cut","target":5000},
 	{"id":"maestro_del_corte","name":"Maestro del Corte","desc":"Corta 10.000 frutas.","icon":"🍍","cat":"cantidad","kind":"counter","metric":"fruits_cut","target":10000},
 	{"id":"leyenda_frutal","name":"Leyenda Frutal","desc":"Corta 100.000 frutas.","icon":"🏆","cat":"cantidad","kind":"counter","metric":"fruits_cut","target":100000},
+	{"id":"dios_del_corte","name":"Dios del Corte","desc":"Corta 500.000 frutas.","icon":"🌌","cat":"cantidad","kind":"counter","metric":"fruits_cut","target":500000},
 
 	# --- CANTIDAD: Días / pedidos completados (mejor marca) ----------------
 	{"id":"primer_dia","name":"Primer Día","desc":"Completa tu primer día de cliente.","icon":"📅","cat":"cantidad","kind":"counter","metric":"best_day","target":1},
-	{"id":"semana_laboral","name":"Semana Laboral","desc":"Llega al día 7.","icon":"🗓️","cat":"cantidad","kind":"counter","metric":"best_day","target":7},
 	{"id":"quincena","name":"Media Quincena","desc":"Llega al día 15.","icon":"🗓️","cat":"cantidad","kind":"counter","metric":"best_day","target":15},
 	{"id":"mes_entero","name":"Mes Entero","desc":"Llega al día 30.","icon":"📆","cat":"cantidad","kind":"counter","metric":"best_day","target":30},
 	{"id":"mes_y_medio","name":"Cincuentón Frutal","desc":"Llega al día 50.","icon":"📆","cat":"cantidad","kind":"counter","metric":"best_day","target":50},
 	{"id":"centenario","name":"Centenario","desc":"Llega al día 100 (la meta).","icon":"🎬","cat":"objetivo","kind":"counter","metric":"best_day","target":100},
 	{"id":"mas_alla","name":"Más Allá de la Meta","desc":"Supera el día 100 (101+).","icon":"🚀","cat":"objetivo","kind":"flag","flag":"surpassed_day_100"},
+	{"id":"centenario_cincuenta","name":"Siglo y Medio","desc":"Llega al día 150.","icon":"🚀","cat":"cantidad","kind":"counter","metric":"best_day","target":150},
+	{"id":"bicentenario","name":"Bicentenario","desc":"Llega al día 200.","icon":"🌠","cat":"cantidad","kind":"counter","metric":"best_day","target":200},
+	{"id":"tricentenario","name":"Tricentenario","desc":"Llega al día 300.","icon":"♾️","cat":"cantidad","kind":"counter","metric":"best_day","target":300},
 
-	# --- CANTIDAD: Dinero generado ------------------------------------------
-	{"id":"primer_sueldo","name":"Primer Sueldo","desc":"Genera $1.000 en total.","icon":"💰","cat":"cantidad","kind":"counter","metric":"money_total","target":1000},
+	# --- CANTIDAD: Dinero generado (acumulado total) ------------------------
+	{"id":"alcanzando_metas","name":"Primeros Beneficios","desc":"Genera $100.000 en total.","icon":"💰","cat":"cantidad","kind":"counter","metric":"money_total","target":100000},
 	{"id":"milionario_frutal","name":"Milionario Frutal","desc":"Genera $1.000.000 en total.","icon":"💵","cat":"cantidad","kind":"counter","metric":"money_total","target":1000000},
+	{"id":"inversor_fruta","name":"Gran Inversor","desc":"Genera $10.000.000 en total.","icon":"🏦","cat":"cantidad","kind":"counter","metric":"money_total","target":10000000},
 	{"id":"empresario","name":"Empresario","desc":"Genera $100.000.000 en total.","icon":"🏛️","cat":"cantidad","kind":"counter","metric":"money_total","target":100000000},
 	{"id":"magnate_frutal","name":"Magnate Frutal","desc":"Genera $1.000.000.000 en total.","icon":"👑","cat":"cantidad","kind":"counter","metric":"money_total","target":1000000000},
+	{"id":"tycoon_frutal","name":"Tycoon Frutal","desc":"Genera $10.000.000.000 en total.","icon":"💎","cat":"cantidad","kind":"counter","metric":"money_total","target":10000000000},
 
 	# --- CANTIDAD: Jackpots -------------------------------------------------
-	{"id":"primera_gran_venta","name":"Gran Venta","desc":"Consigue tu primer Jackpot.","icon":"⭐","cat":"cantidad","kind":"counter","metric":"jackpots","target":1},
-	{"id":"suerte_de_bruja","name":"Suerte de Bruja","desc":"Consigue 10 Jackpots.","icon":"⭐","cat":"cantidad","kind":"counter","metric":"jackpots","target":10},
-	{"id":"favorito_de_fortuna","name":"Favorito de la Fortuna","desc":"Consigue 50 Jackpots.","icon":"🌟","cat":"cantidad","kind":"counter","metric":"jackpots","target":50},
-	{"id":"rey_de_la_fortuna","name":"Rey de la Fortuna","desc":"Consigue 200 Jackpots.","icon":"👑","cat":"cantidad","kind":"counter","metric":"jackpots","target":200},
+	{"id":"gran_venta_inicial","name":"Gran Venta","desc":"Consigue 5 Jackpots.","icon":"⭐","cat":"cantidad","kind":"counter","metric":"jackpots","target":5},
+	{"id":"suerte_de_bruja","name":"Suerte de Bruja","desc":"Consigue 25 Jackpots.","icon":"⭐","cat":"cantidad","kind":"counter","metric":"jackpots","target":25},
+	{"id":"favorito_de_fortuna","name":"Favorito de la Fortuna","desc":"Consigue 100 Jackpots.","icon":"🌟","cat":"cantidad","kind":"counter","metric":"jackpots","target":100},
+	{"id":"rey_de_la_fortuna","name":"Rey de la Fortuna","desc":"Consigue 500 Jackpots.","icon":"👑","cat":"cantidad","kind":"counter","metric":"jackpots","target":500},
 
 	# --- CANTIDAD: Frutas doradas ------------------------------------------
-	{"id":"brillo_dorado","name":"Brillo Dorado","desc":"Corta tu primera fruta dorada.","icon":"✨","cat":"cantidad","kind":"counter","metric":"golden_fruits","target":1},
-	{"id":"cosecha_doradita","name":"Cosecha Doradita","desc":"Corta 10 frutas doradas.","icon":"✨","cat":"cantidad","kind":"counter","metric":"golden_fruits","target":10},
-	{"id":"dorado_total","name":"Dorado Total","desc":"Corta 50 frutas doradas.","icon":"🥇","cat":"cantidad","kind":"counter","metric":"golden_fruits","target":50},
+	{"id":"brillo_dorado","name":"Brillo Dorado","desc":"Corta 5 frutas doradas.","icon":"✨","cat":"cantidad","kind":"counter","metric":"golden_fruits","target":5},
+	{"id":"cosecha_doradita","name":"Cosecha Doradita","desc":"Corta 25 frutas doradas.","icon":"✨","cat":"cantidad","kind":"counter","metric":"golden_fruits","target":25},
+	{"id":"dorado_total","name":"Dorado Total","desc":"Corta 100 frutas doradas.","icon":"🥇","cat":"cantidad","kind":"counter","metric":"golden_fruits","target":100},
+	{"id":"dorado_legendario","name":"Leyenda Dorada","desc":"Corta 250 frutas doradas.","icon":"🥇","cat":"cantidad","kind":"counter","metric":"golden_fruits","target":250},
 
 	# --- CANTIDAD: Críticos ------------------------------------------------
-	{"id":"primer_critico","name":"Primer Crítico","desc":"Asesta tu primer golpe crítico.","icon":"💥","cat":"cantidad","kind":"counter","metric":"crits","target":1},
-	{"id":"filo_critico","name":"Filo Crítico","desc":"Asesta 100 golpes críticos.","icon":"💥","cat":"cantidad","kind":"counter","metric":"crits","target":100},
+	{"id":"afilador","name":"Filo Afilado","desc":"Asesta 25 golpes críticos.","icon":"💥","cat":"cantidad","kind":"counter","metric":"crits","target":25},
+	{"id":"filo_critico","name":"Filo Crítico","desc":"Asesta 250 golpes críticos.","icon":"💥","cat":"cantidad","kind":"counter","metric":"crits","target":250},
 	{"id":"asesino_silencioso","name":"Asesino Silencioso","desc":"Asesta 1.000 golpes críticos.","icon":"🗡️","cat":"cantidad","kind":"counter","metric":"crits","target":1000},
+	{"id":"leyenda_critica","name":"Leyenda Crítica","desc":"Asesta 5.000 golpes críticos.","icon":"🗡️","cat":"cantidad","kind":"counter","metric":"crits","target":5000},
 
 	# --- CANTIDAD: Obstáculos golpeados (gracioso) --------------------------
-	{"id":"coleccionista_piedras","name":"Coleccionista de Piedras","desc":"Golpea 100 piedras... ¿en serio?","icon":"🪨","cat":"gracioso","kind":"counter","metric":"stones_hit","target":100},
-	{"id":"futbolista_sabotaje","name":"Saboteador Frutal","desc":"Golpea 500 piedras a propósito.","icon":"🧱","cat":"gracioso","kind":"counter","metric":"stones_hit","target":500},
+	{"id":"coleccionista_piedras","name":"Coleccionista de Piedras","desc":"Golpea 50 piedras... ¿en serio?","icon":"🪨","cat":"gracioso","kind":"counter","metric":"stones_hit","target":50},
+	{"id":"futbolista_sabotaje","name":"Saboteador Frutal","desc":"Golpea 250 piedras a propósito.","icon":"🧱","cat":"gracioso","kind":"counter","metric":"stones_hit","target":250},
+	{"id":"cantero_implacable","name":"Cantero Implacable","desc":"Golpea 1.000 piedras.","icon":"🪨","cat":"gracioso","kind":"counter","metric":"stones_hit","target":1000},
 
 	# --- CANTIDAD: Quiebras del negocio (gracioso) --------------------------
 	{"id":"primera_quiebra","name":"Primera Quiebra","desc":"Tu negocio quiebra por primera vez.","icon":"💸","cat":"gracioso","kind":"counter","metric":"runs_bankrupt","target":1},
@@ -86,7 +95,6 @@ const DEFINITIONS: Array[Dictionary] = [
 	{"id":"fundador_masoquista","name":"Fundador Masoquista","desc":"Quiebra 50 negocios.","icon":"😵","cat":"gracioso","kind":"counter","metric":"runs_bankrupt","target":50},
 
 	# --- CANTIDAD: Racha máxima --------------------------------------------
-	{"id":"rachita","name":"Rachita","desc":"Alcanza una racha de 5 cortes seguidos.","icon":"🔥","cat":"objetivo","kind":"counter","metric":"max_streak","target":5},
 	{"id":"racha_de_10","name":"Diez en Fila","desc":"Alcanza una racha de 10 cortes seguidos.","icon":"🔥","cat":"objetivo","kind":"counter","metric":"max_streak","target":10},
 	{"id":"racha_de_20","name":"Vigésima Racha","desc":"Alcanza una racha de 20 cortes seguidos.","icon":"🔥","cat":"objetivo","kind":"counter","metric":"max_streak","target":20},
 	{"id":"racha_de_30","name":"Racha de 30","desc":"Alcanza una racha de 30 cortes seguidos.","icon":"🔥","cat":"objetivo","kind":"counter","metric":"max_streak","target":30},
@@ -94,14 +102,16 @@ const DEFINITIONS: Array[Dictionary] = [
 
 	# --- CANTIDAD: Veces que se rompió la racha (gracioso) ------------------
 	{"id":"se_me_fue","name":"Se Me Fue","desc":"Rompe tu racha por primera vez.","icon":"🍂","cat":"gracioso","kind":"counter","metric":"streak_broke","target":1},
-	{"id":"corredor_de_tropezones","name":"Tropiezo Recurrente","desc":"Rompe la racha 25 veces.","icon":"🪨","cat":"gracioso","kind":"counter","metric":"streak_broke","target":25},
+	{"id":"corredor_de_tropezones","name":"Tropiezo Recurrente","desc":"Rompe la racha 50 veces.","icon":"🪨","cat":"gracioso","kind":"counter","metric":"streak_broke","target":50},
 
 	# --- CANTIDAD: Reputación/prestigio ------------------------------------
-	{"id":"primera_estrella","name":"Primera Estrella","desc":"Gana tus primeros puntos de reputación.","icon":"⭐","cat":"cantidad","kind":"counter","metric":"prestige_earned","target":1},
-	{"id":"honorable","name":"Comerciante Honorable","desc":"Acumula 1.000 puntos de reputación.","icon":"🌟","cat":"cantidad","kind":"counter","metric":"prestige_earned","target":1000},
-	{"id":"leyenda_del_mercado","name":"Leyenda del Mercado","desc":"Acumula 10.000 puntos de reputación.","icon":"🏆","cat":"cantidad","kind":"counter","metric":"prestige_earned","target":10000},
-	{"id":"inversor","name":"Inversor","desc":"Gasta 100 puntos de reputación en mejoras de prestigio.","icon":"🏦","cat":"cantidad","kind":"counter","metric":"prestige_spent","target":100},
-	{"id":"magnate","name":"Magnate de Prestigio","desc":"Gasta 1.000 puntos de reputación.","icon":"🎓","cat":"cantidad","kind":"counter","metric":"prestige_spent","target":1000},
+	{"id":"primera_estrella","name":"Comerciante Neófito","desc":"Acumula 15 puntos de reputación.","icon":"⭐","cat":"cantidad","kind":"counter","metric":"prestige_earned","target":15},
+	{"id":"honorable","name":"Comerciante Honorable","desc":"Acumula 100 puntos de reputación.","icon":"🌟","cat":"cantidad","kind":"counter","metric":"prestige_earned","target":100},
+	{"id":"leyenda_del_mercado","name":"Leyenda del Mercado","desc":"Acumula 500 puntos de reputación.","icon":"🏆","cat":"cantidad","kind":"counter","metric":"prestige_earned","target":500},
+	{"id":"imperio_reputacion","name":"Imperio de Reputación","desc":"Acumula 1.000 puntos de reputación.","icon":"🌌","cat":"cantidad","kind":"counter","metric":"prestige_earned","target":1000},
+	{"id":"inversor","name":"Inversor","desc":"Gasta 20 puntos de reputación en mejoras de prestigio.","icon":"🏦","cat":"cantidad","kind":"counter","metric":"prestige_spent","target":20},
+	{"id":"magnate","name":"Magnate de Prestigio","desc":"Gasta 200 puntos de reputación.","icon":"🎓","cat":"cantidad","kind":"counter","metric":"prestige_spent","target":200},
+	{"id":"magnate_total","name":"Especulador Máximo","desc":"Gasta 1.000 puntos de reputación.","icon":"👑","cat":"cantidad","kind":"counter","metric":"prestige_spent","target":1000},
 
 	# --- CANTIDAD: Armamento -----------------------------------------------
 	{"id":"utensilios","name":"Utensilios Varios","desc":"Desbloquea 3 armas distintas.","icon":"🍴","cat":"cantidad","kind":"counter","metric":"knives_owned","target":3},
@@ -115,20 +125,16 @@ const DEFINITIONS: Array[Dictionary] = [
 	{"id":"huerta_completa","name":"Huerta Completa","desc":"Desbloquea todas las frutas.","icon":"🌳","cat":"cantidad","kind":"counter","metric":"fruits_unlocked","target":20},
 
 	# --- CANTIDAD: Comodines descubiertos -----------------------------------
-	{"id":"primer_comodin","name":"Primer Comodín","desc":"Descubre tu primer comodín.","icon":"🃏","cat":"cantidad","kind":"counter","metric":"cards_discovered","target":1},
+	{"id":"baraja_inicial","name":"Manos Amigas","desc":"Descubre 10 comodines distintos.","icon":"🃏","cat":"cantidad","kind":"counter","metric":"cards_discovered","target":10},
 	{"id":"baraja_surtida","name":"Baraja Surtida","desc":"Descubre 30 comodines distintos.","icon":"🃏","cat":"cantidad","kind":"counter","metric":"cards_discovered","target":30},
 	{"id":"cartomantico","name":"Cartomántico","desc":"Descubre 60 comodines distintos.","icon":"🔮","cat":"cantidad","kind":"counter","metric":"cards_discovered","target":60},
 	{"id":"coleccionista_cartas","name":"Coleccionista de Cartas","desc":"Descubre todos los comodines.","icon":"🂠","cat":"cantidad","kind":"counter","metric":"cards_discovered","target":100},
 
 	# --- OBJETIVO: Días perfectos ------------------------------------------
-	{"id":"dia_perfecto","name":"Día Perfecto","desc":"Completa un día sin tocar NI UNA piedra.","icon":"💯","cat":"objetivo","kind":"counter","metric":"clean_days","target":1},
-	{"id":"semana_perfecta","name":"Semana Perfecta","desc":"Completa 7 días sin tocar ninguna piedra.","icon":"✨","cat":"objetivo","kind":"counter","metric":"clean_days","target":7},
+	{"id":"dia_perfecto","name":"Día Perfecto","desc":"Completa 5 días sin tocar NI UNA piedra.","icon":"💯","cat":"objetivo","kind":"counter","metric":"clean_days","target":5},
+	{"id":"semana_perfecta","name":"Semana Perfecta","desc":"Completa 20 días sin tocar ninguna piedra.","icon":"✨","cat":"objetivo","kind":"counter","metric":"clean_days","target":20},
 	{"id":"purista","name":"Purista","desc":"Completa un día equipando solo el Puño.","icon":"👊","cat":"estilo","kind":"flag","flag":"day_with_fist"},
 	{"id":"sin_rincon_dark","name":"Soldado de Hierro","desc":"Completa un día con la Motosierra equipada.","icon":"⚙️","cat":"estilo","kind":"flag","flag":"day_with_top_knife"},
-
-	# --- OBJETIVO: Racha y día perfecto ------------------------------------
-	{"id":"ensalada","name":"¡Esto Ya Es Ensalada!","desc":"Alcanza una racha de 20 sin golpear piedras.","icon":"🥗","cat":"objetivo","kind":"counter","metric":"max_streak","target":20},
-	{"id":"frutalmente_insano","name":"Frutalmente Insano","desc":"Consigue una racha de 50 sin fallar.","icon":"😈","cat":"secreto","kind":"counter","metric":"max_streak","target":50},
 
 	# --- ESTILO: Formas de jugar -------------------------------------------
 	{"id":"paciente","name":"Paciente","desc":"Completa un día con el Tenedor equipado.","icon":"🍴","cat":"estilo","kind":"flag","flag":"day_with_fork"},
@@ -150,7 +156,8 @@ const DEFINITIONS: Array[Dictionary] = [
 
 	# --- CANTIDAD: Actualizaciones de prestigio ----------------------------
 	{"id":"maestria","name":"Maestría","desc":"Compra tu primera mejora de prestigio.","icon":"🎖️","cat":"cantidad","kind":"counter","metric":"prestige_bought","target":1},
-	{"id":"polimata","name":"Polímata","desc":"Compra 10 mejoras de prestigio.","icon":"🎓","cat":"cantidad","kind":"counter","metric":"prestige_bought","target":10},
+	{"id":"polimata","name":"Polímata","desc":"Compra 25 mejoras de prestigio.","icon":"🎓","cat":"cantidad","kind":"counter","metric":"prestige_bought","target":25},
+	{"id":"erudito","name":"Erudito Prestigioso","desc":"Compra 100 mejoras de prestigio.","icon":"🥇","cat":"cantidad","kind":"counter","metric":"prestige_bought","target":100},
 
 	# --- OBJETIVO: Comodines raros/epicos/legendarios ----------------------
 	{"id":"ojo_para_lo_raro","name":"Ojo para lo Raro","desc":"Descubre 5 comodines Raros.","icon":"🃏","cat":"cantidad","kind":"counter","metric":"cards_rare","target":5},
@@ -168,44 +175,38 @@ const DEFINITIONS: Array[Dictionary] = [
 	{"id":"fruits_and_breaks","name":"Fruta y Pan","desc":"Corta una fruta DORADA Y una normal en el mismo día.","icon":"🍞","cat":"estilo","kind":"flag","flag":"golden_and_normal_day"},
 
 	# --- RANDOM / SITUACIONALES ---------------------------------------
-	{"id":"uno_menos_diez","name":"Fila de Diez","desc":"Corta 10 frutas seguidas sin error en un solo día.","icon":"🔟","cat":"secreto","kind":"counter","metric":"max_streak","target":10},
-	{"id":"media_meta","name":"Media Meta","desc":"Llega al día 50 exactamente.","icon":"🎯","cat":"objetivo","kind":"counter","metric":"best_day","target":50},
 
-	# --- MÁS CANTIDAD (para superar 100 entradas) --------------------------
-	{"id":"dos_digitos","name":"Dos Dígitos","desc":"Llega al día 10.","icon":"🔢","cat":"cantidad","kind":"counter","metric":"best_day","target":10},
-	{"id":"veinte","name":"Veinte Días","desc":"Llega al día 20.","icon":"🔢","cat":"cantidad","kind":"counter","metric":"best_day","target":20},
-	{"id":"cuarenta","name":"Cuarenta Días","desc":"Llega al día 40.","icon":"🔢","cat":"cantidad","kind":"counter","metric":"best_day","target":40},
+	# --- MÁS CANTIDAD ------------------------------------------------------
 	{"id":"seis_ceros","name":"Primer Millón","desc":"Genera $1.000.000 en TOTAL en un solo negocio.","icon":"💎","cat":"cantidad","kind":"counter","metric":"run_money_total","target":1000000},
-	{"id":"diez_millas","name":"Diez Mil Frutas","desc":"Corta 10.000 frutas en total (nada mal).","icon":"🍇","cat":"cantidad","kind":"counter","metric":"fruits_cut","target":10000},
-	{"id":"treinta_barras","name":"Treinta y Tres","desc":"Alcanza la racha de 30.","icon":"🔥","cat":"objetivo","kind":"counter","metric":"max_streak","target":30},
-	{"id":"cocoo","name":"Coco Loco","desc":"Corta 25 cocos en total.","icon":"🥥","cat":"secreto","kind":"counter","metric":"cut_coconut","target":25},
-	{"id":"sandia_gigante","name":"Sandía Gigante","desc":"Corta tu primera Sandía.","icon":"🍉","cat":"objetivo","kind":"counter","metric":"cut_watermelon","target":1},
-	{"id":"calabaza_mago","name":"Rey Calabaza","desc":"Corta tu primera Calabaza (la fruta más cara).","icon":"🎃","cat":"secreto","kind":"counter","metric":"cut_pumpkin","target":1},
-	{"id":"pitahaya","name":"Pitahaya Encendida","desc":"Corta una Pitahaya (Fruta del Dragón).","icon":"🍈","cat":"objetivo","kind":"counter","metric":"cut_dragon_fruit","target":1},
-	{"id":"aguacate","name":"Aguacate Real","desc":"Corta un Aguacate.","icon":"🥑","cat":"objetivo","kind":"counter","metric":"cut_avocado","target":1},
-	{"id":"membrillo","name":"Membrillo Curioso","desc":"Corta un Membrillo.","icon":"🍐","cat":"secreto","kind":"counter","metric":"cut_quince","target":1},
-	{"id":"kiwi","name":"Kiwi Moderno","desc":"Corta un Kiwi.","icon":"🥝","cat":"objetivo","kind":"counter","metric":"cut_kiwi","target":1},
-	{"id":"mango","name":"Mango Tropical","desc":"Corta un Mango.","icon":"🥭","cat":"objetivo","kind":"counter","metric":"cut_mango","target":1},
-	{"id":"limon","name":"Limón Fresco","desc":"Corta un Limón.","icon":"🍋","cat":"objetivo","kind":"counter","metric":"cut_lemon","target":1},
-	{"id":"pera","name":"Pera Madura","desc":"Corta una Pera.","icon":"🍐","cat":"objetivo","kind":"counter","metric":"cut_pear","target":1},
-	{"id":"durazno","name":"Melocotón Dulce","desc":"Corta un Melocotón.","icon":"🍑","cat":"objetivo","kind":"counter","metric":"cut_peach","target":1},
-	{"id":"cereza","name":"Cereza Redonda","desc":"Corta una Cereza.","icon":"🍒","cat":"objetivo","kind":"counter","metric":"cut_cherry","target":1},
-	{"id":"naranja","name":"Naranja Ácida","desc":"Corta una Naranja.","icon":"🍊","cat":"objetivo","kind":"counter","metric":"cut_orange","target":1},
-	{"id":"manzana","name":"Manzana Crujiente","desc":"Corta una Manzana.","icon":"🍎","cat":"objetivo","kind":"counter","metric":"cut_apple","target":1},
+	{"id":"cocoo","name":"Coco Loco","desc":"Corta 50 cocos en total.","icon":"🥥","cat":"secreto","kind":"counter","metric":"cut_coconut","target":50},
+	{"id":"sandia_gigante","name":"Sandía Gigante","desc":"Corta 5 Sandías.","icon":"🍉","cat":"objetivo","kind":"counter","metric":"cut_watermelon","target":5},
+	{"id":"calabaza_mago","name":"Rey Calabaza","desc":"Corta 3 Calabazas (la fruta más cara).","icon":"🎃","cat":"secreto","kind":"counter","metric":"cut_pumpkin","target":3},
+	{"id":"pitahaya","name":"Pitahaya Encendida","desc":"Corta 5 Pitahayas (Fruta del Dragón).","icon":"🍈","cat":"objetivo","kind":"counter","metric":"cut_dragon_fruit","target":5},
+	{"id":"aguacate","name":"Aguacate Real","desc":"Corta 5 Aguacates.","icon":"🥑","cat":"objetivo","kind":"counter","metric":"cut_avocado","target":5},
+	{"id":"membrillo","name":"Membrillo Curioso","desc":"Corta 5 Membrillos.","icon":"🍐","cat":"secreto","kind":"counter","metric":"cut_quince","target":5},
+	{"id":"kiwi","name":"Kiwi Moderno","desc":"Corta 25 Kiwis.","icon":"🥝","cat":"objetivo","kind":"counter","metric":"cut_kiwi","target":25},
+	{"id":"mango","name":"Mango Tropical","desc":"Corta 25 Mangos.","icon":"🥭","cat":"objetivo","kind":"counter","metric":"cut_mango","target":25},
+	{"id":"limon","name":"Limón Fresco","desc":"Corta 25 Limones.","icon":"🍋","cat":"objetivo","kind":"counter","metric":"cut_lemon","target":25},
+	{"id":"pera","name":"Pera Madura","desc":"Corta 25 Peras.","icon":"🍐","cat":"objetivo","kind":"counter","metric":"cut_pear","target":25},
+	{"id":"durazno","name":"Melocotón Dulce","desc":"Corta 100 Melocotones.","icon":"🍑","cat":"objetivo","kind":"counter","metric":"cut_peach","target":100},
+	{"id":"cereza","name":"Cereza Redonda","desc":"Corta 100 Cerezas.","icon":"🍒","cat":"objetivo","kind":"counter","metric":"cut_cherry","target":100},
+	{"id":"naranja","name":"Naranja Ácida","desc":"Corta 100 Naranjas.","icon":"🍊","cat":"objetivo","kind":"counter","metric":"cut_orange","target":100},
+	{"id":"manzana","name":"Manzana Crujiente","desc":"Corta 100 Manzanas.","icon":"🍎","cat":"objetivo","kind":"counter","metric":"cut_apple","target":100},
 	{"id":"banana_dorada","name":"Banana Divina","desc":"Corta 100 Bananas.","icon":"🍌","cat":"secreto","kind":"counter","metric":"cut_banana","target":100},
-	{"id":"guayaba","name":"Guayaba Exótica","desc":"Corta una Guayaba.","icon":"🥝","cat":"objetivo","kind":"counter","metric":"cut_guava","target":1},
-	{"id":"piña","name":"Piña Madura","desc":"Corta una Piña.","icon":"🍍","cat":"objetivo","kind":"counter","metric":"cut_pineapple","target":1},
-	{"id":"melón","name":"Melón Jugoso","desc":"Corta un Melón.","icon":"🍈","cat":"objetivo","kind":"counter","metric":"cut_melon","target":1},
-	{"id":"papaya","name":"Papaya Tropical","desc":"Corta una Papaya.","icon":"🥭","cat":"objetivo","kind":"counter","metric":"cut_papaya","target":1},
+	{"id":"guayaba","name":"Guayaba Exótica","desc":"Corta 5 Guayabas.","icon":"🥝","cat":"objetivo","kind":"counter","metric":"cut_guava","target":5},
+	{"id":"piña","name":"Piña Madura","desc":"Corta 5 Piñas.","icon":"🍍","cat":"objetivo","kind":"counter","metric":"cut_pineapple","target":5},
+	{"id":"melón","name":"Melón Jugoso","desc":"Corta 5 Melones.","icon":"🍈","cat":"objetivo","kind":"counter","metric":"cut_melon","target":5},
+	{"id":"papaya","name":"Papaya Tropical","desc":"Corta 5 Papayas.","icon":"🥭","cat":"objetivo","kind":"counter","metric":"cut_papaya","target":5},
 	{"id":"fresa_preferida","name":"Fresa Preferida","desc":"Corta 200 Fresas.","icon":"🍓","cat":"secreto","kind":"counter","metric":"cut_strawberry","target":200},
 	{"id":"combinador_dorado","name":"Combinador Dorado","desc":"Ten 2 frutas doradas en pantalla a la vez.","icon":"✨","cat":"secreto","kind":"counter","metric":"golden_on_screen_2","target":1},
-	{"id":"origen","name":"Origen","desc":"Equipa el Puño y corta 5 frutas (nadie dijo que fuera épico).","icon":"👊","cat":"gracioso","kind":"flag","flag":"started_with_fist"},
+	{"id":"origen","name":"Origen","desc":"Corta 100 frutas con el Puño equipado.","icon":"👊","cat":"gracioso","kind":"flag","flag":"started_with_fist"},
 
 	# --- MÁS: vars/cositas ----------------------------------------------
 	{"id":"fresa_y_naranja","name":"Colores de Verano","desc":"Corta una Fresa y una Naranja en el mismo día.","icon":"🍊","cat":"estilo","kind":"flag","flag":"fresa_y_naranja_day"},
 	{"id":"total_dias_media","name":"Medio Centenar","desc":"Completa 50 días en total acumulados.","icon":"📆","cat":"cantidad","kind":"counter","metric":"days_completed_total","target":50},
 	{"id":"total_dias_cien","name":"Cien Días Jugados","desc":"Completa 100 días en total acumulados.","icon":"📆","cat":"cantidad","kind":"counter","metric":"days_completed_total","target":100},
 	{"id":"total_dias_doscientos","name":"Bicamarón","desc":"Completa 200 días en total acumulados.","icon":"🗓️","cat":"cantidad","kind":"counter","metric":"days_completed_total","target":200},
+	{"id":"total_dias_quinientos","name":"Medio Milenio","desc":"Completa 500 días en total acumulados.","icon":"🗓️","cat":"cantidad","kind":"counter","metric":"days_completed_total","target":500},
 ]
 
 # Categorías con su icono (usadas por la pestaña de Logros para agrupar).
@@ -235,9 +236,7 @@ func _ready() -> void:
 	# Desbloqueo retroactivo: si el jugador tenía progreso guardado de ANTES de
 	# añadirse un logro, se desbloquea al arrancar SIN notificación (el HUD aún
 	# no está listo y no tendría sentido spamear toasts en el menú).
-	_suppress_notifications = true
-	evaluate_all()
-	_suppress_notifications = false
+	evaluate_all(true)
 
 # ---------------------------------------------------------------------------
 # Persistencia
@@ -304,9 +303,12 @@ func _evaluate_flag(flag_name: String) -> void:
 			_check(def)
 
 # Re-evalúa TODOS los logros (se llama al cargar y al marcar un flag global).
-func evaluate_all() -> void:
+func evaluate_all(suppress_notifications: bool = false) -> void:
+	var previous: bool = _suppress_notifications
+	_suppress_notifications = suppress_notifications
 	for def in DEFINITIONS:
 		_check(def)
+	_suppress_notifications = previous
 
 func is_unlocked(id: String) -> bool:
 	return id in get_unlocked_ids()
@@ -326,7 +328,7 @@ func _check(def: Dictionary) -> void:
 		unlocked.append(id)
 		_persist()
 		if not _suppress_notifications:
-			emit_signal("achievement_unlocked", id, def)
+			achievement_unlocked.emit(id, def)
 
 # Progreso de un logro para la UI: devuelve (progreso, target, desbloqueado).
 # Para los "flag" devuelve (1, 1, desbloqueado) (no tienen barra).

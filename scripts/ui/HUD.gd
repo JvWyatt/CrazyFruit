@@ -37,7 +37,8 @@ signal quit_run_requested
 @onready var settings_back_btn: Button = $PausePanel/Card/SettingsVBox/SettingsBackButton
 @onready var pause_confirm_dialog: ConfirmDialog = $PauseConfirmDialog
 @onready var streak_label: Label = $StreakPanel/VBox/StreakLabel
-@onready var streak_bar_label: Label = $StreakPanel/VBox/StreakBarLabel
+@onready var streak_bar: ProgressBar = $StreakPanel/VBox/StreakBar
+@onready var streak_bar_label: Label = $StreakPanel/VBox/StreakBar/StreakBarLabel
 @onready var milestone_label: Label = $MilestoneLabel
 @onready var ach_toast: PanelContainer = $AchToast
 @onready var ach_icon: Label = $AchToast/HBox/AchIcon
@@ -126,34 +127,32 @@ func _on_stats_button_pressed() -> void:
 # --- Racha de frutas --------------------------------------------------------
 
 # Hitos ordenados ascendentemente para calcular progreso entre hitos.
-const STREAK_ORDER: Array[int] = [5, 10, 20, 30, 50]
+const STREAK_ORDER: Array[int] = [5, 10, 20, 30, 50, 75, 100, 140, 190, 250, 320, 400, 490, 590, 700]
 
 func _on_streak_changed(streak: int, multiplier: float) -> void:
 	streak_label.text = "🔥 Racha: " + str(streak)
-	streak_bar_label.text = _build_streak_bar(streak, multiplier)
+	var info: Dictionary = _streak_progress(streak)
+	streak_bar.max_value = float(info["range"])
+	streak_bar.value = float(info["progress"])
+	streak_bar_label.text = ("→ " + str(info["next"])) if info["next"] > 0 else "→ MAX"
+	streak_bar_label.text += "  (x" + str(snappedf(multiplier, 0.01)) + ")"
 
-func _build_streak_bar(streak: int, multiplier: float) -> String:
-	var bars: int = 10
-	var filled: int = 0
-	var next_target: int = 0
-	if streak >= STREAK_ORDER[STREAK_ORDER.size() - 1]:
-		# Racha máxima alcanzada: barra llena, sin objetivo siguiente.
-		filled = bars
-		next_target = 0
-	else:
-		var prev: int = 0
-		var next: int = STREAK_ORDER[0]
-		for m in STREAK_ORDER:
-			if streak < m:
-				next = m
-				break
-			prev = m
-		var progress: float = 0.0 if next == prev else float(streak - prev) / float(next - prev)
-		filled = int(round(progress * bars))
-		next_target = next
-	var filled_str: String = "█".repeat(filled) + "░".repeat(bars - filled)
-	var tail: String = ("→ " + str(next_target)) if next_target > 0 else "→ MAX"
-	return "[" + filled_str + "] " + tail + "  (x" + str(snappedf(multiplier, 0.01)) + ")"
+# Calcula el progreso de la barra de racha entre el hito anterior y el siguiente.
+# Devuelve {range: intervalo, progress: avance dentro del intervalo, next: hito}.
+func _streak_progress(streak: int) -> Dictionary:
+	var last: int = STREAK_ORDER[STREAK_ORDER.size() - 1]
+	if streak >= last:
+		return {"range": 1, "progress": 1, "next": 0}
+	var prev: int = 0
+	var next: int = STREAK_ORDER[0]
+	for m in STREAK_ORDER:
+		if streak < m:
+			next = m
+			break
+		prev = m
+	var range: int = next - prev
+	var progress: int = streak - prev
+	return {"range": range, "progress": progress, "next": next}
 
 func _on_streak_milestone(_milestone: int) -> void:
 	if STREAK_PHRASES.is_empty():

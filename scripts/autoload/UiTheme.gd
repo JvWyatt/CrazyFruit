@@ -137,9 +137,9 @@ func apply_card(panel: PanelContainer, border_color: Color = COLOR_BORDER, bg_co
 	panel.add_theme_stylebox_override("panel", card_style(border_color, bg_color))
 
 # Formato de dinero consistente: enteros simplificados con sufijos de letras
-# para cantidades grandes (ej: 1250 -> "1.2K", 2500000 -> "2.5M",
-# 3500000000 -> "3.5B", 4000000000000 -> "4T"). Usado en TODA la UI (HUD,
-# tiendas, resúmenes) para evitar formatos dispersos.
+# para cantidades grandes (ej: 1250 -> "1.25K", 2500000 -> "2.50M",
+# 3500000000 -> "3.50B", 4000000000000 -> "4.00T"). Siempre muestra 2
+# decimales SIN redondear ni ocultar los centavos. Usado en TODA la UI.
 func format_money(value: float) -> String:
 	var v: float = float(value)
 	var suffixes: Array = ["", "K", "M", "B", "T", "Qa", "Qi", "Sx", "Sp"]
@@ -147,9 +147,7 @@ func format_money(value: float) -> String:
 	while v >= 1000.0 and idx < suffixes.size() - 1:
 		v /= 1000.0
 		idx += 1
-	if idx > 0:
-		return str(snappedf(v, 0.1)) + suffixes[idx]
-	return str(int(round(v)))
+	return ("%.2f" % snappedf(v, 0.01)) + (suffixes[idx] if idx > 0 else "")
 
 # Entrada suave de modales/paneles: fade + escala con rebote suave.
 func pop_in(control: Control) -> void:
@@ -215,3 +213,25 @@ func _cleanup_confetti_later(particles: Node) -> void:
 	await get_tree().create_timer(2.4).timeout
 	if is_instance_valid(particles):
 		particles.queue_free()
+
+# Ráfaga de partículas de un solo color (p. ej. polvo gris al romper una
+# piedra). Se autolimpia solo.
+func dust_burst(parent: Node, global_position: Vector2, color: Color, amount: int = 24) -> void:
+	if parent == null or not is_instance_valid(parent):
+		return
+	var particles := CPUParticles2D.new()
+	particles.global_position = global_position
+	particles.emitting = true
+	particles.amount = amount
+	particles.lifetime = 0.6
+	particles.explosiveness = 1.0
+	particles.one_shot = true
+	particles.spread = 180.0
+	particles.gravity = Vector2(0, 300)
+	particles.initial_velocity_min = 120.0
+	particles.initial_velocity_max = 320.0
+	particles.scale_amount_min = 4.0
+	particles.scale_amount_max = 8.0
+	particles.color = color
+	parent.add_child(particles)
+	_cleanup_confetti_later(particles)

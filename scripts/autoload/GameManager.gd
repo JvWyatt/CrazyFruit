@@ -30,42 +30,19 @@ signal streak_milestone(milestone: int)
 signal streak_broken
 
 # Cuánto dinero hay que ganar para completar cada día/pedido (pedido 1, 2, 3...).
-# Progresión geométrica ×1.21 diaria desde $10 (día 1): el día 100 ronda los
-# ~$1.57B. Cada día es alcanzable con la fruta/arma del día anterior y deja un
-# excedente para comprar mejoras en el mercado. Para pedidos más allá del último
-# de la lista se usa una fórmula (ver get_order_target_for). Editar estos
-# números cambia la dificultad temprana.
-const ORDER_TARGETS: Array[float] = [
-	10.0,        # Día 1
-	12.1,        # Día 2
-	14.6,        # Día 3
-	17.7,        # Día 4
-	21.4,        # Día 5
-	25.9,        # Día 6
-	31.4,        # Día 7
-	38.0,        # Día 8
-	45.9,        # Día 9
-	55.6,        # Día 10
-	67.3,        # Día 11
-	81.4,        # Día 12
-	98.5,        # Día 13
-	119.2,       # Día 14
-	144.2,       # Día 15
-	174.5,       # Día 16
-	211.1,       # Día 17
-	255.5,       # Día 18
-	309.2,       # Día 19
-	374.0,       # Día 20
-]
+# NO es una tabla fija: los días son infinitos y la cuota se calcula con una
+# fórmula geométrica sencilla (ver get_order_target_for). Día 1 = $5 y crece
+# ×1.21 por día: día 100 ≈ $5 × 1.21^99 ≈ $787M. Cada día es alcanzable con la
+# fruta/arma del día anterior y deja un excedente para comprar mejoras.
+const BASE_ORDER_TARGET: float = 5.0
+const ORDER_TARGET_GROWTH: float = 1.21
 
 # OBJETIVO DEL JUEGO: llegar a 100 días. Al completar este día se muestra la
 # pantalla de créditos (con un "Continuar" para seguir haciendo récords).
+# La cuota crece de forma geométrica: día N = BASE_ORDER_TARGET ×
+# ORDER_TARGET_GROWTH^(N-1). Como el juego es de días infinitos, no existe una
+# tabla: la fórmula cubre todos los días.
 const WIN_DAY: int = 100
-
-# Crecimiento de la cuota por día MÁS ALLÁ del día 20 (donde acaba la tabla).
-# Se mantiene el ×1.21 diario de la tabla para que la progresión sea coherente
-# con el resto de las cuotas (día 1 = $10, y ×1.21 cada día siguiente).
-const POST_TABLE_DAILY_GROWTH: float = 1.21
 
 # Estados posibles de la partida: qué pantalla/momento del flujo estamos.
 enum GameState {
@@ -81,7 +58,7 @@ var current_state: GameState = GameState.MENU
 
 # --- Estado del negocio actual (se resetea en start_new_run) ---
 var current_order: int = 1        # Pedido/día actual (1, 2, 3...)
-var order_target: float = 100.0   # Dinero necesario para completar el pedido actual
+var order_target: float = 5.0      # Dinero necesario para completar el pedido actual
 var order_progress: float = 0.0   # Dinero ganado hasta ahora en este pedido
 var run_money: float = 0.0        # Dinero disponible para gastar en la tienda (se resetea cada negocio)
 
@@ -122,6 +99,9 @@ var current_streak: int = 0
 
 # --- Tracking de logros por día/negocio (se resetea) -----------------------
 var _stones_hit_this_day: int = 0
+# True cuando la "primera piedra gratis" del día ya se consumió (ver comodín
+# raro first_stone_free). Se resetea al empezar cada día.
+var _first_stone_consumed_this_day: bool = false
 var _crits_this_day: int = 0
 var _golden_fruits_this_day: int = 0
 var _normal_fruits_this_day: int = 0
@@ -133,23 +113,35 @@ var _fist_cuts_this_run: int = 0
 var _weapon_changed_this_day: bool = false
 
 # Hitos de racha -> multiplicador de monedas. El multiplicador activo es el del
-# mayor hito alcanzado (ver get_streak_multiplier).
+# mayor hito alcanzado (ver get_streak_multiplier). Hasta el hito 50 se mantiene
+# igual (valores fijos); a partir de 50 los hitos van cada vez más lejanos
+# (75, 100, 140, 190, 250...) y cada uno suma +x1 (estilo progresión de idle).
 const STREAK_MILESTONES: Dictionary = {
 	5: 1.10,
 	10: 1.20,
 	20: 1.30,
 	30: 1.50,
 	50: 2.00,
+	75: 3.0,
+	100: 4.0,
+	140: 5.0,
+	190: 6.0,
+	250: 7.0,
+	320: 8.0,
+	400: 9.0,
+	490: 10.0,
+	590: 11.0,
+	700: 12.0,
 }
-const MAX_STREAK_MULTIPLIER: float = 2.00
 
-# Multiplicador según el número de frutas consecutivas cortadas.
+# Multiplicador según el número de frutas consecutivas cortadas: el del mayor
+# hito alcanzado MÁS el bonus ADITIVO acumulado por comodines de racha.
 func get_streak_multiplier() -> float:
 	var mult: float = 1.0
 	for m in STREAK_MILESTONES:
 		if current_streak >= int(m):
 			mult = STREAK_MILESTONES[m]
-	return maxf(mult, 1.0)
+	return maxf(mult, 1.0) + StatsManager.get_streak_bonus()
 
 # Incrementa la racha al cortar una fruta (llamado desde register_fruit_cut).
 func _increment_streak() -> void:
@@ -177,12 +169,10 @@ func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 
 func get_order_target_for(order_num: int) -> float:
-	if order_num <= ORDER_TARGETS.size():
-		return ORDER_TARGETS[order_num - 1] * StatsManager.get_order_target_multiplier()
-	# Más allá del día 20: crecimiento suave y sostenido (POST_TABLE_DAILY_GROWTH)
-	# para que el DÍA 100 tenga una cuota alcanzable y siga creciendo para récords.
-	var base_tail: float = ORDER_TARGETS[ORDER_TARGETS.size() - 1] * pow(POST_TABLE_DAILY_GROWTH, order_num - ORDER_TARGETS.size())
-	return base_tail * StatsManager.get_order_target_multiplier()
+	# Fórmula geométrica de días infinitos: día N = base × crecimiento^(N-1).
+	# La misma expresión cubre todos los días (1..∞), sin tabla fija.
+	var base: float = BASE_ORDER_TARGET * pow(ORDER_TARGET_GROWTH, order_num - 1)
+	return base * StatsManager.get_order_target_multiplier()
 
 # Empieza un negocio nuevo desde cero: reinicia dinero, pedido, energía y
 # TAMBIÉN las frutas/armas desbloqueadas de la partida anterior (solo el
@@ -204,6 +194,7 @@ func start_new_run() -> void:
 	run_equipped_knife = "weapon_fist"
 	current_streak = 0
 	_stones_hit_this_day = 0
+	_first_stone_consumed_this_day = false
 	_crits_this_day = 0
 	_golden_fruits_this_day = 0
 	_normal_fruits_this_day = 0
@@ -298,10 +289,10 @@ func register_fruit_cut(fruit_data: FruitData, base_reward: float, is_jackpot: b
 		_normal_fruits_this_day += 1
 		if _golden_fruits_this_day > 0:
 			AchievementManager.set_flag("golden_and_normal_day")
-	# Logro "Origen": equipar el Puño y cortar 5 frutas con él en el negocio.
+	# Logro "Origen": cortar 100 frutas con el Puño equipado en el negocio.
 	if run_equipped_knife == "weapon_fist":
 		_fist_cuts_this_run += 1
-		if _fist_cuts_this_run >= 5:
+		if _fist_cuts_this_run >= 100:
 			AchievementManager.set_flag("started_with_fist")
 
 	emit_signal("money_changed", run_money)
@@ -360,6 +351,9 @@ func _end_round_and_validate() -> void:
 
 # Registra los logros ligados a completar un día (días, perfecto, estilo).
 func _on_day_completed() -> void:
+	# Se genera 1 ⭐ de reputación por cada día completado (economía prestigio).
+	SaveManager.add_prestige_points(1.0)
+	AchievementManager.record_metric("prestige_earned", 1.0)
 	AchievementManager.set_metric("best_day", maxf(AchievementManager.get_metric("best_day"), current_order))
 	AchievementManager.record_metric("days_completed_total", 1)
 	if _stones_hit_this_day == 0:
@@ -408,10 +402,17 @@ func advance_to_next_order() -> void:
 	order_progress = 0.0
 	current_state = GameState.PLAYING
 	_stones_hit_this_day = 0
+	_first_stone_consumed_this_day = false
 	_crits_this_day = 0
 	_golden_fruits_this_day = 0
 	_normal_fruits_this_day = 0
 	_fruits_this_day_set = {}
+	# La racha se reinicia a 0 al empezar cada día nuevo, A MENOS que el jugador
+	# tenga un comodín mítico que la conserve entre días. La piedra SIEMPRE la
+	# rompe dentro del mismo día (ver SwipeController).
+	if not StatsManager.has_streak_keep():
+		current_streak = 0
+	emit_signal("streak_changed", current_streak, get_streak_multiplier())
 	
 	round_time_left = ROUND_TIME_SECONDS
 	emit_signal("round_time_changed", round_time_left)
@@ -426,10 +427,11 @@ func end_run_failed() -> void:
 	# Fórmula de Reputación: 10 puntos por cada pedido completado + 1 punto
 	# por cada $50000 generados en total durante el negocio (dividido por una
 	# cantidad alta para que el dinero aporte suplementos, no la mayor parte).
+	# Se conservan 2 decimales (la parte de dinero genera fracciones).
 	var completed_orders_count: int = current_order - 1
-	var prestige_from_orders: int = completed_orders_count * 10
-	var prestige_from_money: int = int(floor(total_money_generated_run / 50000.0))
-	var earned_prestige: int = prestige_from_orders + prestige_from_money
+	var prestige_from_orders: float = completed_orders_count * 10.0
+	var prestige_from_money: float = snappedf(total_money_generated_run / 50000.0, 0.01)
+	var earned_prestige: float = snappedf(prestige_from_orders + prestige_from_money, 0.01)
 
 	SaveManager.add_prestige_points(earned_prestige)
 	SaveManager.record_run_stats(completed_orders_count, total_fruits_cut_run)

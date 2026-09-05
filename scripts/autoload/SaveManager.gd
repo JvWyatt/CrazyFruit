@@ -80,14 +80,31 @@ func load_data() -> void:
 	emit_signal("data_loaded")
 
 func save_to_disk() -> void:
-	var file: FileAccess = FileAccess.open(SAVE_FILE_PATH, FileAccess.WRITE)
+	var json_string: String = JSON.stringify(save_data, "\t")
+	# Escritura atómica: primero se escribe a un archivo temporal y luego se
+	# renombra. Si la app muere durante la escritura, el save original no se
+	# corrompe (el rename es atómico en la mayoría de sistemas de archivos).
+	var tmp_path: String = SAVE_FILE_PATH + ".tmp"
+	var file: FileAccess = FileAccess.open(tmp_path, FileAccess.WRITE)
 	if file == null:
 		push_error("Error opening save file for write: " + str(FileAccess.get_open_error()))
+		# Fallback: intento directo (sin protección atómica).
+		file = FileAccess.open(SAVE_FILE_PATH, FileAccess.WRITE)
+		if file == null:
+			push_error("Fallback save also failed: " + str(FileAccess.get_open_error()))
+			return
+		file.store_string(json_string)
+		file.close()
+		emit_signal("data_saved")
 		return
-
-	var json_string: String = JSON.stringify(save_data, "\t")
 	file.store_string(json_string)
 	file.close()
+	# Renombrar tmp -> save (atómico en POSIX; en Windows puede fallar si el
+	# destino ya existe, por eso se intenta primero).
+	if DirAccess.rename_absolute(tmp_path, SAVE_FILE_PATH) != OK:
+		# Fallback Windows: eliminar destino y reintentar.
+		DirAccess.remove_absolute(SAVE_FILE_PATH)
+		DirAccess.rename_absolute(tmp_path, SAVE_FILE_PATH)
 	emit_signal("data_saved")
 
 func get_prestige_points() -> float:
@@ -193,6 +210,8 @@ func reset_save() -> void:
 	}
 	save_to_disk()
 	emit_signal("prestige_changed", 0)
+	# El reset de prestigio cambia las stats finales cacheadas en StatsManager.
+	StatsManager.invalidate_stat_cache()
 	# Los autoloads NO son singletons de engine (Engine.has_singleton daria
 	# false): AchievementManager existe siempre como autoload, llamada directa.
 	AchievementManager.reset_all()

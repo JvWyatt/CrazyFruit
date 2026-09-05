@@ -3,13 +3,13 @@
 [ext_resource type="Script" uid="uid://ctmisjsdikrjn" path="res://scripts/Main.gd" id="1_main"]
 [ext_resource type="PackedScene" uid="uid://dg03k36pm1y8a" path="res://scenes/ui/MainMenu.tscn" id="2_menu"]
 [ext_resource type="PackedScene" uid="uid://c7m5p23s78va1" path="res://scenes/game/FruitSpawner.tscn" id="3_spawner"]
-[ext_resource type="PackedScene" uid="uid://bv83nas24w8q1" path="res://scenes/game/SwipeController.tscn" id="4_swipe"]
+[ext_resource type="PackedScene" uid="uid://bv83m9s24w8q1" path="res://scenes/game/SwipeController.tscn" id="4_swipe"]
 [ext_resource type="PackedScene" uid="uid://dm28ka4n2e7k0" path="res://scenes/ui/HUD.tscn" id="5_hud"]
 [ext_resource type="PackedScene" uid="uid://df72mk4w870p1" path="res://scenes/ui/RunUpgradeModal.tscn" id="6_run_up"]
 [ext_resource type="PackedScene" uid="uid://dmk8730pa16c1" path="res://scenes/ui/StatsModal.tscn" id="7_stats_mod"]
 [ext_resource type="PackedScene" uid="uid://cx62m20g3n4a1" path="res://scenes/ui/CardSelectionModal.tscn" id="9_card_sel"]
 [ext_resource type="PackedScene" uid="uid://b00g72yq15x3a" path="res://scenes/ui/ResultsModal.tscn" id="10_results"]
-[ext_resource type="PackedScene" uid="uid://bwm82l5k4qaa1" path="res://scenes/ui/PrestigeShopModal.tscn" id="12_prestige_shop"]
+[ext_resource type="PackedScene" uid="uid://bwm82l5k4p9a1" path="res://scenes/ui/PrestigeShopModal.tscn" id="12_prestige_shop"]
 [ext_resource type="PackedScene" path="res://scenes/ui/ProgressModal.tscn" id="13_progress"]
 [ext_resource type="PackedScene" path="res://scenes/ui/CardsModal.tscn" id="14_cards"]
 [ext_resource type="PackedScene" path="res://scenes/ui/CreditsModal.tscn" id="15_credits"]
@@ -25,7 +25,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
-color = Color(0.24577132, 0.69673496, 0.7205561, 1)
+color = Color(0.055, 0.065, 0.11, 1)
 
 [node name="MainMenu" parent="." instance=ExtResource("2_menu")]
 

@@ -1,13 +1,32 @@
-# Godot 4
+# Godot editor data — never commit
 .godot/
 
-# Export / build output
+# Export artifacts
 /build/
+/export/
 *.apk
 *.aab
+*.ipa
+*.pck
+*.zip
 *.keystore
 *.jks
 
-# Editor
+# C# / Mono build output (if used)
+.mono/
+.import/
+bin/
+obj/
+*.csproj.user
+*.sln.user
+*.user
+
+# IDE and OS files
+.vs/
+.vscode/settings.json
+.idea/
+*.swp
 *.tmp
+.DS_Store
+Thumbs.db
 .editor

@@ -1,31 +1,28 @@
-[gd_scene load_steps=8 format=3 uid="uid://dg03k36pm1y8a"]
+[gd_scene load_steps=13 format=3 uid="uid://dg03k36pm1y8a"]
 
 [ext_resource type="Script" uid="uid://bdj3lmpeoeea5" path="res://scripts/ui/MainMenu.gd" id="1_mm"]
 [ext_resource type="PackedScene" path="res://scenes/ui/SettingsSection.tscn" id="2_ss"]
 [ext_resource type="PackedScene" path="res://scenes/ui/ConfirmDialog.tscn" id="3_cd"]
+[ext_resource type="FontFile" uid="uid://d0q5ls72jdqnh" path="res://assets/fonts/display-ttf/SkitserCartoon.ttf" id="4_e2per"]
+[ext_resource type="Texture2D" uid="uid://ccw2bv8oohapn" path="res://assets/ui/icons/prestige.png" id="6_7mi0g"]
+[ext_resource type="FontFile" uid="uid://bsk4775kdna1c" path="res://assets/fonts/roboto/Roboto-Black.ttf" id="7_7vr37"]
+[ext_resource type="Texture2D" uid="uid://ts4equqnr1im" path="res://assets/ui/backgrounds/menu_bg.png" id="tex_bg"]
+[ext_resource type="Texture2D" uid="uid://bnf8gub0jg74" path="res://assets/ui/backgrounds/logo.png" id="tex_logo"]
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_play_normal"]
-bg_color = Color(0.98, 0.78, 0.22, 1)
-border_width_left = 2
-border_width_top = 2
-border_width_right = 2
-border_width_bottom = 2
-border_color = Color(1, 0.95, 0.62, 1)
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_e2per"]
+bg_color = Color(1, 1, 1, 1)
 corner_radius_top_left = 999
 corner_radius_top_right = 999
 corner_radius_bottom_right = 999
 corner_radius_bottom_left = 999
-shadow_color = Color(0, 0, 0, 0.4)
-shadow_size = 6
-shadow_offset = Vector2(0, 3)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_play_pressed"]
-bg_color = Color(0.8, 0.6, 0.12, 1)
+bg_color = Color(0.42745474, 0.42409566, 0.84588677, 1)
 border_width_left = 2
 border_width_top = 2
 border_width_right = 2
 border_width_bottom = 2
-border_color = Color(0.95, 0.75, 0.25, 1)
+border_color = Color(0.42745098, 0.42352942, 0.84705883, 1)
 corner_radius_top_left = 999
 corner_radius_top_right = 999
 corner_radius_bottom_right = 999
@@ -35,12 +32,12 @@ shadow_size = 3
 shadow_offset = Vector2(0, 2)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_play_hover"]
-bg_color = Color(1, 0.86, 0.38, 1)
+bg_color = Color(0.6309953, 0.70069915, 0.94501597, 1)
 border_width_left = 2
 border_width_top = 2
 border_width_right = 2
 border_width_bottom = 2
-border_color = Color(1, 0.97, 0.72, 1)
+border_color = Color(0.6313726, 0.7019608, 0.94509804, 1)
 corner_radius_top_left = 999
 corner_radius_top_right = 999
 corner_radius_bottom_right = 999
@@ -77,14 +74,16 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_mm")
 
-[node name="Background" type="ColorRect" parent="."]
+[node name="BG" type="TextureRect" parent="."]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-color = Color(0.07, 0.08, 0.12, 1)
+texture = ExtResource("tex_bg")
+expand_mode = 1
+stretch_mode = 6
 
 [node name="VersionLabel" type="Label" parent="."]
 layout_mode = 1
@@ -93,15 +92,31 @@ anchor_left = 1.0
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = -102.0
-offset_top = -48.0
-offset_right = -22.0
-offset_bottom = -23.0
+offset_left = -162.0
+offset_top = -64.0
+offset_right = -82.0
+offset_bottom = -39.0
 grow_horizontal = 0
 grow_vertical = 0
-theme_override_colors/font_color = Color(0.42, 0.5, 0.65, 1)
-theme_override_font_sizes/font_size = 16
-text = "v0.013"
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_fonts/font = ExtResource("7_7vr37")
+theme_override_font_sizes/font_size = 20
+text = "v0.017"
+
+[node name="HBoxContainer" type="HBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_bottom = 511.0
+grow_horizontal = 2
+metadata/_edit_use_anchors_ = true
+
+[node name="TextureRect" type="TextureRect" parent="HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 6
+texture = ExtResource("tex_logo")
+expand_mode = 3
+stretch_mode = 3
 
 [node name="CenterVBox" type="VBoxContainer" parent="."]
 layout_mode = 1
@@ -121,79 +136,92 @@ alignment = 1
 
 [node name="TitleVBox" type="VBoxContainer" parent="CenterVBox"]
 layout_mode = 2
-theme_override_constants/separation = 6
+size_flags_horizontal = 4
+size_flags_vertical = 6
+theme_override_constants/separation = 50
+metadata/_edit_use_anchors_ = true
 
-[node name="IconLabel" type="Label" parent="CenterVBox/TitleVBox"]
+[node name="s1" type="Label" parent="CenterVBox/TitleVBox"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 56
-text = "🍎🔪🍉"
 horizontal_alignment = 1
 
 [node name="TitleLabel" type="Label" parent="CenterVBox/TitleVBox"]
 layout_mode = 2
-theme_override_colors/font_color = Color(1, 0.88, 0.25, 1)
+theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.8)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
 theme_override_constants/shadow_offset_y = 3
-theme_override_font_sizes/font_size = 42
-text = "CRAZY FRUIT"
-horizontal_alignment = 1
-
-[node name="SubtitleLabel" type="Label" parent="CenterVBox/TitleVBox"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.7, 0.8, 0.95, 1)
-theme_override_font_sizes/font_size = 18
-text = "¡Rebana y Vende Frutas!"
+theme_override_constants/outline_size = 10
+theme_override_fonts/font = ExtResource("4_e2per")
+theme_override_font_sizes/font_size = 51
+text = "Crazy Fruit"
 horizontal_alignment = 1
 
 [node name="GoalLabel" type="Label" parent="CenterVBox/TitleVBox"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.55, 0.92, 0.62, 1)
-theme_override_font_sizes/font_size = 16
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_fonts/font = ExtResource("7_7vr37")
+theme_override_font_sizes/font_size = 28
 text = "🎯 100 días, ¿eso está pelado?"
+horizontal_alignment = 1
+
+[node name="s2" type="Label" parent="CenterVBox/TitleVBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 56
 horizontal_alignment = 1
 
 [node name="ButtonsVBox" type="VBoxContainer" parent="CenterVBox"]
 layout_mode = 2
-theme_override_constants/separation = 12
+theme_override_constants/separation = 10
 
 [node name="PlayButton" type="Button" parent="CenterVBox/ButtonsVBox"]
 custom_minimum_size = Vector2(0, 64)
 layout_mode = 2
-theme_override_colors/font_color = Color(0.32, 0.2, 0.04, 1)
-theme_override_colors/font_hover_color = Color(0.32, 0.2, 0.04, 1)
-theme_override_font_sizes/font_size = 26
-theme_override_styles/normal = SubResource("StyleBoxFlat_play_normal")
+theme_override_colors/font_color = Color(0.000113828486, 0.000113827875, 0.000113828006, 1)
+theme_override_colors/font_pressed_color = Color(1, 1, 1, 1)
+theme_override_colors/font_hover_color = Color(0.95, 0.95, 0.95, 1)
+theme_override_fonts/font = ExtResource("7_7vr37")
+theme_override_font_sizes/font_size = 50
+theme_override_styles/normal = SubResource("StyleBoxFlat_e2per")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_play_pressed")
 theme_override_styles/hover = SubResource("StyleBoxFlat_play_hover")
-text = "⚔️ JUGAR"
+text = "JUGAR"
 
 [node name="PrestigeShopButton" type="Button" parent="CenterVBox/ButtonsVBox"]
 custom_minimum_size = Vector2(0, 52)
 layout_mode = 2
+theme_override_fonts/font = ExtResource("7_7vr37")
 theme_override_font_sizes/font_size = 18
-text = "⭐ MERCADO DE PRESTIGIO"
+text = "MERCADO DE PRESTIGIO"
+icon = ExtResource("6_7mi0g")
+expand_icon = true
 
 [node name="ProgressButton" type="Button" parent="CenterVBox/ButtonsVBox"]
 custom_minimum_size = Vector2(0, 52)
 layout_mode = 2
+theme_override_fonts/font = ExtResource("7_7vr37")
 theme_override_font_sizes/font_size = 18
 text = "🏆 VER PROGRESO"
 
 [node name="AchievementsButton" type="Button" parent="CenterVBox/ButtonsVBox"]
 custom_minimum_size = Vector2(0, 52)
 layout_mode = 2
+theme_override_fonts/font = ExtResource("7_7vr37")
 theme_override_font_sizes/font_size = 18
 text = "🎖️ LOGROS"
 
 [node name="CardsButton" type="Button" parent="CenterVBox/ButtonsVBox"]
 custom_minimum_size = Vector2(0, 52)
 layout_mode = 2
+theme_override_fonts/font = ExtResource("7_7vr37")
 theme_override_font_sizes/font_size = 18
 text = "🃏 COMODINES"
 
 [node name="SettingsButton" type="Button" parent="CenterVBox/ButtonsVBox"]
 custom_minimum_size = Vector2(0, 52)
 layout_mode = 2
+theme_override_fonts/font = ExtResource("7_7vr37")
 theme_override_font_sizes/font_size = 18
 text = "⚙️ AJUSTES"
 
@@ -201,6 +229,7 @@ text = "⚙️ AJUSTES"
 custom_minimum_size = Vector2(0, 44)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.7, 0.5, 0.5, 1)
+theme_override_fonts/font = ExtResource("7_7vr37")
 theme_override_font_sizes/font_size = 14
 text = "🔄 REINICIAR PROGRESO"
 

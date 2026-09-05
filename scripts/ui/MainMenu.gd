@@ -28,6 +28,8 @@ signal open_achievements_requested
 @onready var settings_section: SettingsSection = $SettingsPanel/SettingsCard/VBox/SettingsSection
 @onready var back_button: Button = $SettingsPanel/SettingsCard/VBox/BackButton
 @onready var goal_label: Label = $CenterVBox/TitleVBox/GoalLabel
+@onready var title_label: Label = $CenterVBox/TitleVBox/TitleLabel
+@onready var center_vbox: VBoxContainer = $CenterVBox
 
 var _anim_started: bool = false
 
@@ -57,14 +59,18 @@ func _ready() -> void:
 	reset_button.pressed.connect(_on_reset_pressed)
 	reset_confirm_dialog.confirmed.connect(_on_reset_confirmed)
 	back_button.pressed.connect(_on_settings_closed)
+	_setup_hover_animations()
 	call_deferred("_maybe_animate")
 
+func _setup_hover_animations() -> void:
+	UiTheme.add_hover_scale(play_button, 1.06)
+	UiTheme.add_hover_scale(prestige_shop_button)
+	UiTheme.add_hover_scale(progress_button)
+	UiTheme.add_hover_scale(achievements_button)
+	UiTheme.add_hover_scale(cards_button)
+	UiTheme.add_hover_scale(settings_button)
+
 func _notification(what: int) -> void:
-	# La animación de entrada corre UNA sola vez. Repetirla en cada
-	# NOTIFICATION_VISIBILITY_CHANGED (muy frecuente en Android al superponer
-	# modales) creaba tweens en colisión sobre el menú, que seguía visible tras
-	# los botones (Prestigio/Progreso/Comodines/Ajustes). Al no re-disparchar,
-	# se elimina ese churn de animaciones que solo se daba en el menú principal.
 	if what == NOTIFICATION_VISIBILITY_CHANGED and is_visible_in_tree():
 		_rotate_phrase()
 		if not _anim_started:
@@ -76,7 +82,7 @@ func _rotate_phrase() -> void:
 		return
 	var phrase: String = CHALLENGE_PHRASES[_phrase_index % CHALLENGE_PHRASES.size()]
 	_phrase_index += 1
-	goal_label.text = "🎯 " + phrase
+	goal_label.text = phrase
 
 func _maybe_animate() -> void:
 	if not is_visible_in_tree():
@@ -84,7 +90,13 @@ func _maybe_animate() -> void:
 	animate_in()
 
 func animate_in() -> void:
-	UiTheme.pop_in($CenterVBox)
+	center_vbox.pivot_offset = center_vbox.size * 0.5
+	center_vbox.modulate.a = 0.0
+	center_vbox.position.y += 20
+	var tween := create_tween()
+	tween.set_parallel(true)
+	tween.tween_property(center_vbox, "modulate:a", 1.0, 0.4).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	tween.tween_property(center_vbox, "position:y", center_vbox.position.y - 20, 0.5).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 
 func _on_play_pressed() -> void:
 	SoundManager.play_click()

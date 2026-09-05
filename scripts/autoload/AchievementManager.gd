@@ -28,6 +28,13 @@ const SAVE_KEY := "achievements"
 # cubrir el desbloqueo retroactivo silencioso al arrancar.
 var _suppress_notifications: bool = false
 
+# Guardado deferred: en lugar de escribir a disco en cada metric/flag update
+# (que puede ocurrir 60+ veces por segundo durante rachas largas), se acumulan
+# los cambios y se persisten con un debounce de 0.5s.
+const SAVE_DEBOUNCE: float = 0.5
+var _save_pending: bool = false
+var _save_timer: float = 0.0
+
 # ---------------------------------------------------------------------------
 # TABLA DE LOGROS
 # ---------------------------------------------------------------------------
@@ -238,6 +245,21 @@ func _ready() -> void:
 	# no está listo y no tendría sentido spamear toasts en el menú).
 	evaluate_all(true)
 
+func _process(delta: float) -> void:
+	if not _save_pending:
+		return
+	_save_timer -= delta
+	if _save_timer <= 0.0:
+		_save_pending = false
+		SaveManager.save_to_disk()
+
+# Forza el guardado inmediato al cerrar/poner en segundo plano el juego.
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_WM_CLOSE_REQUEST or what == NOTIFICATION_APPLICATION_PAUSED:
+		if _save_pending:
+			_save_pending = false
+			SaveManager.save_to_disk()
+
 # ---------------------------------------------------------------------------
 # Persistencia
 # ---------------------------------------------------------------------------
@@ -255,11 +277,14 @@ func get_flags() -> Dictionary:
 	return SaveManager.save_data[SAVE_KEY]["flags"]
 
 func _persist() -> void:
-	SaveManager.save_to_disk()
+	_save_pending = true
+	_save_timer = SAVE_DEBOUNCE
 
 func reset_all() -> void:
 	SaveManager.save_data[SAVE_KEY] = {"unlocked": [], "metrics": {}, "flags": {}}
-	_persist()
+	_save_pending = false
+	_save_timer = 0.0
+	SaveManager.save_to_disk()
 
 # ---------------------------------------------------------------------------
 # Métricas (progreso) 

@@ -96,6 +96,10 @@ var run_equipped_knife: String = "weapon_fist"
 # toca una piedra/obstáculo. El multiplicador de monedas aplicado corresponde
 # al último hito alcanzado (y se queda en x2.00 tras superar 50).
 var current_streak: int = 0
+# Caché del multiplicador del mayor hito de racha alcanzado: se recalcula SOLO
+# al CAMBIAR la racha (ver _refresh_streak_multiplier), para que
+# get_streak_multiplier() haga O(1) en el hot path de cada corte.
+var _streak_mult: float = 1.0
 
 # --- Tracking de logros por día/negocio (se resetea) -----------------------
 var _stones_hit_this_day: int = 0
@@ -108,6 +112,10 @@ var _normal_fruits_this_day: int = 0
 var _fruits_this_day_set: Dictionary = {}
 var _upgrades_bought_this_run: int = 0
 var _fist_cuts_this_run: int = 0
+# Prestigio (reputación) ganado durante ESTE negocio: 1 ⭐ por día + bonus de
+# comodines ACTIVOS. Se acumula en _on_day_completed y se muestra en el
+# resumen final SIN sumarse de nuevo (ya se añadió a SaveManager día a día).
+var prestige_earned_this_run: float = 0.0
 # "Hachero Total": se marca al cambiar de arma y se evalúa al completar el día
 # (la ventana cubre también la tienda entre días: ver _on_day_completed).
 var _weapon_changed_this_day: bool = false
@@ -137,17 +145,23 @@ const STREAK_MILESTONES: Dictionary = {
 # Multiplicador según el número de frutas consecutivas cortadas: el del mayor
 # hito alcanzado MÁS el bonus ADITIVO acumulado por comodines de racha.
 func get_streak_multiplier() -> float:
+	return maxf(_streak_mult, 1.0) + StatsManager.get_streak_bonus()
+
+# Recalcula _streak_mult recorriendo los hitos de racha. Solo se llama cuando
+# cambia la racha (incremento, ruptura o reseteo de día), no en cada corte.
+func _refresh_streak_multiplier() -> void:
 	var mult: float = 1.0
 	for m in STREAK_MILESTONES:
 		if current_streak >= int(m):
 			mult = STREAK_MILESTONES[m]
-	return maxf(mult, 1.0) + StatsManager.get_streak_bonus()
+	_streak_mult = mult
 
 # Incrementa la racha al cortar una fruta (llamado desde register_fruit_cut).
 func _increment_streak() -> void:
 	var next_streak: int = current_streak + 1
 	var reached_milestone: bool = STREAK_MILESTONES.has(next_streak)
 	current_streak = next_streak
+	_refresh_streak_multiplier()
 	var mult: float = get_streak_multiplier()
 	emit_signal("streak_changed", current_streak, mult)
 	if reached_milestone:
@@ -161,6 +175,7 @@ func _increment_streak() -> void:
 func break_streak() -> void:
 	if current_streak != 0:
 		current_streak = 0
+		_refresh_streak_multiplier()
 		emit_signal("streak_changed", 0, 1.0)
 		emit_signal("streak_broken")
 		AchievementManager.record_metric("streak_broke", 1)
@@ -192,7 +207,9 @@ func start_new_run() -> void:
 	run_unlocked_fruits = ["strawberry"]
 	run_unlocked_knives = ["weapon_fist"]
 	run_equipped_knife = "weapon_fist"
+	StatsManager.invalidate_stat_cache()
 	current_streak = 0
+	_refresh_streak_multiplier()
 	_stones_hit_this_day = 0
 	_first_stone_consumed_this_day = false
 	_crits_this_day = 0
@@ -201,6 +218,7 @@ func start_new_run() -> void:
 	_fruits_this_day_set = {}
 	_upgrades_bought_this_run = 0
 	_fist_cuts_this_run = 0
+	prestige_earned_this_run = 0.0
 	_weapon_changed_this_day = false
 	emit_signal("streak_changed", 0, 1.0)
 	emit_signal("run_knife_equipped", run_equipped_knife)
@@ -333,6 +351,7 @@ func set_equipped_knife_this_run(knife_id: String) -> void:
 	if knife_id != run_equipped_knife:
 		_weapon_changed_this_day = true
 	run_equipped_knife = knife_id
+	StatsManager.invalidate_stat_cache()
 	if knife_id == "weapon_chainsaw":
 		AchievementManager.set_flag("used_chainsaw")
 	emit_signal("run_knife_equipped", knife_id)
@@ -352,8 +371,12 @@ func _end_round_and_validate() -> void:
 # Registra los logros ligados a completar un día (días, perfecto, estilo).
 func _on_day_completed() -> void:
 	# Se genera 1 ⭐ de reputación por cada día completado (economía prestigio).
-	SaveManager.add_prestige_points(1.0)
-	AchievementManager.record_metric("prestige_earned", 1.0)
+	# Solo los comodines ACTIVOS pueden aumentar la reputación diaria (+bonus);
+	# el final del negocio NO vuelve a otorgar puntos (ver end_run_failed).
+	var day_prestige: float = 1.0 + StatsManager.get_prestige_per_day_bonus()
+	SaveManager.add_prestige_points(day_prestige)
+	prestige_earned_this_run += day_prestige
+	AchievementManager.record_metric("prestige_earned", day_prestige)
 	AchievementManager.set_metric("best_day", maxf(AchievementManager.get_metric("best_day"), current_order))
 	AchievementManager.record_metric("days_completed_total", 1)
 	if _stones_hit_this_day == 0:
@@ -412,6 +435,7 @@ func advance_to_next_order() -> void:
 	# rompe dentro del mismo día (ver SwipeController).
 	if not StatsManager.has_streak_keep():
 		current_streak = 0
+		_refresh_streak_multiplier()
 	emit_signal("streak_changed", current_streak, get_streak_multiplier())
 	
 	round_time_left = ROUND_TIME_SECONDS
@@ -424,21 +448,16 @@ func end_run_failed() -> void:
 	current_state = GameState.RESULTS
 	SoundManager.play_game_over()
 
-	# Fórmula de Reputación: 10 puntos por cada pedido completado + 1 punto
-	# por cada $50000 generados en total durante el negocio (dividido por una
-	# cantidad alta para que el dinero aporte suplementos, no la mayor parte).
-	# Se conservan 2 decimales (la parte de dinero genera fracciones).
+	# La reputación de ESTE negocio ya se concedió día a día en _on_day_completed
+	# (1 ⭐ por día + bonus de comodines activos): NO se vuelve a sumar aquí para
+	# evitar duplicar los mismos puntos (antes esta fórmula los contaba 2×).
 	var completed_orders_count: int = current_order - 1
-	var prestige_from_orders: float = completed_orders_count * 10.0
-	var prestige_from_money: float = snappedf(total_money_generated_run / 50000.0, 0.01)
-	var earned_prestige: float = snappedf(prestige_from_orders + prestige_from_money, 0.01)
+	var earned_prestige: float = prestige_earned_this_run
 
-	SaveManager.add_prestige_points(earned_prestige)
 	SaveManager.record_run_stats(completed_orders_count, total_fruits_cut_run)
 
 	# Logros ligados al final del negocio.
 	AchievementManager.record_metric("runs_bankrupt", 1)
-	AchievementManager.record_metric("prestige_earned", earned_prestige)
 	AchievementManager.set_metric("run_money_total", maxf(AchievementManager.get_metric("run_money_total"), total_money_generated_run))
 
 	var summary: Dictionary = {

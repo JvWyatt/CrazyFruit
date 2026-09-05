@@ -22,29 +22,31 @@ signal open_stats_requested
 @onready var continue_button: Button = $Panel/VBox/BottomHBox/ContinueButton
 
 var fruit_prices: Dictionary = {
-	# Progresión rebalanceada: cada fruta cuesta ~1.5x la anterior, empezando
-	# por la Banana en 500. La Fresa (primera) es gratis. La Frutería está
-	# bloqueada en cadena: no puedes comprar una fruta sin haber comprado la
-	# anterior (ver _get_prev_fruit_id).
-	"banana": 500,
-	"peach": 750,
-	"cherry": 1125,
-	"orange": 1688,
-	"apple": 2531,
-	"pear": 3797,
-	"kiwi": 5695,
-	"mango": 8543,
-	"lemon": 12814,
-	"watermelon": 19222,
-	"melon": 28833,
-	"pineapple": 43249,
-	"papaya": 64873,
-	"coconut": 97310,
-	"avocado": 145965,
-	"dragon_fruit": 218947,
-	"guava": 328420,
-	"quince": 492630,
-	"pumpkin": 738945
+	# Precios EXPLÍCITOS (no calculados en tiempo de ejecución). La Fresa
+	# (primera fruta) es gratis y se empieza con ella desbloqueada. La Banana
+	# cuesta 75 y cada fruta siguiente se calculó multiplicando la anterior por
+	# 1.5 (factor continuo sobre el valor exacto, redondeado al entero), hasta
+	# la fruta 20 (Calabaza).
+	"strawberry": 0,
+	"banana": 75,
+	"peach": 113,
+	"cherry": 169,
+	"orange": 253,
+	"apple": 380,
+	"pear": 570,
+	"kiwi": 854,
+	"mango": 1281,
+	"lemon": 1922,
+	"watermelon": 2883,
+	"melon": 4325,
+	"pineapple": 6487,
+	"papaya": 9731,
+	"coconut": 14596,
+	"avocado": 21895,
+	"dragon_fruit": 32842,
+	"guava": 49263,
+	"quince": 73895,
+	"pumpkin": 110842
 }
 
 # Cached row refs so purchases can update in place instead of rebuilding the whole shop
@@ -82,7 +84,7 @@ func _rebuild_ui() -> void:
 	for key in StatsManager.run_upgrade_definitions.keys():
 		var def: Dictionary = StatsManager.run_upgrade_definitions[key]
 		var level: int = StatsManager.run_upgrade_levels[key]
-		var cost: int = StatsManager.get_run_upgrade_cost(key)
+		var cost: float = StatsManager.get_run_upgrade_cost(key)
 		var can_buy: bool = GameManager.run_money >= cost
 
 		var panel := PanelContainer.new()
@@ -113,7 +115,7 @@ func _rebuild_ui() -> void:
 
 		var buy_btn := Button.new()
 		buy_btn.custom_minimum_size = Vector2(120, 48)
-		buy_btn.text = "$" + UiTheme.format_money(float(cost))
+		buy_btn.text = "$" + UiTheme.format_money(cost)
 		buy_btn.add_theme_font_size_override("font_size", 16)
 		buy_btn.disabled = not can_buy
 
@@ -140,7 +142,7 @@ func _update_upgrade_row(key: String) -> void:
 		return
 	var row: Dictionary = _upgrade_rows[key]
 	var level: int = StatsManager.run_upgrade_levels[key]
-	var cost: int = StatsManager.get_run_upgrade_cost(key)
+	var cost: float = StatsManager.get_run_upgrade_cost(key)
 	row["name_lbl"].text = str(row["def"]["name"]) + " (x" + str(level) + ")"
 	row["buy_btn"].text = "$" + UiTheme.format_money(float(cost))
 
@@ -167,7 +169,7 @@ func _refresh_affordability() -> void:
 	var money: float = GameManager.run_money
 	for key in _upgrade_rows.keys():
 		var row: Dictionary = _upgrade_rows[key]
-		var cost: int = StatsManager.get_run_upgrade_cost(key)
+		var cost: float = StatsManager.get_run_upgrade_cost(key)
 		row["buy_btn"].disabled = money < cost
 	for fruit_id in _fruit_rows.keys():
 		_sync_fruit_row(str(fruit_id))
@@ -333,7 +335,7 @@ func _on_buy_fruit(fruit_id: String, price: int) -> void:
 		_refresh_affordability()
 
 func _on_buy_upgrade(upgrade_id: String) -> void:
-	var cost: int = StatsManager.get_run_upgrade_cost(upgrade_id)
+	var cost: float = StatsManager.get_run_upgrade_cost(upgrade_id)
 	if GameManager.spend_run_money(cost):
 		SoundManager.play_coin()
 		StatsManager.buy_run_upgrade(upgrade_id)

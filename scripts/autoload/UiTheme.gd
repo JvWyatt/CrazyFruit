@@ -17,7 +17,15 @@ const COLOR_TEXT_DIM: Color = Color(0.65, 0.72, 0.82)
 const COLOR_SUCCESS: Color = Color(0.31, 0.84, 0.62)
 const COLOR_DANGER: Color = Color(1.0, 0.35, 0.37)
 
+
+var FONT_DISPLAY: FontFile = preload("res://assets/fonts/display-ttf/SkitserCartoon.ttf")
+var FONT_BODY: FontFile = preload("res://assets/fonts/body-ttf/Cartoonic Massive Regular.ttf")
+
 func _ready() -> void:
+	var system_emoji := SystemFont.new()
+	system_emoji.allow_system_fallback = true
+	FONT_DISPLAY.fallbacks = [system_emoji]
+	FONT_BODY.fallbacks = [system_emoji]
 	_install_theme()
 
 # ---------------------------------------------------------------------------
@@ -122,6 +130,61 @@ func _box_style(bg: Color, border: Color, radius: int, shadow_size: int = 0) -> 
 # ---------------------------------------------------------------------------
 # Helpers para la UI generada por código
 # ---------------------------------------------------------------------------
+
+# Aplica un estilo de botón destacado según la variante: "primary" (dorado,
+# usado p.ej. para JUGAR) o "danger" (rojo, usado p.ej. para REINICIAR).
+func apply_button_style(button: Button, variant: String = "primary") -> void:
+	if button == null:
+		return
+	match variant:
+		"primary":
+			button.add_theme_stylebox_override("normal", _pill_style(Color(0.98, 0.78, 0.22), Color(1, 0.95, 0.62), 6))
+			button.add_theme_stylebox_override("hover", _pill_style(Color(1, 0.86, 0.38), Color(1, 0.97, 0.72), 7))
+			button.add_theme_stylebox_override("pressed", _pill_style(Color(0.8, 0.6, 0.12), Color(0.95, 0.75, 0.25), 3))
+			button.add_theme_stylebox_override("hover_pressed", _pill_style(Color(0.8, 0.6, 0.12), Color(0.95, 0.75, 0.25), 3))
+			button.add_theme_color_override("font_color", Color(0.32, 0.2, 0.04))
+			button.add_theme_color_override("font_hover_color", Color(0.32, 0.2, 0.04))
+			button.add_theme_color_override("font_pressed_color", Color(0.32, 0.2, 0.04))
+		"danger":
+			button.add_theme_stylebox_override("normal", _pill_style(Color(0.42, 0.14, 0.16), Color(0.75, 0.3, 0.32), 4))
+			button.add_theme_stylebox_override("hover", _pill_style(Color(0.52, 0.2, 0.22), Color(0.9, 0.4, 0.42), 5))
+			button.add_theme_stylebox_override("pressed", _pill_style(Color(0.3, 0.08, 0.1), Color(0.6, 0.2, 0.22), 1))
+			button.add_theme_stylebox_override("hover_pressed", _pill_style(Color(0.3, 0.08, 0.1), Color(0.6, 0.2, 0.22), 1))
+			button.add_theme_color_override("font_color", Color(1.0, 0.85, 0.85))
+			button.add_theme_color_override("font_hover_color", Color(1.0, 0.95, 0.95))
+			button.add_theme_color_override("font_pressed_color", Color(1.0, 0.8, 0.8))
+		_:
+			return
+
+# Estilo de tarjeta modal: fondo oscuro con borde brillante y sombra grande
+# (p.ej. el panel de ajustes del menú principal).
+func apply_modal_panel(panel: PanelContainer) -> void:
+	if panel == null:
+		return
+	var style := _box_style(Color(0.09, 0.11, 0.19, 0.98), Color(0.45, 0.55, 0.85), 18, 10)
+	style.content_margin_left = 28
+	style.content_margin_right = 28
+	style.content_margin_top = 24
+	style.content_margin_bottom = 24
+	panel.add_theme_stylebox_override("panel", style)
+
+# Escala el botón al pasar el ratón encima para dar feedback táctil de
+# interacción. Recalcula el pivot si el tamaño cambia.
+func add_hover_scale(button: Control, amount: float = 1.05) -> void:
+	if button == null:
+		return
+	button.pivot_offset = button.size * 0.5
+	button.resized.connect(func():
+		button.pivot_offset = button.size * 0.5
+	)
+	button.mouse_entered.connect(func():
+		var tween := button.create_tween()
+		tween.tween_property(button, "scale", Vector2(amount, amount), 0.12).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	)
+	button.mouse_exited.connect(func():
+		var tween := button.create_tween()
+		tween.tween_property(button, "scale", Vector2.ONE, 0.12).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	)
 
 # Tarjeta/panel con borde y sombra, usada por la UI generada por código.
 func card_style(border_color: Color = COLOR_BORDER, bg_color: Color = COLOR_ROW) -> StyleBoxFlat:

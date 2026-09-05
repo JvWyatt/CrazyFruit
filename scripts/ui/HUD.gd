@@ -14,12 +14,12 @@ signal open_stats_requested
 signal quit_run_requested
 
 @onready var money_label: Label = $TopContainer/VBox/TopHBox/MoneyContainer/MoneyLabel
-@onready var order_label: Label = $TopContainer/VBox/TopHBox/OrderContainer/OrderLabel
+@onready var order_label: Label = $TopContainer/VBox/TopHBox/MoneyContainer/OrderLabel
 @onready var order_progress_bar: ProgressBar = $TopContainer/VBox/OrderProgressBar
 @onready var order_progress_label: Label = $TopContainer/VBox/OrderProgressBar/OrderProgressLabel
-@onready var status_info_label: Label = $TopContainer/VBox/StatusHBox/StatusInfoLabel
+@onready var status_info_label: Label = $TopContainer/VBox/TopHBox/MoneyContainer/StatusInfoLabel
 @onready var launch_rate_label: Label = $TopContainer/VBox/StatusHBox/LaunchRateLabel
-@onready var round_time_label: Label = $TopContainer/VBox/RoundTimeLabel
+@onready var round_time_label: Label = $TopContainer/VBox/StatusHBox/RoundTimeLabel
 @onready var energy_bar: ProgressBar = $TopContainer/VBox/EnergyContainer/EnergyBar
 @onready var energy_label: Label = $TopContainer/VBox/EnergyContainer/EnergyBar/EnergyLabel
 @onready var knife_label: Label = $BottomContainer/KnifeInfoLabel

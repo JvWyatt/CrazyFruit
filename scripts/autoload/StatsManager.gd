@@ -136,11 +136,11 @@ var run_upgrade_levels: Dictionary = {
 # (+0.5% mercado / +1% prestigio, sin cambios), y frecuencia de frutas sin
 # cambios (mercado +10% / prestigio +25%).
 var run_upgrade_definitions: Dictionary = {
-	"damage": {"name": "Afilado de Hoja", "desc": "+10% daño", "base_cost": 10, "cost_mult": 1.5, "icon": "💥"},
-	"energy_max": {"name": "Resistencia", "desc": "+10% resistencia máxima", "base_cost": 10, "cost_mult": 1.5, "icon": "⚡"},
-	"luck": {"name": "Golpe de Suerte", "desc": "+0.777% probabilidad de Jackpot", "base_cost": 10, "cost_mult": 1.5, "icon": "🍀"},
-	"money": {"name": "Negociación", "desc": "+10% multiplicador de ganancias", "base_cost": 10, "cost_mult": 1.5, "icon": "💰"},
-	"launch_rate": {"name": "Cosecha Veloz", "desc": "+10% frecuencia de lanzamiento", "base_cost": 10, "cost_mult": 1.5, "icon": "🚀"}
+	"damage": {"name": "Afilado de Hoja", "desc": "+10% daño", "base_cost": 5, "cost_mult": 1.5, "icon": "💥"},
+	"energy_max": {"name": "Resistencia", "desc": "+10% resistencia máxima", "base_cost": 5, "cost_mult": 1.5, "icon": "⚡"},
+	"luck": {"name": "Golpe de Suerte", "desc": "+0.777% probabilidad de Jackpot", "base_cost": 5, "cost_mult": 1.5, "icon": "🍀"},
+	"money": {"name": "Negociación", "desc": "+10% multiplicador de ganancias", "base_cost": 5, "cost_mult": 1.5, "icon": "💰"},
+	"launch_rate": {"name": "Cosecha Veloz", "desc": "+10% frecuencia de lanzamiento", "base_cost": 5, "cost_mult": 1.5, "icon": "🚀"}
 }
 
 # ----------------------------------------------------------------------------
@@ -389,7 +389,7 @@ func get_obstacle_resistance_penalty() -> float:
 	return maxf(1.0, get_final_max_energy() * OBSTACLE_RESISTANCE_PENALTY_FRACTION)
 
 # Precio final de las mejoras del mercado: la primera compra (nivel 0) cuesta
-# el base_cost ($10) y cada compra siguiente crece ×1.5: 10, 15, 22.5 → ..., y
+# el base_cost ($5) y cada compra siguiente crece ×1.5: 5, 7.5, 11.25 → ..., y
 # así sucesivamente (fórmula base_cost × cost_mult^nivel, sin tabla fija).
 func get_run_upgrade_cost(upgrade_id: String) -> float:
 	if not run_upgrade_definitions.has(upgrade_id):

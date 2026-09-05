@@ -1,4 +1,4 @@
-[gd_scene load_steps=13 format=3 uid="uid://dg03k36pm1y8a"]
+[gd_scene load_steps=18 format=3 uid="uid://dg03k36pm1y8a"]
 
 [ext_resource type="Script" uid="uid://bdj3lmpeoeea5" path="res://scripts/ui/MainMenu.gd" id="1_mm"]
 [ext_resource type="PackedScene" path="res://scenes/ui/SettingsSection.tscn" id="2_ss"]
@@ -6,6 +6,11 @@
 [ext_resource type="FontFile" uid="uid://d0q5ls72jdqnh" path="res://assets/fonts/display-ttf/SkitserCartoon.ttf" id="4_e2per"]
 [ext_resource type="Texture2D" uid="uid://ccw2bv8oohapn" path="res://assets/ui/icons/prestige.png" id="6_7mi0g"]
 [ext_resource type="FontFile" uid="uid://bsk4775kdna1c" path="res://assets/fonts/roboto/Roboto-Black.ttf" id="7_7vr37"]
+[ext_resource type="Texture2D" uid="uid://drn1mukt17ueg" path="res://assets/ui/icons/progress_book.png" id="7_ee60a"]
+[ext_resource type="Texture2D" uid="uid://cl0ryhmly6nf7" path="res://assets/ui/icons/achievements.png" id="8_qjd48"]
+[ext_resource type="Texture2D" uid="uid://dkcptt6wrtxbw" path="res://assets/ui/icons/Joker.png" id="9_ff4wq"]
+[ext_resource type="Texture2D" uid="uid://cdpail6lhujn8" path="res://assets/ui/icons/settings.png" id="10_nqw28"]
+[ext_resource type="Texture2D" uid="uid://bay06q8cb31ci" path="res://assets/ui/icons/info.png" id="11_7uy2f"]
 [ext_resource type="Texture2D" uid="uid://ts4equqnr1im" path="res://assets/ui/backgrounds/menu_bg.png" id="tex_bg"]
 [ext_resource type="Texture2D" uid="uid://bnf8gub0jg74" path="res://assets/ui/backgrounds/logo.png" id="tex_logo"]
 
@@ -202,28 +207,42 @@ custom_minimum_size = Vector2(0, 52)
 layout_mode = 2
 theme_override_fonts/font = ExtResource("7_7vr37")
 theme_override_font_sizes/font_size = 18
-text = "🏆 VER PROGRESO"
+text = " VER PROGRESO"
+icon = ExtResource("7_ee60a")
+expand_icon = true
 
 [node name="AchievementsButton" type="Button" parent="CenterVBox/ButtonsVBox"]
 custom_minimum_size = Vector2(0, 52)
 layout_mode = 2
 theme_override_fonts/font = ExtResource("7_7vr37")
 theme_override_font_sizes/font_size = 18
-text = "🎖️ LOGROS"
+text = "LOGROS"
+icon = ExtResource("8_qjd48")
+expand_icon = true
 
 [node name="CardsButton" type="Button" parent="CenterVBox/ButtonsVBox"]
 custom_minimum_size = Vector2(0, 52)
 layout_mode = 2
 theme_override_fonts/font = ExtResource("7_7vr37")
 theme_override_font_sizes/font_size = 18
-text = "🃏 COMODINES"
+text = "COMODINES"
+icon = ExtResource("9_ff4wq")
+expand_icon = true
 
 [node name="SettingsButton" type="Button" parent="CenterVBox/ButtonsVBox"]
 custom_minimum_size = Vector2(0, 52)
 layout_mode = 2
 theme_override_fonts/font = ExtResource("7_7vr37")
 theme_override_font_sizes/font_size = 18
-text = "⚙️ AJUSTES"
+text = " AJUSTES"
+icon = ExtResource("10_nqw28")
+expand_icon = true
+
+[node name="s1" type="Control" parent="CenterVBox/ButtonsVBox"]
+layout_mode = 2
+
+[node name="s2" type="Control" parent="CenterVBox/ButtonsVBox"]
+layout_mode = 2
 
 [node name="ResetButton" type="Button" parent="CenterVBox/ButtonsVBox"]
 custom_minimum_size = Vector2(0, 44)
@@ -231,7 +250,9 @@ layout_mode = 2
 theme_override_colors/font_color = Color(0.7, 0.5, 0.5, 1)
 theme_override_fonts/font = ExtResource("7_7vr37")
 theme_override_font_sizes/font_size = 14
-text = "🔄 REINICIAR PROGRESO"
+text = "REINICIAR PROGRESO"
+icon = ExtResource("11_7uy2f")
+expand_icon = true
 
 [node name="ResetConfirmDialog" parent="." instance=ExtResource("3_cd")]
 layout_mode = 1

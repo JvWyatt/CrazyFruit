@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bsntuw6j138cv"
-path="res://.godot/imported/card_frame_common.png-5a2f64dbe6c5fe6650636795b5ea201d.ctex"
+uid="uid://dkcptt6wrtxbw"
+path="res://.godot/imported/Joker.png-9f503f204c7c4e22c238297fe4c5ab03.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/ui/game/card_frame_common.png"
-dest_files=["res://.godot/imported/card_frame_common.png-5a2f64dbe6c5fe6650636795b5ea201d.ctex"]
+source_file="res://assets/ui/icons/Joker.png"
+dest_files=["res://.godot/imported/Joker.png-9f503f204c7c4e22c238297fe4c5ab03.ctex"]
 
 [params]
 

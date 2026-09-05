@@ -107,9 +107,9 @@ func take_damage(amount: float, is_critical: bool, cut_dir: Vector2 = Vector2.ZE
 		tween.tween_property(visual_node, "scale", Vector2(0.85, 1.15), 0.08)
 		tween.tween_property(visual_node, "scale", Vector2(1.0, 1.0), 0.1).set_trans(Tween.TRANS_BOUNCE)
 
-	# Spawn Damage Text
+	# Spawn Damage Text (daño con 2 decimales, ej. "-5.70").
 	_spawn_floating_text(
-		("-" + str(int(round(amount)))) if not is_critical else ("¡CRÍTICO! -" + str(int(round(amount)))),
+		("-" + String.num(amount, 2)) if not is_critical else ("¡CRÍTICO! -" + String.num(amount, 2)),
 		Color(1.0, 0.3, 0.3) if not is_critical else Color(1.0, 0.85, 0.1),
 		1.0 if not is_critical else 1.35
 	)

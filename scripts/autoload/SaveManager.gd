@@ -39,7 +39,14 @@ var save_data: Dictionary = {
 	"total_fruits_cut": 0,
 	"total_reputation_earned": 0,
 	"days_started": 0,
-	"best_clients_in_day": 0
+	"best_clients_in_day": 0,
+	# Logros desbloqueados + métricas/flags de progreso. TODO lo gestiona
+	# AchievementManager; aquí solo se guarda para persistirlo entre sesiones.
+	"achievements": {
+		"unlocked": [],
+		"metrics": {},
+		"flags": {}
+	}
 }
 
 func _ready() -> void:
@@ -206,7 +213,12 @@ func reset_save() -> void:
 		"total_fruits_cut": 0,
 		"total_reputation_earned": 0,
 		"days_started": 0,
-		"best_clients_in_day": 0
+		"best_clients_in_day": 0,
+		"achievements": {
+			"unlocked": [],
+			"metrics": {},
+			"flags": {}
+		}
 	}
 	save_to_disk()
 	emit_signal("prestige_changed", 0)

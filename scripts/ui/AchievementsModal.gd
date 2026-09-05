@@ -129,7 +129,11 @@ func _next_tab() -> bool:
 	vbox.add_child(header)
 
 	# Añadir la pestaña vacía (solo header) es barato; las filas llegan por lotes tras ella.
+	# El nombre del nodo es lo que TabContainer muestra como titulo de pestaña por
+	# defecto; se asigna un titulo legible para que no salga "ScrollContainer".
+	scroll.name = "Tab_" + str(randi())
 	tabs.add_child(scroll)
+	tabs.set_tab_title(tabs.get_tab_count() - 1, str(info["icon"]) + " " + str(info["tag"]))
 	_current_vbox = vbox
 	return true
 

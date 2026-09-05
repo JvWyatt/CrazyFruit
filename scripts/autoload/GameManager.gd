@@ -31,17 +31,19 @@ signal streak_broken
 
 # Cuánto dinero hay que ganar para completar cada día/pedido (pedido 1, 2, 3...).
 # NO es una tabla fija: los días son infinitos y la cuota se calcula con una
-# fórmula geométrica sencilla (ver get_order_target_for). Día 1 = $5 y crece
-# ×1.21 por día: día 100 ≈ $5 × 1.21^99 ≈ $787M. Cada día es alcanzable con la
-# fruta/arma del día anterior y deja un excedente para comprar mejoras.
-const BASE_ORDER_TARGET: float = 5.0
+# fórmula geométrica sencilla (ver get_order_target_for). El día 1 es de regalo
+# (objetivo $0: basta con terminar la ronda) y desde el día 2 la cuota arranca
+# en $10 y crece ×1.21 por día: día 100 ≈ $10 × 1.21^98 ≈ $1.30B. Cada día es
+# alcanzable con la fruta/arma del día anterior y deja un excedente para
+# comprar mejoras.
+const BASE_ORDER_TARGET: float = 10.0
 const ORDER_TARGET_GROWTH: float = 1.21
 
 # OBJETIVO DEL JUEGO: llegar a 100 días. Al completar este día se muestra la
 # pantalla de créditos (con un "Continuar" para seguir haciendo récords).
-# La cuota crece de forma geométrica: día N = BASE_ORDER_TARGET ×
-# ORDER_TARGET_GROWTH^(N-1). Como el juego es de días infinitos, no existe una
-# tabla: la fórmula cubre todos los días.
+# La cuota crece de forma geométrica: día 1 = $0 (regalo) y día N = 
+# BASE_ORDER_TARGET × ORDER_TARGET_GROWTH^(N-2). Como el juego es de días
+# infinitos, no existe una tabla: la fórmula cubre todos los días.
 const WIN_DAY: int = 100
 
 # Estados posibles de la partida: qué pantalla/momento del flujo estamos.
@@ -58,7 +60,7 @@ var current_state: GameState = GameState.MENU
 
 # --- Estado del negocio actual (se resetea en start_new_run) ---
 var current_order: int = 1        # Pedido/día actual (1, 2, 3...)
-var order_target: float = 5.0      # Dinero necesario para completar el pedido actual
+var order_target: float = BASE_ORDER_TARGET      # Dinero necesario para completar el pedido actual
 var order_progress: float = 0.0   # Dinero ganado hasta ahora en este pedido
 var run_money: float = 0.0        # Dinero disponible para gastar en la tienda (se resetea cada negocio)
 
@@ -184,9 +186,12 @@ func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 
 func get_order_target_for(order_num: int) -> float:
-	# Fórmula geométrica de días infinitos: día N = base × crecimiento^(N-1).
-	# La misma expresión cubre todos los días (1..∞), sin tabla fija.
-	var base: float = BASE_ORDER_TARGET * pow(ORDER_TARGET_GROWTH, order_num - 1)
+	# Día 1 es de regalo: objetivo $0, se completa con terminar la ronda.
+	# Desde el día 2 la cuota arranca en BASE y crece ×1.21 por día:
+	# día N = BASE_ORDER_TARGET × ORDER_TARGET_GROWTH^(N-2).
+	if order_num <= 1:
+		return 0.0
+	var base: float = BASE_ORDER_TARGET * pow(ORDER_TARGET_GROWTH, order_num - 2)
 	return base * StatsManager.get_order_target_multiplier()
 
 # Empieza un negocio nuevo desde cero: reinicia dinero, pedido, energía y

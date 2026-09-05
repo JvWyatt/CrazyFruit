@@ -15,7 +15,7 @@ config/description="Crazy Fruit - Incremental 2D Fruit Cutting Mobile Game"
 config/version="0.017"
 run/main_scene="res://scenes/Main.tscn"
 config/features=PackedStringArray("4.5", "GL Compatibility")
-config/icon="res://icon.png"
+config/icon="res://assets/icon_app.png"
 
 [audio]
 

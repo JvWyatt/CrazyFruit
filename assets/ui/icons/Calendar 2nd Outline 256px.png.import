@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://c5rs63aqdygnx"
-path="res://.godot/imported/order_progress_fill.png-7ddbce4d7377242a5bea17b1d59925d3.ctex"
+uid="uid://eu6ns4chldvf"
+path="res://.godot/imported/Calendar 2nd Outline 256px.png-d0fda2d1a2e023e87018fec712e9baf9.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/ui/game/order_progress_fill.png"
-dest_files=["res://.godot/imported/order_progress_fill.png-7ddbce4d7377242a5bea17b1d59925d3.ctex"]
+source_file="res://assets/ui/icons/Calendar 2nd Outline 256px.png"
+dest_files=["res://.godot/imported/Calendar 2nd Outline 256px.png-d0fda2d1a2e023e87018fec712e9baf9.ctex"]
 
 [params]
 

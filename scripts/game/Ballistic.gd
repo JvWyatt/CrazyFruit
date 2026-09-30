@@ -19,6 +19,15 @@ const DEFAULT_WALL_LEFT: float = 10.0
 const DEFAULT_WALL_RIGHT: float = 710.0
 const DEFAULT_ESCAPE_Y: float = 1500.0
 
+# Valores POR DEFECTO editables en el inspector de cada escena (Fruit.tscn y
+# Obstacle.tscn). Al lanzar con centinelas (gravedad -1, paredes/escape 0) se
+# usan estos valores exportados; si el llamador pasa valores reales, mandan los
+# suyos (ver FruitSpawner, que pasa las paredes y la altura de escape REALES).
+@export_range(0.0, 5000.0, 0.1) var gravity_default: float = DEFAULT_GRAVITY
+@export_range(0.0, 2000.0, 1.0) var wall_left_default: float = DEFAULT_WALL_LEFT
+@export_range(0.0, 2000.0, 1.0) var wall_right_default: float = DEFAULT_WALL_RIGHT
+@export_range(0.0, 4000.0, 1.0) var escape_y_default: float = DEFAULT_ESCAPE_Y
+
 var gravity: float = DEFAULT_GRAVITY
 var escape_y: float = DEFAULT_ESCAPE_Y
 var wall_left: float = DEFAULT_WALL_LEFT
@@ -31,15 +40,16 @@ var is_active: bool = false
 # acorde al alto REAL del viewport: un valor fijo (p.ej. 1500) elimina las
 # frutas al instante en pantallas más altas que 720x1280 (la fruta nace a
 # play_bounds.end.y + 150, que en pantalla alta supera 1500).
-func launch(from_position: Vector2, launch_velocity: Vector2, p_gravity: float = DEFAULT_GRAVITY, p_wall_left: float = DEFAULT_WALL_LEFT, p_wall_right: float = DEFAULT_WALL_RIGHT, p_escape_y: float = DEFAULT_ESCAPE_Y) -> void:
+func launch(from_position: Vector2, launch_velocity: Vector2, p_gravity: float = -1.0, p_wall_left: float = 0.0, p_wall_right: float = 0.0, p_escape_y: float = 0.0) -> void:
 	var parent := get_parent()
 	if parent is Node2D:
 		parent.position = from_position
 	velocity = launch_velocity
-	gravity = p_gravity
-	wall_left = p_wall_left
-	wall_right = p_wall_right
-	escape_y = p_escape_y
+	# Los centinelas (-1 / 0) resuelven a los valores exportados del inspector.
+	gravity = gravity_default if p_gravity < 0.0 else p_gravity
+	wall_left = wall_left_default if p_wall_left <= 0.0 else p_wall_left
+	wall_right = wall_right_default if p_wall_right <= 0.0 else p_wall_right
+	escape_y = escape_y_default if p_escape_y <= 0.0 else p_escape_y
 	is_active = true
 
 func stop() -> void:

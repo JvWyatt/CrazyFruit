@@ -1,43 +1,9 @@
-[gd_scene load_steps=5 format=3 uid="uid://cx62m20g3n4a1"]
+[gd_scene format=3 uid="uid://cx62m20g3n4a1"]
 
-[ext_resource type="Script" path="res://scripts/ui/CardSelectionModal.gd" id="1_csm"]
-[ext_resource type="Script" path="res://scripts/ui/TouchScrollContainer.gd" id="2_touch_scroll"]
+[ext_resource type="Script" uid="uid://cb03ic4sgbdy5" path="res://scripts/ui/CardSelectionModal.gd" id="1_csm"]
+[ext_resource type="Theme" uid="uid://cw00u1brw0yxi" path="res://themes/ui01_theme.tres" id="1_tpv6o"]
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_modal_bg"]
-bg_color = Color(0.08, 0.09, 0.14, 0.97)
-border_width_left = 2
-border_width_top = 2
-border_width_right = 2
-border_width_bottom = 2
-border_color = Color(0.32, 0.41, 0.63, 0.9)
-corner_radius_top_left = 18
-corner_radius_top_right = 18
-corner_radius_bottom_right = 18
-corner_radius_bottom_left = 18
-content_margin_left = 22.0
-content_margin_top = 22.0
-content_margin_right = 22.0
-content_margin_bottom = 22.0
-shadow_color = Color(0, 0, 0, 0.65)
-shadow_size = 24
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_summary"]
-bg_color = Color(0.06, 0.12, 0.1, 0.98)
-border_width_left = 1
-border_width_top = 1
-border_width_right = 1
-border_width_bottom = 1
-border_color = Color(0.35, 0.7, 0.5, 0.7)
-corner_radius_top_left = 10
-corner_radius_top_right = 10
-corner_radius_bottom_right = 10
-corner_radius_bottom_left = 10
-content_margin_left = 16.0
-content_margin_top = 12.0
-content_margin_right = 16.0
-content_margin_bottom = 12.0
-
-[node name="CardSelectionModal" type="Control"]
+[node name="CardSelectionModal" type="Control" unique_id=2006243297]
 z_index = 35
 layout_mode = 3
 anchors_preset = 15
@@ -45,18 +11,19 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+theme = ExtResource("1_tpv6o")
 script = ExtResource("1_csm")
 
-[node name="Dimmer" type="ColorRect" parent="."]
+[node name="Dimmer" type="ColorRect" parent="." unique_id=1642812806]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-color = Color(0, 0, 0, 0.7)
+color = Color(0, 0, 0, 0.65)
 
-[node name="Panel" type="PanelContainer" parent="."]
+[node name="Panel" type="PanelContainer" parent="." unique_id=861302991]
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
@@ -69,122 +36,119 @@ offset_right = 320.0
 offset_bottom = 420.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_styles/panel = SubResource("StyleBoxFlat_modal_bg")
+theme_type_variation = &"ModalPanel"
 
-[node name="VBox" type="VBoxContainer" parent="Panel"]
+[node name="VBox" type="VBoxContainer" parent="Panel" unique_id=108456681]
 layout_mode = 2
 theme_override_constants/separation = 16
 
-[node name="TitleLabel" type="Label" parent="Panel/VBox"]
+[node name="TitleLabel" type="Label" parent="Panel/VBox" unique_id=732008669]
 layout_mode = 2
-theme_override_colors/font_color = Color(1, 0.88, 0.2, 1)
-theme_override_font_sizes/font_size = 24
-text = "🎉 ¡DÍA COMPLETADO!"
+theme_type_variation = &"TitleLabel"
+theme_override_font_sizes/font_size = 28
+text = "¡DÍA COMPLETADO!"
 horizontal_alignment = 1
 autowrap_mode = 2
 
-[node name="SubtitleLabel" type="Label" parent="Panel/VBox"]
+[node name="SummaryPanel" type="PanelContainer" parent="Panel/VBox" unique_id=1716338548]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.8, 0.88, 1, 1)
-theme_override_font_sizes/font_size = 16
-text = "Selecciona 1 comodín para mejorar tu negocio:"
-horizontal_alignment = 1
-autowrap_mode = 2
+theme_type_variation = &"SummaryPanel"
 
-[node name="SummaryPanel" type="PanelContainer" parent="Panel/VBox"]
-layout_mode = 2
-theme_override_styles/panel = SubResource("StyleBoxFlat_summary")
-
-[node name="SummaryVBox" type="VBoxContainer" parent="Panel/VBox/SummaryPanel"]
+[node name="SummaryVBox" type="VBoxContainer" parent="Panel/VBox/SummaryPanel" unique_id=1508689060]
 layout_mode = 2
 theme_override_constants/separation = 6
 
-[node name="SummaryTitle" type="Label" parent="Panel/VBox/SummaryPanel/SummaryVBox"]
+[node name="SummaryTitle" type="Label" parent="Panel/VBox/SummaryPanel/SummaryVBox" unique_id=1132556494]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.6, 0.95, 0.6, 1)
 theme_override_font_sizes/font_size = 16
 text = "📊 RESUMEN DEL DÍA"
 horizontal_alignment = 1
 
-[node name="EarnedRow" type="HBoxContainer" parent="Panel/VBox/SummaryPanel/SummaryVBox"]
+[node name="EarnedRow" type="HBoxContainer" parent="Panel/VBox/SummaryPanel/SummaryVBox" unique_id=157972037]
 layout_mode = 2
 
-[node name="EarnedLabel" type="Label" parent="Panel/VBox/SummaryPanel/SummaryVBox/EarnedRow"]
+[node name="EarnedLabel" type="Label" parent="Panel/VBox/SummaryPanel/SummaryVBox/EarnedRow" unique_id=800131827]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_colors/font_color = Color(0.8, 0.88, 1, 1)
-theme_override_font_sizes/font_size = 15
+theme_override_font_sizes/font_size = 16
 text = "Conseguido:"
 
-[node name="EarnedValue" type="Label" parent="Panel/VBox/SummaryPanel/SummaryVBox/EarnedRow"]
+[node name="EarnedValue" type="Label" parent="Panel/VBox/SummaryPanel/SummaryVBox/EarnedRow" unique_id=763557197]
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_font_sizes/font_size = 15
+theme_override_font_sizes/font_size = 16
 text = "$0"
 horizontal_alignment = 2
 
-[node name="TaxRow" type="HBoxContainer" parent="Panel/VBox/SummaryPanel/SummaryVBox"]
+[node name="TaxRow" type="HBoxContainer" parent="Panel/VBox/SummaryPanel/SummaryVBox" unique_id=1319439625]
 layout_mode = 2
 
-[node name="TaxLabel" type="Label" parent="Panel/VBox/SummaryPanel/SummaryVBox/TaxRow"]
+[node name="TaxLabel" type="Label" parent="Panel/VBox/SummaryPanel/SummaryVBox/TaxRow" unique_id=746254239]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_colors/font_color = Color(0.8, 0.88, 1, 1)
-theme_override_font_sizes/font_size = 15
+theme_override_font_sizes/font_size = 16
 text = "Impuesto:"
 
-[node name="TaxValue" type="Label" parent="Panel/VBox/SummaryPanel/SummaryVBox/TaxRow"]
+[node name="TaxValue" type="Label" parent="Panel/VBox/SummaryPanel/SummaryVBox/TaxRow" unique_id=690944307]
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 0.6, 0.6, 1)
-theme_override_font_sizes/font_size = 15
+theme_override_font_sizes/font_size = 16
 text = "$0"
 horizontal_alignment = 2
 
-[node name="ProfitRow" type="HBoxContainer" parent="Panel/VBox/SummaryPanel/SummaryVBox"]
+[node name="ProfitRow" type="HBoxContainer" parent="Panel/VBox/SummaryPanel/SummaryVBox" unique_id=893620802]
 layout_mode = 2
 
-[node name="ProfitLabel" type="Label" parent="Panel/VBox/SummaryPanel/SummaryVBox/ProfitRow"]
+[node name="ProfitLabel" type="Label" parent="Panel/VBox/SummaryPanel/SummaryVBox/ProfitRow" unique_id=591061677]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_colors/font_color = Color(0.8, 0.88, 1, 1)
-theme_override_font_sizes/font_size = 15
+theme_override_font_sizes/font_size = 16
 text = "Ganancia:"
 
-[node name="ProfitValue" type="Label" parent="Panel/VBox/SummaryPanel/SummaryVBox/ProfitRow"]
+[node name="ProfitValue" type="Label" parent="Panel/VBox/SummaryPanel/SummaryVBox/ProfitRow" unique_id=1726311689]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.6, 0.95, 0.6, 1)
-theme_override_font_sizes/font_size = 15
+theme_override_font_sizes/font_size = 16
 text = "$0"
 horizontal_alignment = 2
 
-[node name="NextTargetRow" type="HBoxContainer" parent="Panel/VBox/SummaryPanel/SummaryVBox"]
+[node name="Control" type="Control" parent="Panel/VBox/SummaryPanel/SummaryVBox" unique_id=976522875]
 layout_mode = 2
 
-[node name="NextTargetLabel" type="Label" parent="Panel/VBox/SummaryPanel/SummaryVBox/NextTargetRow"]
+[node name="NextTargetRow" type="HBoxContainer" parent="Panel/VBox/SummaryPanel/SummaryVBox" unique_id=577718316]
+layout_mode = 2
+
+[node name="NextTargetLabel" type="Label" parent="Panel/VBox/SummaryPanel/SummaryVBox/NextTargetRow" unique_id=1814385068]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_colors/font_color = Color(0.95, 0.85, 0.55, 1)
 theme_override_font_sizes/font_size = 14
-text = "🎯 Objetivo del siguiente día:"
+text = "Siguiente objetivo:"
 
-[node name="NextTargetValue" type="Label" parent="Panel/VBox/SummaryPanel/SummaryVBox/NextTargetRow"]
+[node name="NextTargetValue" type="Label" parent="Panel/VBox/SummaryPanel/SummaryVBox/NextTargetRow" unique_id=596642765]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.95, 0.85, 0.55, 1)
 theme_override_font_sizes/font_size = 14
 text = "$0"
 horizontal_alignment = 2
 
-[node name="HSeparator" type="HSeparator" parent="Panel/VBox"]
+[node name="HSeparator" type="HSeparator" parent="Panel/VBox" unique_id=1481114250]
 layout_mode = 2
 
-[node name="CardsScroll" type="ScrollContainer" parent="Panel/VBox"]
+[node name="SubtitleLabel" type="Label" parent="Panel/VBox" unique_id=1933329000]
 layout_mode = 2
-size_flags_vertical = 3
-script = ExtResource("2_touch_scroll")
+theme_type_variation = &"SubtitleLabel"
+theme_override_font_sizes/font_size = 18
+text = "Selecciona 1 comodín para mejorar tu negocio:"
+horizontal_alignment = 1
+autowrap_mode = 2
 
-[node name="CardsVBox" type="VBoxContainer" parent="Panel/VBox/CardsScroll"]
+[node name="CardsHBox" type="HBoxContainer" parent="Panel/VBox" unique_id=1487350501]
 layout_mode = 2
-size_flags_horizontal = 3
 size_flags_vertical = 3
-theme_override_constants/separation = 14
+theme_override_constants/separation = 16
 alignment = 1

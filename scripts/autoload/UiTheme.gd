@@ -1,12 +1,22 @@
 extends Node
 # ============================================================================
-# UiTheme: paleta central + tema global + micro-interacciones para la
-# interfaz. Construye un Theme por código (más robusto que un .tres a mano)
-# y lo aplica al root para que TODOS los botones/paneles/barras hereden el
-# estilo (píldoras, bordes, relieve, sombras) sin tocar cada widget.
-# También expone helpers para la UI generada por código.
+# UiTheme: paleta central + helpers + micro-interacciones para la interfaz.
+# ----------------------------------------------------------------------------
+# El TEMA global vive AHORA en un archivo editable visualmente:
+#   res://themes/ui01_theme.tres
+# Ahí se cambian colores, bordes, fuentes y estilos de botones/paneles/barras
+# desde el inspector (también expone tipos personalizados "PrimaryButton",
+# "DangerButton", "ModalPanel", "Card" y el grupo de colores "Palette").
+# Este script solo CARGA ese theme y aporta helpers para la UI generada por
+# código. Si el .tres falta, _build_fallback_theme() replica el estilo por
+# código para que el juego nunca se quede sin tema.
 # ============================================================================
 
+const THEME_PATH: String = "res://themes/ui01_theme.tres"
+
+# Colores de la paleta central (usados por code-hints como ConfirmDialog).
+# Por defecto replican el theme; siempre consulta _palette_color() si quieres
+# que el valor editable del .tres sea el que manda.
 const COLOR_BG: Color = Color(0.055, 0.071, 0.125)
 const COLOR_PANEL: Color = Color(0.078, 0.102, 0.18)
 const COLOR_ROW: Color = Color(0.102, 0.129, 0.22)
@@ -33,99 +43,23 @@ func _ready() -> void:
 # ---------------------------------------------------------------------------
 
 func _install_theme() -> void:
-	var theme := Theme.new()
-
-	# Botones: esquinas claramente redondeadas con borde, relieve inferior y sombra.
-# (Radio fijo 18: una píldora con radio 999 en botones anchos se ve como un
-# rectángulo plano; con radio 18 el redondeo es evidente en todas las pantallas.)
-	var btn_normal := _pill_style(Color(0.16, 0.2, 0.34), Color(0.45, 0.55, 0.85, 0.9), 3)
-	var btn_hover := _pill_style(Color(0.23, 0.3, 0.5), Color(0.72, 0.8, 0.97, 1.0), 4)
-	var btn_pressed := _pill_style(Color(0.085, 0.11, 0.2), Color(0.95, 0.78, 0.32, 1.0), 1)
-	var btn_disabled := _pill_style(Color(0.1, 0.12, 0.17), Color(0.18, 0.21, 0.3, 1.0), 0)
-	var btn_focus := _pill_style(Color(0, 0, 0, 0), Color(0.3, 0.6, 1.0, 0.9), 0)
-	btn_focus.border_width_left = 2
-	btn_focus.border_width_top = 2
-	btn_focus.border_width_right = 2
-	btn_focus.border_width_bottom = 2
-
-	theme.set_stylebox("normal", "Button", btn_normal)
-	theme.set_stylebox("hover", "Button", btn_hover)
-	theme.set_stylebox("pressed", "Button", btn_pressed)
-	theme.set_stylebox("disabled", "Button", btn_disabled)
-	theme.set_stylebox("focus", "Button", btn_focus)
-	theme.set_stylebox("hover_pressed", "Button", btn_pressed)
-
-	theme.set_color("font_color", "Button", Color(0.94, 0.96, 1.0))
-	theme.set_color("font_hover_color", "Button", Color(1.0, 0.96, 0.78))
-	theme.set_color("font_pressed_color", "Button", Color(1.0, 0.86, 0.4))
-	theme.set_color("font_disabled_color", "Button", Color(0.45, 0.5, 0.6, 0.7))
-	theme.set_constant("separation", "Button", 0)
-
-	# Sliders horizontales (ajustes): carril oscuro, relleno verde y pomo dorado.
-	theme.set_stylebox("slider", "HSlider", _box_style(Color(0.09, 0.11, 0.17), Color(0.16, 0.21, 0.34, 0.8), 5))
-	theme.set_stylebox("grabber_area", "HSlider", _box_style(Color(0.31, 0.84, 0.62), Color(0, 0, 0, 0), 5))
-	theme.set_stylebox("grabber_area_highlight", "HSlider", _box_style(Color(0.34, 0.92, 0.68), Color(0, 0, 0, 0), 5))
-	theme.set_stylebox("grabber", "HSlider", _box_style(Color(1.0, 0.835, 0.29), Color(0.8, 0.6, 0.2, 0.9), 999))
-	theme.set_stylebox("grabber_highlight", "HSlider", _box_style(Color(1.0, 0.9, 0.5), Color(0.8, 0.6, 0.2, 0.9), 999))
-
-	# Barras de progreso (fondo con borde sutil + relleno redondeado).
-	theme.set_stylebox("background", "ProgressBar", _box_style(Color(0.09, 0.11, 0.17), Color(0.2, 0.26, 0.42, 0.8), 8))
-	theme.set_stylebox("fill", "ProgressBar", _box_style(Color(0.31, 0.84, 0.62), Color(0.31, 0.84, 0.62, 0.0), 8))
-
-	# Pestañas redondeadas (p.ej. Mejoras/Frutería/Armas de la tienda de mejoras).
-	theme.set_stylebox("tab_selected", "TabContainer", _box_style(Color(0.16, 0.2, 0.34), Color(0.45, 0.55, 0.85, 0.9), 12, 2))
-	theme.set_stylebox("tab_unselected", "TabContainer", _box_style(Color(0.09, 0.11, 0.17), Color(0.2, 0.26, 0.42, 0.6), 12))
-	theme.set_stylebox("tab_hovered", "TabContainer", _box_style(Color(0.12, 0.15, 0.24), Color(0.4, 0.5, 0.75, 0.7), 12))
-	theme.set_stylebox("tab_focused", "TabContainer", _box_style(Color(0.12, 0.15, 0.24), Color(0.3, 0.6, 1.0, 0.9), 12, 2))
-	theme.set_stylebox("panel", "TabContainer", _box_style(COLOR_PANEL, Color(0.28, 0.36, 0.58, 0.8), 14))
-	theme.set_color("font_color_selected", "TabContainer", COLOR_TEXT)
-	theme.set_color("font_unselected_color", "TabContainer", COLOR_TEXT_DIM)
-	theme.set_color("font_hovered_color", "TabContainer", COLOR_TEXT)
-	theme.set_font_size("font_size", "TabContainer", 16)
-	theme.set_constant("tab_separation", "TabContainer", 2)
-
-	# Paneles por defecto (tarjeta oscura con borde y sombra).
-	theme.set_stylebox("panel", "PanelContainer", _box_style(COLOR_PANEL, Color(0.28, 0.36, 0.58), 14, 8))
-
-	# Paneles de ventanas/diálogos.
-	theme.set_stylebox("panel", "Window", _box_style(Color(0.1, 0.13, 0.22, 0.99), Color(0.32, 0.41, 0.63), 16, 10))
-
-	# Scrollbars verticales.
-	var scroll_track := _box_style(Color(0.07, 0.09, 0.15), Color(0, 0, 0, 0), 4)
-	var scroll_grab := _box_style(Color(0.34, 0.43, 0.66), Color(0, 0, 0, 0), 4)
-	var scroll_grab_hi := _box_style(Color(0.48, 0.6, 0.88), Color(0, 0, 0, 0), 4)
-	theme.set_stylebox("scroll", "VScrollBar", scroll_track)
-	theme.set_stylebox("grabber", "VScrollBar", scroll_grab)
-	theme.set_stylebox("grabber_highlight", "VScrollBar", scroll_grab_hi)
-	theme.set_stylebox("grabber_pressed", "VScrollBar", scroll_grab_hi)
-
-	# Texto por defecto.
-	theme.set_color("font_color", "Label", COLOR_TEXT)
-	theme.set_font_size("font_size", "Label", 18)
-
+	var theme := load(THEME_PATH) as Theme
+	if theme == null:
+		push_warning("UiTheme: no se pudo cargar %s; usando tema de respaldo por código." % THEME_PATH)
+		theme = _build_fallback_theme()
 	get_tree().root.theme = theme
 
-func _pill_style(bg: Color, border: Color, shadow_size: int) -> StyleBoxFlat:
-	var sb := _box_style(bg, border, 18, shadow_size)
-	sb.content_margin_left = 24
-	sb.content_margin_right = 24
-	sb.content_margin_top = 10
-	sb.content_margin_bottom = 10
-	return sb
+# Devuelve el Theme activo (o null si aún no está aplicado).
+func _current_theme() -> Theme:
+	return get_tree().root.theme as Theme if get_tree() and (get_tree().root.theme as Theme) else null
 
-func _box_style(bg: Color, border: Color, radius: int, shadow_size: int = 0) -> StyleBoxFlat:
-	var sb := StyleBoxFlat.new()
-	sb.bg_color = bg
-	sb.border_width_left = 2
-	sb.border_width_top = 2
-	sb.border_width_right = 2
-	sb.border_width_bottom = 2
-	sb.border_color = border
-	sb.set_corner_radius_all(radius)
-	sb.shadow_color = Color(0, 0, 0, 0.35)
-	sb.shadow_size = shadow_size
-	sb.shadow_offset = Vector2(0, 2)
-	return sb
+# Lee un color de la paleta editable del theme ("Palette/<clave>") con
+# alternativa en código si el .tres no lo define.
+func _palette_color(key: String, fallback: Color) -> Color:
+	var theme := _current_theme()
+	if theme and theme.has_color(key, "Palette"):
+		return theme.get_color(key, "Palette")
+	return fallback
 
 # ---------------------------------------------------------------------------
 # Helpers para la UI generada por código
@@ -133,39 +67,72 @@ func _box_style(bg: Color, border: Color, radius: int, shadow_size: int = 0) -> 
 
 # Aplica un estilo de botón destacado según la variante: "primary" (dorado,
 # usado p.ej. para JUGAR) o "danger" (rojo, usado p.ej. para REINICIAR).
+# Los estilos vienen del theme (tipos personalizados PrimaryButton/DangerButton).
 func apply_button_style(button: Button, variant: String = "primary") -> void:
 	if button == null:
 		return
 	match variant:
 		"primary":
-			button.add_theme_stylebox_override("normal", _pill_style(Color(0.98, 0.78, 0.22), Color(1, 0.95, 0.62), 6))
-			button.add_theme_stylebox_override("hover", _pill_style(Color(1, 0.86, 0.38), Color(1, 0.97, 0.72), 7))
-			button.add_theme_stylebox_override("pressed", _pill_style(Color(0.8, 0.6, 0.12), Color(0.95, 0.75, 0.25), 3))
-			button.add_theme_stylebox_override("hover_pressed", _pill_style(Color(0.8, 0.6, 0.12), Color(0.95, 0.75, 0.25), 3))
-			button.add_theme_color_override("font_color", Color(0.32, 0.2, 0.04))
-			button.add_theme_color_override("font_hover_color", Color(0.32, 0.2, 0.04))
-			button.add_theme_color_override("font_pressed_color", Color(0.32, 0.2, 0.04))
+			_apply_theme_button(
+				button,
+				"PrimaryButton",
+				[Color(0.98, 0.78, 0.22), Color(1, 0.95, 0.62), 6],
+				[Color(1, 0.86, 0.38), Color(1, 0.97, 0.72), 7],
+				[Color(0.8, 0.6, 0.12), Color(0.95, 0.75, 0.25), 3],
+				Color(0.32, 0.2, 0.04))
 		"danger":
-			button.add_theme_stylebox_override("normal", _pill_style(Color(0.42, 0.14, 0.16), Color(0.75, 0.3, 0.32), 4))
-			button.add_theme_stylebox_override("hover", _pill_style(Color(0.52, 0.2, 0.22), Color(0.9, 0.4, 0.42), 5))
-			button.add_theme_stylebox_override("pressed", _pill_style(Color(0.3, 0.08, 0.1), Color(0.6, 0.2, 0.22), 1))
-			button.add_theme_stylebox_override("hover_pressed", _pill_style(Color(0.3, 0.08, 0.1), Color(0.6, 0.2, 0.22), 1))
-			button.add_theme_color_override("font_color", Color(1.0, 0.85, 0.85))
-			button.add_theme_color_override("font_hover_color", Color(1.0, 0.95, 0.95))
-			button.add_theme_color_override("font_pressed_color", Color(1.0, 0.8, 0.8))
+			_apply_theme_button(
+				button,
+				"DangerButton",
+				[Color(0.42, 0.14, 0.16), Color(0.75, 0.3, 0.32), 4],
+				[Color(0.52, 0.2, 0.22), Color(0.9, 0.4, 0.42), 5],
+				[Color(0.3, 0.08, 0.1), Color(0.6, 0.2, 0.22), 1],
+				Color(1.0, 0.85, 0.85))
 		_:
 			return
 
+# Aplica los styleboxes/colores de un tipo personalizado del theme. Si el
+# .tres no define ese tipo, construye inline con los mismos valores.
+func _apply_theme_button(button: Button, theme_type: String, normal: Array, hover: Array, pressed: Array, font_color: Color) -> void:
+	var theme := _current_theme()
+	var states: Array[String] = ["normal", "hover", "pressed", "hover_pressed"]
+	var fallback_by_state := {"normal": normal, "hover": hover, "pressed": pressed, "hover_pressed": pressed}
+	if theme and theme.has_stylebox("normal", theme_type):
+		for state in states:
+			var sb := theme.get_stylebox(state, theme_type)
+			if sb:
+				button.add_theme_stylebox_override(state, sb)
+		if theme.has_stylebox("focus", theme_type):
+			button.add_theme_stylebox_override("focus", theme.get_stylebox("focus", theme_type))
+	else:
+		for state in states:
+			var vals: Array = fallback_by_state[state]
+			button.add_theme_stylebox_override(state, _pill_style(vals[0], vals[1], int(vals[2])))
+	if theme and theme.has_color("font_color", theme_type):
+		button.add_theme_color_override("font_color", theme.get_color("font_color", theme_type))
+		button.add_theme_color_override("font_hover_color", theme.get_color("font_hover_color", theme_type))
+		button.add_theme_color_override("font_pressed_color", theme.get_color("font_pressed_color", theme_type))
+	else:
+		button.add_theme_color_override("font_color", font_color)
+		button.add_theme_color_override("font_hover_color", font_color)
+		button.add_theme_color_override("font_pressed_color", font_color)
+
 # Estilo de tarjeta modal: fondo oscuro con borde brillante y sombra grande
-# (p.ej. el panel de ajustes del menú principal).
+# (p.ej. el panel de ajustes del menú principal). Proviene del tipo
+# personalizado "ModalPanel" del theme (con respaldo en código).
 func apply_modal_panel(panel: PanelContainer) -> void:
 	if panel == null:
 		return
-	var style := _box_style(Color(0.09, 0.11, 0.19, 0.98), Color(0.45, 0.55, 0.85), 18, 10)
-	style.content_margin_left = 28
-	style.content_margin_right = 28
-	style.content_margin_top = 24
-	style.content_margin_bottom = 24
+	var theme := _current_theme()
+	var style: StyleBox = null
+	if theme and theme.has_stylebox("panel", "ModalPanel"):
+		style = theme.get_stylebox("panel", "ModalPanel")
+	if style == null:
+		style = _box_style(Color(0.09, 0.11, 0.19, 0.98), Color(0.45, 0.55, 0.85), 18, 10)
+		style.content_margin_left = 28
+		style.content_margin_right = 28
+		style.content_margin_top = 24
+		style.content_margin_bottom = 24
 	panel.add_theme_stylebox_override("panel", style)
 
 # Escala el botón al pasar el ratón encima para dar feedback táctil de
@@ -186,7 +153,8 @@ func add_hover_scale(button: Control, amount: float = 1.05) -> void:
 		tween.tween_property(button, "scale", Vector2.ONE, 0.12).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 	)
 
-# Tarjeta/panel con borde y sombra, usada por la UI generada por código.
+# Tarjeta/panel genérico para la UI generada por código. Si cambias el borde o
+# el fondo por defecto, aquí se lee la paleta editable del theme.
 func card_style(border_color: Color = COLOR_BORDER, bg_color: Color = COLOR_ROW) -> StyleBoxFlat:
 	var style := _box_style(bg_color, border_color, 14, 6)
 	style.content_margin_left = 16
@@ -195,8 +163,17 @@ func card_style(border_color: Color = COLOR_BORDER, bg_color: Color = COLOR_ROW)
 	style.content_margin_bottom = 12
 	return style
 
-# Da un estilo de tarjeta consistente a un PanelContainer sin sobrescribir nada.
+# Da un estilo de tarjeta consistente a un PanelContainer. Con los colores por
+# defecto usa el tipo personalizado "Card" del theme (editable); con un borde o
+# fondo propio (p.ej. rareza de comodín) construye uno inline.
 func apply_card(panel: PanelContainer, border_color: Color = COLOR_BORDER, bg_color: Color = COLOR_ROW) -> void:
+	if panel == null:
+		return
+	if border_color == COLOR_BORDER and bg_color == COLOR_ROW:
+		var theme := _current_theme()
+		if theme and theme.has_stylebox("panel", "Card"):
+			panel.add_theme_stylebox_override("panel", theme.get_stylebox("panel", "Card"))
+			return
 	panel.add_theme_stylebox_override("panel", card_style(border_color, bg_color))
 
 # Formato de dinero consistente: enteros simplificados con sufijos de letras
@@ -298,3 +275,52 @@ func dust_burst(parent: Node, global_position: Vector2, color: Color, amount: in
 	particles.color = color
 	parent.add_child(particles)
 	_cleanup_confetti_later(particles)
+
+# ---------------------------------------------------------------------------
+# Respaldo en código (solo si falla la carga de themes/ui01_theme.tres)
+# ---------------------------------------------------------------------------
+
+func _pill_style(bg: Color, border: Color, shadow_size: int) -> StyleBoxFlat:
+	var sb := _box_style(bg, border, 18, shadow_size)
+	sb.content_margin_left = 24
+	sb.content_margin_right = 24
+	sb.content_margin_top = 10
+	sb.content_margin_bottom = 10
+	return sb
+
+func _box_style(bg: Color, border: Color, radius: int, shadow_size: int = 0) -> StyleBoxFlat:
+	var sb := StyleBoxFlat.new()
+	sb.bg_color = bg
+	sb.border_width_left = 2
+	sb.border_width_top = 2
+	sb.border_width_right = 2
+	sb.border_width_bottom = 2
+	sb.border_color = border
+	sb.set_corner_radius_all(radius)
+	sb.shadow_color = Color(0, 0, 0, 0.35)
+	sb.shadow_size = shadow_size
+	sb.shadow_offset = Vector2(0, 2)
+	return sb
+
+func _build_fallback_theme() -> Theme:
+	var theme := Theme.new()
+	theme.set_stylebox("normal", "Button", _pill_style(Color(0.16, 0.2, 0.34), Color(0.45, 0.55, 0.85, 0.9), 3))
+	theme.set_stylebox("hover", "Button", _pill_style(Color(0.23, 0.3, 0.5), Color(0.72, 0.8, 0.97, 1.0), 4))
+	theme.set_stylebox("pressed", "Button", _pill_style(Color(0.085, 0.11, 0.2), Color(0.95, 0.78, 0.32, 1.0), 1))
+	theme.set_stylebox("disabled", "Button", _pill_style(Color(0.1, 0.12, 0.17), Color(0.18, 0.21, 0.3, 1.0), 0))
+	var btn_focus := _pill_style(Color(0, 0, 0, 0), Color(0.3, 0.6, 1.0, 0.9), 0)
+	btn_focus.border_width_left = 2
+	btn_focus.border_width_top = 2
+	btn_focus.border_width_right = 2
+	btn_focus.border_width_bottom = 2
+	theme.set_stylebox("focus", "Button", btn_focus)
+	theme.set_stylebox("hover_pressed", "Button", theme.get_stylebox("pressed", "Button"))
+	theme.set_color("font_color", "Button", Color(0.94, 0.96, 1.0))
+	theme.set_color("font_hover_color", "Button", Color(1.0, 0.96, 0.78))
+	theme.set_color("font_pressed_color", "Button", Color(1.0, 0.86, 0.4))
+	theme.set_color("font_disabled_color", "Button", Color(0.45, 0.5, 0.6, 0.7))
+	theme.set_constant("separation", "Button", 0)
+	theme.set_stylebox("panel", "PanelContainer", _box_style(COLOR_PANEL, Color(0.28, 0.36, 0.58), 14, 8))
+	theme.set_color("font_color", "Label", COLOR_TEXT)
+	theme.set_font_size("font_size", "Label", 18)
+	return theme

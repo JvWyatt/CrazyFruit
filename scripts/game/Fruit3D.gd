@@ -20,10 +20,12 @@ class_name Fruit3D
 #     +Z hacia la camara). Tamano real en unidades: diametro = 2 * radio
 #     efectivo (el radio de FruitData por la escala). Frutas pequeñas ~64
 #     unidades de diametro, la sandia ~192.
-#   - Modelo ROTO: exportalo con DOS mallas/nodos (las dos mitades) para que
-#     se anime la separacion. Si exportas SOLO UNA mitad (lo mas comun), se
-#     duplica espejada en runtime para formar la otra. Las mitades caen por
-#     gravedad hasta salir de pantalla (sin hitbox).
+#   - Modelo ROTO: exportalo con DOS nodos/grupos (las dos mitades, aun si cada
+#     mitad tiene varias mallas) y se usan tal cual, SIN espejo: necesario para
+#     frutas asimetricas (banana, etc., donde cada lado es distinto). Si
+#     exportas SOLO UNA malla, se duplica espejada en runtime para formar la
+#     otra (frutas simetricas). Las mitades caen por gravedad hasta salir de
+#     pantalla (sin hitbox).
 #   Si el .glb no existe, se usa la fruta esferica de color base (fallback).
 # ============================================================================
 
@@ -32,8 +34,11 @@ const BROKEN_MODELS_DIR: String = "res://assets/models/broken/"
 const ROCK_MODELS_DIR: String = "res://assets/models/"
 # Factor SOLO visual (0.75 = -25%): reduce el tamaño del modelo 3D un 25% sin
 # tocar el hitbox de corte (que fija fd.radius en Fruit.gd, 2D). Este espejo
-# 3D es puramente estético. Coherente con FruitVisual.VISUAL_SCALE.
-const VISUAL_SCALE: float = 0.75
+# 3D es puramente estético. Coherente con FruitVisual.visual_scale.
+# Editables en el inspector de la escena Fruit3D.tscn.
+@export_range(0.1, 2.0, 0.05) var visual_scale: float = 0.75
+# Gravedad con la que caen las mitades del modelo roto tras el corte.
+@export_range(0.0, 4000.0, 10.0) var broken_gravity: float = 1500.0
 
 var is_rock: bool = false
 var _broken: bool = false
@@ -42,8 +47,6 @@ var _radius: float = 40.0
 var _spin: Vector3 = Vector3.ZERO
 var _broken_vel_a: Vector3 = Vector3.ZERO
 var _broken_vel_b: Vector3 = Vector3.ZERO
-
-const BROKEN_GRAVITY: float = 1500.0
 
 var half_a: MeshInstance3D
 var half_b: MeshInstance3D
@@ -63,7 +66,7 @@ func set_pos2d(pos: Vector2) -> void:
 
 func setup_fruit(fd: FruitData, golden: bool, p_scale: float = 1.0) -> void:
 	is_rock = false
-	var radius: float = fd.radius * VISUAL_SCALE * maxf(p_scale, 0.05)
+	var radius: float = fd.radius * visual_scale * maxf(p_scale, 0.05)
 	_radius = radius
 
 	_clear_children(whole)
@@ -167,8 +170,8 @@ func _update_broken_halves(delta: float) -> void:
 	if half_a == null or half_b == null:
 		queue_free()
 		return
-	_broken_vel_a.y -= BROKEN_GRAVITY * delta
-	_broken_vel_b.y -= BROKEN_GRAVITY * delta
+	_broken_vel_a.y -= broken_gravity * delta
+	_broken_vel_b.y -= broken_gravity * delta
 	half_a.position += _broken_vel_a * delta
 	half_b.position += _broken_vel_b * delta
 	half_a.rotation.z += -2.5 * delta
@@ -204,41 +207,60 @@ func _load_model(path: String) -> Node3D:
 	inst.free()
 	return null
 
-# Si el modelo roto tiene >= 2 mallas, las usa como las dos mitades para la
-# animacion de separacion. Si tiene SOLO UNA (el caso comun: el usuario exporta
-# una sola mitad), la duplica espejada para crear la otra mitad, asi la fruta
-# se parte en dos piezas con la misma ilusion. Si no tiene ninguna, se muestra
-# estatico. Cada pieza se ajusta al radio (escala + centrado).
+# ============================================================================
+# Modelo ROTO:
+#   - Si el .glb trae DOS grupos de mallas (las dos mitades, caso normal al
+#     exportar desde Blender con las dos partes), se usan TAL CUAL como las dos
+#     mitades. NO se espeja nada: ideal para frutas asimetricas (banana, coco,
+#     sandia...) donde cada lado es distinto.
+#   - Si trae SOLO UNA malla (lo mas comun en frutas simetricas), se duplica
+#     espejada en runtime para formar la otra mitad.
+#   - Las mallas de cada mitad se agrupan por su nodo padre, asi una mitad con
+#     varias piezas (cascara + pulpa) cae entera y nunca se mezclan mitades.
+# ============================================================================
 func _dispose_broken_model(model: Node3D, target_radius: float) -> void:
 	var meshes: Array[MeshInstance3D] = []
 	_collect_meshes(model, meshes)
+	if meshes.is_empty():
+		broken.add_child(model)
+		return
+
+	# Manda cada mitad como "grupo" si el autor exporto las dos partes en nodos
+	# separados (>= 2 grupos): cada grupo = una mitad, con todos sus meshes.
+	var groups := _collect_mesh_groups(model)
+	if groups.size() >= 2:
+		if groups.size() > 2:
+			push_warning("Fruit3D: '%s' creo %d grupos de mallas; se usan los 2 primeros como mitades." % [model.name, groups.size()])
+		_broken_has_halves = true
+		_build_half_from_group(groups[0] as Node3D, "HalfA", target_radius)
+		_build_half_from_group(groups[1] as Node3D, "HalfB", target_radius)
+		model.free()
+		return
+
+	# Sin grupos claros pero con >= 2 mallas sueltas: cada malla es una mitad.
 	if meshes.size() >= 2:
 		_broken_has_halves = true
-		meshes[0].get_parent().remove_child(meshes[0])
-		meshes[1].get_parent().remove_child(meshes[1])
-		broken.add_child(meshes[0])
-		broken.add_child(meshes[1])
-		half_a = meshes[0]
-		half_b = meshes[1]
+		half_a = _steal_mesh_as_half(meshes[0], "HalfA")
+		half_b = _steal_mesh_as_half(meshes[1], "HalfB")
 		model.free()
 		_fit_content(half_a, target_radius)
 		_fit_content(half_b, target_radius)
-	elif meshes.size() == 1:
-		_broken_has_halves = true
-		var src := meshes[0]
-		src.get_parent().remove_child(src)
-		broken.add_child(src)
-		half_a = src
-		half_b = MeshInstance3D.new()
-		half_b.name = "HalfBMirror"
-		half_b.mesh = _mirror_mesh(src.mesh)
-		half_b.transform = src.transform
-		broken.add_child(half_b)
-		model.free()
-		_fit_content(half_a, target_radius)
-		_fit_content(half_b, target_radius)
-	else:
-		broken.add_child(model)
+		return
+
+	# Una sola malla: duplicarla espejada (fruta simetrica).
+	_broken_has_halves = true
+	var src := meshes[0]
+	src.get_parent().remove_child(src)
+	broken.add_child(src)
+	half_a = src
+	half_b = MeshInstance3D.new()
+	half_b.name = "HalfBMirror"
+	half_b.mesh = _mirror_mesh(src.mesh)
+	half_b.transform = src.transform
+	broken.add_child(half_b)
+	model.free()
+	_fit_content(half_a, target_radius)
+	_fit_content(half_b, target_radius)
 
 func _collect_meshes(node: Node, out: Array[MeshInstance3D]) -> void:
 	if node is MeshInstance3D:
@@ -250,6 +272,49 @@ func _model_mesh_count(model: Node3D) -> int:
 	var meshes: Array[MeshInstance3D] = []
 	_collect_meshes(model, meshes)
 	return meshes.size()
+
+# Devuelve los hijos directos del modelo que contienen mallas (cada mitad
+# exportada como objeto separado en Blender es uno de estos "grupos").
+func _collect_mesh_groups(model: Node3D) -> Array[Node]:
+	var groups: Array[Node] = []
+	for child in model.get_children():
+		if _node_has_mesh(child):
+			groups.append(child)
+	return groups
+
+func _node_has_mesh(node: Node) -> bool:
+	if node is MeshInstance3D:
+		return (node as MeshInstance3D).mesh != null
+	for child in node.get_children():
+		if _node_has_mesh(child):
+			return true
+	return false
+
+# Desmonta un grupo (nodo 3D) del modelo importado y lo cuelga de "broken" como
+# una mitad completa, ajustando su tamano al radio del hitbox.
+func _build_half_from_group(group: Node3D, half_name: String, target_radius: float) -> void:
+	if group == null:
+		push_warning("Fruit3D: grupo de mitad nulo ignorado en modelo roto.")
+		return
+	group.name = half_name
+	if group.get_parent():
+		group.get_parent().remove_child(group)
+	broken.add_child(group)
+	if half_name == "HalfA":
+		half_a = group
+	else:
+		half_b = group
+	_fit_content(group, target_radius)
+
+# Mueve una malla suelta a un contenedor 3D nuevo y lo devuelve como mitad.
+func _steal_mesh_as_half(mi: MeshInstance3D, half_name: String) -> Node3D:
+	var root := Node3D.new()
+	root.name = half_name
+	if mi.get_parent():
+		mi.get_parent().remove_child(mi)
+	root.add_child(mi)
+	broken.add_child(root)
+	return root
 
 # Devuelve una copia de la malla reflejada sobre el plano X=0, con las normales
 # negadas y el culling de caras corregido (se invierten los triangulos). Asi la

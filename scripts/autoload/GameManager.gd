@@ -8,7 +8,7 @@ extends Node
 # quiebra). Para el progreso PERMANENTE (prestigio, reputación, desbloqueos
 # históricos) revisa SaveManager.gd en su lugar.
 #
-# La ronda dura como máximo ROUND_TIME_SECONDS (límite FIJO, no mejorable): si
+# La ronda dura como máximo get_round_time() (límite FIJO no mejorable): si
 # se agota el tiempo, pasa lo mismo que si se agota la resistencia (se valida
 # si se cumplió el objetivo). No existe mejora que lo modifique.
 # Otros scripts escuchan las señales de aquí (money_changed, energy_changed,
@@ -33,18 +33,18 @@ signal streak_broken
 # NO es una tabla fija: los días son infinitos y la cuota se calcula con una
 # fórmula geométrica sencilla (ver get_order_target_for). El día 1 es de regalo
 # (objetivo $0: basta con terminar la ronda) y desde el día 2 la cuota arranca
-# en $10 y crece ×1.21 por día: día 100 ≈ $10 × 1.21^98 ≈ $1.30B. Cada día es
-# alcanzable con la fruta/arma del día anterior y deja un excedente para
-# comprar mejoras.
-const BASE_ORDER_TARGET: float = 10.0
-const ORDER_TARGET_GROWTH: float = 1.21
+# en balance.base_order_target y crece × order_target_growth por día: día 100
+# ≈ $10 × 1.21^98 ≈ $1.30B. Cada día es alcanzable con la fruta/arma del día
+# anterior y deja un excedente para comprar mejoras.
+# Los valores de la cuota, la duración de la ronda (round_time_seconds) y el
+# día de victoria (win_day) se editan VISUALMENTE en res://data/balance.tres
+# (recurso BalanceData), igual que el resto del balance del juego.
 
-# OBJETIVO DEL JUEGO: llegar a 100 días. Al completar este día se muestra la
-# pantalla de créditos (con un "Continuar" para seguir haciendo récords).
-# La cuota crece de forma geométrica: día 1 = $0 (regalo) y día N = 
-# BASE_ORDER_TARGET × ORDER_TARGET_GROWTH^(N-2). Como el juego es de días
-# infinitos, no existe una tabla: la fórmula cubre todos los días.
-const WIN_DAY: int = 100
+# OBJETIVO DEL JUEGO: llegar a balance.win_day (día 100 por defecto). Al
+# completarlo se muestran los créditos (con un "Continuar" para seguir
+# haciendo récords). La cuota crece de forma geométrica: día 1 = $0 (regalo) y
+# día N = base × growth^(N-2). Como el juego es de días infinitos, no existe
+# una tabla: la fórmula cubre todos los días.
 
 # Estados posibles de la partida: qué pantalla/momento del flujo estamos.
 enum GameState {
@@ -60,7 +60,7 @@ var current_state: GameState = GameState.MENU
 
 # --- Estado del negocio actual (se resetea en start_new_run) ---
 var current_order: int = 1        # Pedido/día actual (1, 2, 3...)
-var order_target: float = BASE_ORDER_TARGET      # Dinero necesario para completar el pedido actual
+var order_target: float = 0.0                      # Dinero necesario para completar el pedido actual
 var order_progress: float = 0.0   # Dinero ganado hasta ahora en este pedido
 var run_money: float = 0.0        # Dinero disponible para gastar en la tienda (se resetea cada negocio)
 
@@ -69,14 +69,21 @@ var total_fruits_cut_run: int = 0
 var total_jackpots_run: int = 0
 var total_golden_fruits_run: int = 0
 
-# Duración máxima de cada ronda en segundos. Es un límite FIJO: no depende de
+# Duración máxima de cada ronda en segundos (balance.round_time_seconds,
+# editable en res://data/balance.tres). Es un límite FIJO: no depende de
 # mejoras (no se puede mejorar), solo se rellena en start_new_run/advance_to_next_order.
-const ROUND_TIME_SECONDS: float = 60.0
+func get_round_time() -> float:
+	return StatsManager.balance.round_time_seconds
+
+# Día en el que el juego se considera completado (se muestran los créditos).
+# Editable en res://data/balance.tres (campo win_day).
+func get_win_day() -> int:
+	return int(StatsManager.balance.win_day)
 
 # Estado de la ronda actual: activa mientras se está jugando el día.
 var is_round_active: bool = false
 var current_energy: float = 100.0
-var round_time_left: float = ROUND_TIME_SECONDS
+var round_time_left: float = 0.0
 
 func _process(delta: float) -> void:
 	if not is_round_active or current_state != GameState.PLAYING:
@@ -122,26 +129,18 @@ var prestige_earned_this_run: float = 0.0
 # (la ventana cubre también la tienda entre días: ver _on_day_completed).
 var _weapon_changed_this_day: bool = false
 
-# Hitos de racha -> multiplicador de monedas. El multiplicador activo es el del
-# mayor hito alcanzado (ver get_streak_multiplier). Hasta el hito 50 se mantiene
-# igual (valores fijos); a partir de 50 los hitos van cada vez más lejanos
-# (75, 100, 140, 190, 250...) y cada uno suma +x1 (estilo progresión de idle).
+# Hitos de racha -> multiplicador de monedas. La racha empieza a otorgar
+# multiplicador a partir de 10 frutas consecutivas; el multiplicador activo es
+# el del mayor hito alcanzado (ver get_streak_multiplier). A partir de 1000,
+# cada 1000 frutas adicionales suma +1.00 al multiplicador (2000 → ×3.50,
+# 3000 → ×4.50...). NO existen incrementos intermedios fuera de estos hitos.
 const STREAK_MILESTONES: Dictionary = {
-	5: 1.10,
-	10: 1.20,
-	20: 1.30,
-	30: 1.50,
-	50: 2.00,
-	75: 3.0,
-	100: 4.0,
-	140: 5.0,
-	190: 6.0,
-	250: 7.0,
-	320: 8.0,
-	400: 9.0,
-	490: 10.0,
-	590: 11.0,
-	700: 12.0,
+	10: 1.10,
+	50: 1.20,
+	100: 1.30,
+	250: 1.50,
+	500: 2.00,
+	1000: 2.50,
 }
 
 # Multiplicador según el número de frutas consecutivas cortadas: el del mayor
@@ -156,12 +155,19 @@ func _refresh_streak_multiplier() -> void:
 	for m in STREAK_MILESTONES:
 		if current_streak >= int(m):
 			mult = STREAK_MILESTONES[m]
+	# A partir del último hito (1000), cada 1000 frutas adicionales suma +1.00.
+	var last_m: int = 1000
+	if current_streak >= last_m:
+		var bands: int = int((current_streak - last_m) / 1000)
+		mult = float(STREAK_MILESTONES[1000]) + float(bands) * 1.0
 	_streak_mult = mult
 
 # Incrementa la racha al cortar una fruta (llamado desde register_fruit_cut).
 func _increment_streak() -> void:
 	var next_streak: int = current_streak + 1
-	var reached_milestone: bool = STREAK_MILESTONES.has(next_streak)
+	# Es un hito si está en la tabla fija (10..500 en el rango 1000) o si es un
+	# múltiplo de 1000 por encima del último hito (2000, 3000...).
+	var reached_milestone: bool = STREAK_MILESTONES.has(next_streak) or (next_streak > 1000 and next_streak % 1000 == 0)
 	current_streak = next_streak
 	_refresh_streak_multiplier()
 	var mult: float = get_streak_multiplier()
@@ -187,11 +193,12 @@ func _ready() -> void:
 
 func get_order_target_for(order_num: int) -> float:
 	# Día 1 es de regalo: objetivo $0, se completa con terminar la ronda.
-	# Desde el día 2 la cuota arranca en BASE y crece ×1.21 por día:
-	# día N = BASE_ORDER_TARGET × ORDER_TARGET_GROWTH^(N-2).
+	# Desde el día 2 la cuota arranca en balance.base_order_target y crece
+	# × order_target_growth por día:
+	# día N = base_order_target × order_target_growth^(N-2).
 	if order_num <= 1:
 		return 0.0
-	var base: float = BASE_ORDER_TARGET * pow(ORDER_TARGET_GROWTH, order_num - 2)
+	var base: float = StatsManager.balance.base_order_target * pow(StatsManager.balance.order_target_growth, order_num - 2)
 	return base * StatsManager.get_order_target_multiplier()
 
 # Empieza un negocio nuevo desde cero: reinicia dinero, pedido, energía y
@@ -229,7 +236,7 @@ func start_new_run() -> void:
 	emit_signal("run_knife_equipped", run_equipped_knife)
 	SaveManager.record_day_started()
 	
-	round_time_left = ROUND_TIME_SECONDS
+	round_time_left = get_round_time()
 	emit_signal("round_time_changed", round_time_left)
 	emit_signal("run_started")
 	emit_signal("money_changed", run_money)
@@ -424,7 +431,7 @@ func advance_to_next_order() -> void:
 	current_energy = StatsManager.get_final_max_energy()
 	emit_signal("energy_changed", current_energy, StatsManager.get_final_max_energy())
 	current_order += 1
-	if current_order > 100:
+	if current_order > get_win_day():
 		AchievementManager.set_flag("surpassed_day_100")
 	order_target = get_order_target_for(current_order)
 	order_progress = 0.0
@@ -443,7 +450,7 @@ func advance_to_next_order() -> void:
 		_refresh_streak_multiplier()
 	emit_signal("streak_changed", current_streak, get_streak_multiplier())
 	
-	round_time_left = ROUND_TIME_SECONDS
+	round_time_left = get_round_time()
 	emit_signal("round_time_changed", round_time_left)
 	emit_signal("order_progress_changed", order_progress, order_target)
 	is_round_active = true

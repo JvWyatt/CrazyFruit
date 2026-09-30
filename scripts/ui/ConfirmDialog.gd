@@ -28,11 +28,10 @@ func _ready() -> void:
 		visible = false
 	)
 
-func open(title: String, message: String, ok_text: String = "ACEPTAR", cancel_text: String = "CANCELAR", ok_font_color: Color = UiTheme.COLOR_DANGER) -> void:
+func open(title: String, message: String, ok_text: String = "ACEPTAR", cancel_text: String = "CANCELAR") -> void:
 	title_label.text = title
 	message_label.text = message
 	ok_button.text = ok_text
 	cancel_button.text = cancel_text
-	ok_button.add_theme_color_override("font_color", ok_font_color)
 	visible = true
 	UiTheme.pop_in(card)

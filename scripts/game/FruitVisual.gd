@@ -24,7 +24,8 @@ const RING_REF_RADIUS: float = 50.0
 const GOLDEN_RING_PATH: String = "res://assets/fruits/golden_ring.png"
 # Factor SOLO visual (0.75 = -25%). Reduce el sprite un 25% SIN tocar el hitbox
 # de corte (el hitbox lo fija fd.radius en Fruit.gd). Coherente con Fruit3D.
-const VISUAL_SCALE: float = 0.75
+# Editable en el inspector de la escena Fruit.tscn (nodo "Visual").
+@export_range(0.1, 2.0, 0.05) var visual_scale: float = 0.75
 
 const TEXTURE_PATHS: Dictionary = {
 	"strawberry": "res://assets/fruits/strawberry.png",
@@ -77,7 +78,7 @@ func refresh_visual() -> void:
 	# visible = tex_width * 1.5 * k. Para que quede en 2 * radio * 1.5,
 	# k = 2 * radio / tex_width.
 	if tex:
-		var k: float = 2.0 * fd.radius * VISUAL_SCALE / float(tex.get_width())
+		var k: float = 2.0 * fd.radius * visual_scale / float(tex.get_width())
 		scale = Vector2(k, k)
 	if golden_ring:
 		golden_ring.visible = fruit_parent.is_golden

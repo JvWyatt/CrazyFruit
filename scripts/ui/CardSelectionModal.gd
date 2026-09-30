@@ -2,17 +2,19 @@ extends Control
 # ============================================================================
 # CardSelectionModal: pantalla para elegir un comodín (carta) al completar
 # un pedido. Muestra primero el resumen del día (conseguido, impuesto,
-# ganancia) y debajo las cartas disponibles. Al completar el pedido el
-# impuesto (objetivo del día) se paga automáticamente aquí; si no se puede
-# pagar, el negocio termina (ver Main.gd).
-# Las cartas disponibles vienen de CardDatabase.gd; al elegir una se aplica
-# con StatsManager.apply_card_upgrade().
+# ganancia) y debajo las cartas disponibles como 3 cartas verticales con
+# frente y reverso (CardFlipWidget). Al completar el pedido el impuesto
+# (objetivo del día) se paga automáticamente aquí; si no se puede pagar, el
+# negocio termina (ver Main.gd).
+# Las cartas disponibles vienen de CardDatabase.gd (get_random_cards); al
+# elegir una se aplica con StatsManager.apply_card_upgrade(). La lógica de
+# selección/efectos NO cambia; solo la presentación.
 # ============================================================================
 
 signal card_chosen(order_num: int)
 signal unpayable
 
-@onready var cards_container: VBoxContainer = $Panel/VBox/CardsScroll/CardsVBox
+@onready var cards_container: HBoxContainer = $Panel/VBox/CardsHBox
 @onready var title_label: Label = $Panel/VBox/TitleLabel
 @onready var subtitle_label: Label = $Panel/VBox/SubtitleLabel
 @onready var earned_value: Label = $Panel/VBox/SummaryPanel/SummaryVBox/EarnedRow/EarnedValue
@@ -59,58 +61,10 @@ func open_modal(order_completed_num: int) -> void:
 	var cards: Array[Dictionary] = CardDatabase.get_random_cards(3)
 
 	for card_data in cards:
-		var card_panel := PanelContainer.new()
-		UiTheme.apply_card(card_panel, card_data["color"])
-
-		var hbox := HBoxContainer.new()
-		hbox.add_theme_constant_override("separation", 16)
-
-		var icon_lbl := Label.new()
-		icon_lbl.text = str(card_data["icon"])
-		icon_lbl.add_theme_font_size_override("font_size", 38)
-		icon_lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-
-		var text_vbox := VBoxContainer.new()
-		text_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		text_vbox.custom_minimum_size.x = 0
-
-		var rarity_lbl := Label.new()
-		rarity_lbl.text = "[" + str(card_data["rarity"]).to_upper() + "]"
-		rarity_lbl.add_theme_font_size_override("font_size", 13)
-		rarity_lbl.modulate = card_data["color"]
-
-		var name_lbl := Label.new()
-		name_lbl.text = str(card_data["title"])
-		name_lbl.add_theme_font_size_override("font_size", 20)
-		name_lbl.modulate = Color(1.0, 1.0, 1.0)
-		name_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-
-		var desc_lbl := Label.new()
-		desc_lbl.text = str(card_data["desc"])
-		desc_lbl.add_theme_font_size_override("font_size", 15)
-		desc_lbl.modulate = Color(0.85, 0.9, 0.95)
-		desc_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-
-		text_vbox.add_child(rarity_lbl)
-		text_vbox.add_child(name_lbl)
-		text_vbox.add_child(desc_lbl)
-
-		var choose_btn := Button.new()
-		choose_btn.custom_minimum_size = Vector2(120, 56)
-		choose_btn.text = "ELEGIR\nCOMODÍN"
-		choose_btn.add_theme_font_size_override("font_size", 14)
-
-		var captured_card: Dictionary = card_data
-		choose_btn.pressed.connect(func():
-			_on_card_selected(captured_card)
-		)
-
-		hbox.add_child(icon_lbl)
-		hbox.add_child(text_vbox)
-		hbox.add_child(choose_btn)
-
-		card_panel.add_child(hbox)
-		cards_container.add_child(card_panel)
+		var widget := CardFlipWidget.new()
+		widget.configure(card_data)
+		widget.chosen.connect(_on_card_selected)
+		cards_container.add_child(widget)
 
 func _on_card_selected(card_data: Dictionary) -> void:
 	SoundManager.play_victory()

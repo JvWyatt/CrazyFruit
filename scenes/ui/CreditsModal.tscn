@@ -1,26 +1,10 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene load_steps=3 format=3]
 
+[ext_resource type="Theme" uid="uid://cw00u1brw0yxi" path="res://themes/ui01_theme.tres" id="1_theme"]
 [ext_resource type="Script" path="res://scripts/ui/CreditsModal.gd" id="1_credits"]
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_modal_bg"]
-bg_color = Color(0.08, 0.09, 0.14, 0.97)
-border_width_left = 2
-border_width_top = 2
-border_width_right = 2
-border_width_bottom = 2
-border_color = Color(1, 0.88, 0.3, 0.95)
-corner_radius_top_left = 18
-corner_radius_top_right = 18
-corner_radius_bottom_right = 18
-corner_radius_bottom_left = 18
-content_margin_left = 24.0
-content_margin_top = 24.0
-content_margin_right = 24.0
-content_margin_bottom = 24.0
-shadow_color = Color(0, 0, 0, 0.6)
-shadow_size = 20
-
 [node name="CreditsModal" type="Control"]
+theme = ExtResource("1_theme")
 z_index = 35
 layout_mode = 3
 anchors_preset = 15
@@ -37,7 +21,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-color = Color(0, 0, 0, 0.7)
+color = Color(0, 0, 0, 0.65)
 
 [node name="Panel" type="PanelContainer" parent="."]
 layout_mode = 1
@@ -52,7 +36,7 @@ offset_right = 330.0
 offset_bottom = 300.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_styles/panel = SubResource("StyleBoxFlat_modal_bg")
+theme_type_variation = "ModalPanel"
 
 [node name="VBox" type="VBoxContainer" parent="Panel"]
 layout_mode = 2
@@ -60,7 +44,7 @@ theme_override_constants/separation = 20
 
 [node name="TitleLabel" type="Label" parent="Panel/VBox"]
 layout_mode = 2
-theme_override_colors/font_color = Color(1, 0.88, 0.3, 1)
+theme_type_variation = &"TitleLabel"
 theme_override_colors/font_outline_color = Color(0, 0, 0, 0.9)
 theme_override_constants/outline_size = 4
 theme_override_font_sizes/font_size = 40
@@ -69,7 +53,7 @@ horizontal_alignment = 1
 
 [node name="SubtitleLabel" type="Label" parent="Panel/VBox"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 20
+theme_type_variation = &"SubtitleLabel"
 text = "¡Completaste los 100 días del juego!"
 horizontal_alignment = 1
 autowrap_mode = 2
@@ -95,12 +79,13 @@ autowrap_mode = 2
 [node name="ContinueButton" type="Button" parent="Panel/VBox"]
 custom_minimum_size = Vector2(0, 60)
 layout_mode = 2
-theme_override_font_sizes/font_size = 20
+theme_type_variation = "PrimaryButton"
+theme_override_font_sizes/font_size = 18
 text = "▶ CONTINUAR (NUEVOS RÉCORDS)"
 
 [node name="ExitButton" type="Button" parent="Panel/VBox"]
 custom_minimum_size = Vector2(0, 52)
 layout_mode = 2
-theme_override_colors/font_color = Color(1, 0.55, 0.5, 1)
+theme_type_variation = "DangerButton"
 theme_override_font_sizes/font_size = 18
 text = "🚪 SALIR AL MENÚ"

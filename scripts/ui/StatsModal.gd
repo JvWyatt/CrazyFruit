@@ -38,7 +38,7 @@ func _refresh_ui() -> void:
 	var crit_mult: float = StatsManager.get_final_critical_multiplier()
 	var launch_rate: float = StatsManager.get_final_launch_rate()
 
-	var base_dmg: float = float(StatsManager.get_equipped_knife_data().get("damage", 10.0))
+	var base_dmg: float = StatsManager.get_equipped_knife_data().damage
 	var dmg_bonus_pct: int = int(round((dmg / base_dmg - 1.0) * 100.0)) if base_dmg > 0.0 else 0
 	var base_energy: float = 100.0
 	var energy_bonus_pct: int = int(round((max_en / base_energy - 1.0) * 100.0))
@@ -112,7 +112,7 @@ func _add_stat_row(label_text: String, value_text: String, sub_desc: String, val
 
 	var val_lbl := Label.new()
 	val_lbl.text = value_text
-	val_lbl.add_theme_font_size_override("font_size", 17)
+	val_lbl.add_theme_font_size_override("font_size", 18)
 	val_lbl.modulate = val_color
 
 	hbox.add_child(name_lbl)
@@ -120,7 +120,7 @@ func _add_stat_row(label_text: String, value_text: String, sub_desc: String, val
 
 	var desc_lbl := Label.new()
 	desc_lbl.text = sub_desc
-	desc_lbl.add_theme_font_size_override("font_size", 12)
+	desc_lbl.add_theme_font_size_override("font_size", 14)
 	desc_lbl.modulate = Color(0.65, 0.72, 0.82)
 	desc_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 

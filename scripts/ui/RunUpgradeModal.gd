@@ -7,6 +7,12 @@ extends Control
 # TODO lo comprado aquí usa GameManager.run_money y se pierde si el negocio
 # quiebra (ver GameManager.start_new_run que reinicia run_unlocked_fruits,
 # run_unlocked_knives y StatsManager.run_upgrade_levels).
+#
+# DISEÑO EN REJILLA: las tres pestañas muestran tarjetas en un ResponsiveGrid
+# (scripts/ui/ResponsiveGrid.gd): ShopCard para las mejoras y CollectionCard
+# para frutas y armas. Todo el aspecto de las tarjetas vive en esos scripts;
+# aquí solo hay datos, precios y compra. Para volver al listado vertical basta
+# con cambiar el nodo ItemsGrid por el VBoxContainer anterior.
 # ============================================================================
 
 signal start_next_order_requested
@@ -15,43 +21,15 @@ signal open_stats_requested
 @onready var title_label: Label = $Panel/VBox/HeaderHBox/TitleLabel
 @onready var money_label: Label = $Panel/VBox/HeaderHBox/MoneyLabel
 @onready var close_button: Button = $Panel/VBox/HeaderHBox/CloseButton
-@onready var items_container: VBoxContainer = $Panel/VBox/TabContainer/Mejoras/ItemsVBox
-@onready var fruit_items_container: VBoxContainer = $Panel/VBox/TabContainer/Frutería/ItemsVBox
-@onready var weapon_items_container: VBoxContainer = $Panel/VBox/TabContainer/Armas/ItemsVBox
+@onready var items_container: ResponsiveGrid = $Panel/VBox/TabContainer/Mejoras/ItemsGrid
+@onready var fruit_items_container: ResponsiveGrid = $Panel/VBox/TabContainer/Frutería/ItemsGrid
+@onready var weapon_items_container: ResponsiveGrid = $Panel/VBox/TabContainer/Armas/ItemsGrid
 @onready var stats_button: Button = $Panel/VBox/BottomHBox/StatsButton
 @onready var continue_button: Button = $Panel/VBox/BottomHBox/ContinueButton
 
-var fruit_prices: Dictionary = {
-	# Precios EXPLÍCITOS (no calculados en tiempo de ejecución). La Fresa
-	# (primera fruta) es gratis y se empieza con ella desbloqueada. La Banana
-	# cuesta 75 y cada fruta siguiente se calculó multiplicando la anterior por
-	# 1.5 (factor continuo sobre el valor exacto, redondeado al entero), hasta
-	# la fruta 20 (Calabaza).
-	"strawberry": 0,
-	"banana": 75,
-	"peach": 113,
-	"cherry": 169,
-	"orange": 253,
-	"apple": 380,
-	"pear": 570,
-	"kiwi": 854,
-	"mango": 1281,
-	"lemon": 1922,
-	"watermelon": 2883,
-	"melon": 4325,
-	"pineapple": 6487,
-	"papaya": 9731,
-	"coconut": 14596,
-	"avocado": 21895,
-	"dragon_fruit": 32842,
-	"guava": 49263,
-	"quince": 73895,
-	"pumpkin": 110842
-}
-
 # Cached row refs so purchases can update in place instead of rebuilding the whole shop
 var _upgrade_rows: Dictionary = {} # key -> {name_lbl, buy_btn}
-var _fruit_rows: Dictionary = {} # fruit_id -> {buy_btn, price}
+var _fruit_rows: Dictionary = {} # fruit_id -> {card, buy_btn, price}
 
 func _ready() -> void:
 	close_button.pressed.connect(_on_close_pressed)
@@ -82,56 +60,28 @@ func _rebuild_ui() -> void:
 	_upgrade_rows.clear()
 
 	for key in StatsManager.run_upgrade_definitions.keys():
-		var def: Dictionary = StatsManager.run_upgrade_definitions[key]
+		var def: RunUpgradeData = StatsManager.run_upgrade_definitions[key]
 		var level: int = StatsManager.run_upgrade_levels[key]
 		var cost: float = StatsManager.get_run_upgrade_cost(key)
 		var can_buy: bool = GameManager.run_money >= cost
 
-		var panel := PanelContainer.new()
-		UiTheme.apply_card(panel)
-
-		var hbox := HBoxContainer.new()
-		hbox.add_theme_constant_override("separation", 12)
-
-		var icon_lbl := Label.new()
-		icon_lbl.text = str(def["icon"])
-		icon_lbl.add_theme_font_size_override("font_size", 28)
-
-		var text_vbox := VBoxContainer.new()
-		text_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-
-		var name_lbl := Label.new()
-		name_lbl.text = str(def["name"]) + " (x" + str(level) + ")"
-		name_lbl.add_theme_font_size_override("font_size", 18)
-		name_lbl.modulate = Color(1.0, 0.95, 0.7)
-
-		var desc_lbl := Label.new()
-		desc_lbl.text = str(def["desc"])
-		desc_lbl.add_theme_font_size_override("font_size", 14)
-		desc_lbl.modulate = Color(0.8, 0.85, 0.9)
-
-		text_vbox.add_child(name_lbl)
-		text_vbox.add_child(desc_lbl)
-
-		var buy_btn := Button.new()
-		buy_btn.custom_minimum_size = Vector2(120, 48)
-		buy_btn.text = "$" + UiTheme.format_money(cost)
-		buy_btn.add_theme_font_size_override("font_size", 16)
-		buy_btn.disabled = not can_buy
+		var card := ShopCard.create()
+		card.setup(
+			def.icon,
+			def.name,
+			"x" + str(level),
+			def.desc,
+			"$" + UiTheme.format_money(cost),
+			can_buy
+		)
 
 		var up_key = key
-		buy_btn.pressed.connect(func():
+		card.action_button.pressed.connect(func():
 			_on_buy_upgrade(up_key)
 		)
 
-		hbox.add_child(icon_lbl)
-		hbox.add_child(text_vbox)
-		hbox.add_child(buy_btn)
-
-		panel.add_child(hbox)
-		items_container.add_child(panel)
-
-		_upgrade_rows[key] = {"name_lbl": name_lbl, "buy_btn": buy_btn, "def": def}
+		items_container.add_child(card)
+		_upgrade_rows[key] = {"subtitle_lbl": card.subtitle_label, "buy_btn": card.action_button, "def": def}
 
 	_rebuild_fruit_shop()
 	_rebuild_weapon_shop()
@@ -143,7 +93,7 @@ func _update_upgrade_row(key: String) -> void:
 	var row: Dictionary = _upgrade_rows[key]
 	var level: int = StatsManager.run_upgrade_levels[key]
 	var cost: float = StatsManager.get_run_upgrade_cost(key)
-	row["name_lbl"].text = str(row["def"]["name"]) + " (x" + str(level) + ")"
+	row["subtitle_lbl"].text = "x" + str(level)
 	row["buy_btn"].text = "$" + UiTheme.format_money(float(cost))
 
 # Fruta anterior en la cadena de desbloqueo ("" si es la primera). Regla de
@@ -158,10 +108,10 @@ func _get_prev_fruit_id(fruit_id: String) -> String:
 # Arma anterior en la cadena de desbloqueo ("" si es la primera). Regla de la
 # Armería: no se puede desbloquear un arma sin haber desbloqueado la anterior.
 func _get_prev_knife_id(knife_id: String) -> String:
-	var ids: Array = StatsManager.knives_db.keys()
+	var ids: Array[String] = StatsManager.get_sorted_knife_ids()
 	var idx: int = ids.find(knife_id)
 	if idx > 0:
-		return str(ids[idx - 1])
+		return ids[idx - 1]
 	return ""
 
 # Refresh disabled state of all buy buttons based on current money, no node creation
@@ -182,17 +132,25 @@ func _sync_fruit_row(fruit_id: String) -> void:
 	if not _fruit_rows.has(fruit_id):
 		return
 	var row: Dictionary = _fruit_rows[fruit_id]
+	var card: CollectionCard = row["card"]
 	var buy_btn: Button = row["buy_btn"]
-	if GameManager.is_fruit_unlocked_this_run(fruit_id):
+	var unlocked: bool = GameManager.is_fruit_unlocked_this_run(fruit_id)
+	var prev_id: String = _get_prev_fruit_id(fruit_id)
+	var chain_ok: bool = prev_id == "" or GameManager.is_fruit_unlocked_this_run(prev_id)
+
+	if unlocked:
+		# Ya desbloqueada: fuera el velo y se ve el arte con sus datos.
+		card.set_locked(false)
 		buy_btn.text = "DISPONIBLE"
 		buy_btn.disabled = true
 		return
-	var prev_id: String = _get_prev_fruit_id(fruit_id)
-	var chain_ok: bool = prev_id == "" or GameManager.is_fruit_unlocked_this_run(prev_id)
 	if not chain_ok:
+		var prev_data: FruitData = FruitDatabase.get_fruit_data(prev_id)
+		card.set_locked(true, "Necesitas " + prev_data.display_name + " antes.")
 		buy_btn.text = "🔒 BLOQUEADO"
 		buy_btn.disabled = true
 		return
+	card.set_locked(true)
 	buy_btn.text = "DESBLOQUEAR\n$" + UiTheme.format_money(float(row["price"]))
 	buy_btn.disabled = GameManager.run_money < int(row["price"])
 
@@ -203,47 +161,39 @@ func _rebuild_fruit_shop() -> void:
 
 	var fruit_ids: Array[String] = FruitDatabase.get_sorted_fruit_ids()
 	for fruit_id in fruit_ids:
-		var fruit_data: Dictionary = FruitDatabase.get_fruit_data(fruit_id)
-		var price: int = StatsManager.get_fruit_price(int(fruit_prices.get(fruit_id, 0)))
+		var fruit_data: FruitData = FruitDatabase.get_fruit_data(fruit_id)
+		var price: int = StatsManager.get_fruit_price(fruit_data.price)
 		var prev_id: String = _get_prev_fruit_id(fruit_id)
 		var chain_ok: bool = prev_id == "" or GameManager.is_fruit_unlocked_this_run(prev_id)
-		var panel := PanelContainer.new()
-		var hbox := HBoxContainer.new()
-		hbox.add_theme_constant_override("separation", 12)
-
-		var icon_lbl := Label.new()
-		icon_lbl.text = str(fruit_data["emoji"])
-		icon_lbl.add_theme_font_size_override("font_size", 30)
-		var name_lbl := Label.new()
-		name_lbl.text = str(fruit_data["name"])
-		name_lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		name_lbl.add_theme_font_size_override("font_size", 18)
-		var stats_lbl := Label.new()
-		stats_lbl.text = "Vida: " + str(int(fruit_data["max_hp"])) + "  |  Ganancias: $" + UiTheme.format_money(float(fruit_data["min_reward"])) + " - $" + UiTheme.format_money(float(fruit_data["max_reward"]))
+		var prev_name: String = ""
 		if not chain_ok:
-			var prev_data: Dictionary = FruitDatabase.get_fruit_data(prev_id)
-			stats_lbl.text += "\n🔒 Requisito: comprar " + str(prev_data["name"])
-		stats_lbl.add_theme_font_size_override("font_size", 13)
-		stats_lbl.modulate = Color(0.75, 0.85, 0.9)
-		var text_vbox := VBoxContainer.new()
-		text_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		text_vbox.add_child(name_lbl)
-		text_vbox.add_child(stats_lbl)
+			prev_name = FruitDatabase.get_fruit_data(prev_id).display_name
 
-		var buy_btn := Button.new()
-		buy_btn.custom_minimum_size = Vector2(130, 48)
+		var stats_lbl: String = "Vida: " + str(int(fruit_data.max_hp))
+		stats_lbl += "\nGanancias:\n$" + UiTheme.format_money(fruit_data.min_reward)
+		stats_lbl += " - $" + UiTheme.format_money(fruit_data.max_reward)
+		stats_lbl += "\nJackpot: " + str(int(fruit_data.jackpot_chance * 100.0)) + "%"
+
+		# Cara = la fruta; reverso = sus numeros. Las bloqueadas conservan su
+		# hueco en el grid pero con el velo, sin arte ni nombre.
+		var card := CollectionCard.create()
+		card.setup(
+			fruit_data.id,
+			fruit_data.icon_emoji,
+			fruit_data.display_name,
+			stats_lbl,
+			"Fruta " + str(int(fruit_data.unlock_order)),
+			CollectionCard.fruit_texture(fruit_data.id)
+		)
+		card.set_locked(true, "Necesitas " + prev_name + " antes." if not chain_ok else "")
+
 		var captured_id: String = str(fruit_id)
-		buy_btn.pressed.connect(func():
+		card.action_button.pressed.connect(func():
 			_on_buy_fruit(captured_id, price)
 		)
 
-		hbox.add_child(icon_lbl)
-		hbox.add_child(text_vbox)
-		hbox.add_child(buy_btn)
-		panel.add_child(hbox)
-		fruit_items_container.add_child(panel)
-
-		_fruit_rows[fruit_id] = {"buy_btn": buy_btn, "price": price}
+		fruit_items_container.add_child(card)
+		_fruit_rows[fruit_id] = {"card": card, "buy_btn": card.action_button, "price": price}
 		_sync_fruit_row(fruit_id)
 
 # Update a single fruit row (unlocked state) after purchase, no rebuild
@@ -255,58 +205,53 @@ func _rebuild_weapon_shop() -> void:
 		child.queue_free()
 
 	var equipped_id: String = GameManager.run_equipped_knife
-	for knife_id in StatsManager.knives_db.keys():
-		var knife_data: Dictionary = StatsManager.knives_db[knife_id]
+	for knife_id in StatsManager.get_sorted_knife_ids():
+		var knife_data: KnifeData = StatsManager.knives_db[knife_id]
 		var is_unlocked: bool = GameManager.is_knife_unlocked_this_run(knife_id)
 		var is_equipped: bool = knife_id == equipped_id
-		var price: int = StatsManager.get_weapon_price(int(knife_data["price"]))
+		var price: int = StatsManager.get_weapon_price(knife_data.price)
 		var prev_id: String = _get_prev_knife_id(str(knife_id))
 		var chain_ok: bool = prev_id == "" or GameManager.is_knife_unlocked_this_run(prev_id)
-		var hbox := HBoxContainer.new()
-		hbox.add_theme_constant_override("separation", 12)
+		var prev_name: String = ""
+		if not chain_ok:
+			prev_name = (StatsManager.knives_db[prev_id] as KnifeData).name
 
-		var icon_lbl := Label.new()
-		icon_lbl.text = str(knife_data["icon"])
-		icon_lbl.add_theme_font_size_override("font_size", 30)
-		var name_lbl := Label.new()
-		name_lbl.text = str(knife_data["name"]) + (" [EN USO]" if is_equipped else "")
-		name_lbl.add_theme_font_size_override("font_size", 18)
-		var stats_lbl := Label.new()
-		stats_lbl.text = "Daño: " + str(int(knife_data["damage"])) + "  |  Energía por golpe: " + str(knife_data["energy_cost"])
-		if not chain_ok and not is_unlocked:
-			var prev_knife: Dictionary = StatsManager.knives_db[prev_id]
-			stats_lbl.text += "\n🔒 Requisito: comprar " + str(prev_knife["name"])
-		stats_lbl.add_theme_font_size_override("font_size", 13)
-		stats_lbl.modulate = Color(0.75, 0.85, 0.9)
-		var desc_lbl := Label.new()
-		desc_lbl.text = str(knife_data["description"])
-		desc_lbl.add_theme_font_size_override("font_size", 12)
-		desc_lbl.modulate = Color(0.65, 0.75, 0.82)
-		var text_vbox := VBoxContainer.new()
-		text_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		text_vbox.add_child(name_lbl)
-		text_vbox.add_child(stats_lbl)
-		text_vbox.add_child(desc_lbl)
+		var effective_energy: float = snappedf(knife_data.energy_cost * StatsManager.balance.resistance_cost_multiplier, 0.01)
+		var stats_lbl: String = "Daño: " + str(snappedf(knife_data.damage, 0.1))
+		stats_lbl += "\nEnergía por golpe: " + str(effective_energy)
 
-		var action_btn := Button.new()
-		action_btn.custom_minimum_size = Vector2(130, 48)
+		# Cara = el arma; reverso = sus numeros y descripcion. Sin imagen propia
+		# todavia, el anverso usa el icono del arma.
+		var card := CollectionCard.create()
+		card.setup(
+			knife_data.id,
+			knife_data.icon,
+			knife_data.name,
+			stats_lbl,
+			knife_data.description,
+			null
+		)
+		# Los Arms ya desbloqueados (o en uso) se ven con normalidad; los de la
+		# cadena bloqueados conservan su hueco pero van velados.
+		card.set_locked(not is_unlocked, "Necesitas " + prev_name + " antes." if not chain_ok else "")
+
 		var captured_id: String = str(knife_id)
 		if is_equipped:
-			action_btn.text = "EN USO"
-			action_btn.disabled = true
+			card.action_button.text = "EN USO"
+			card.action_button.disabled = true
 		elif is_unlocked:
-			action_btn.text = "EQUIPAR"
-			action_btn.pressed.connect(func():
+			card.action_button.text = "EQUIPAR"
+			card.action_button.pressed.connect(func():
 				GameManager.set_equipped_knife_this_run(captured_id)
 				_rebuild_weapon_shop()
 			)
 		elif not chain_ok:
-			action_btn.text = "🔒 BLOQUEADO"
-			action_btn.disabled = true
+			card.action_button.text = "🔒 BLOQUEADO"
+			card.action_button.disabled = true
 		else:
-			action_btn.text = "DESBLOQUEAR\n$" + UiTheme.format_money(float(price))
-			action_btn.disabled = GameManager.run_money < price
-			action_btn.pressed.connect(func():
+			card.action_button.text = "DESBLOQUEAR\n$" + UiTheme.format_money(float(price))
+			card.action_button.disabled = GameManager.run_money < price
+			card.action_button.pressed.connect(func():
 				if _get_prev_knife_id(captured_id) != "" and not GameManager.is_knife_unlocked_this_run(_get_prev_knife_id(captured_id)):
 					_rebuild_weapon_shop()
 					return
@@ -318,10 +263,7 @@ func _rebuild_weapon_shop() -> void:
 					_rebuild_weapon_shop()
 			)
 
-		hbox.add_child(icon_lbl)
-		hbox.add_child(text_vbox)
-		hbox.add_child(action_btn)
-		weapon_items_container.add_child(hbox)
+		weapon_items_container.add_child(card)
 
 func _on_buy_fruit(fruit_id: String, price: int) -> void:
 	var prev_id: String = _get_prev_fruit_id(fruit_id)

@@ -41,7 +41,7 @@ func _refresh_cards(card_ids: Array) -> void:
 		var empty_label := Label.new()
 		empty_label.text = "Todavía no hay comodines para mostrar."
 		empty_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		empty_label.add_theme_font_size_override("font_size", 17)
+		empty_label.add_theme_font_size_override("font_size", 16)
 		cards_container.add_child(empty_label)
 		return
 
@@ -60,7 +60,7 @@ func _refresh_cards(card_ids: Array) -> void:
 		for card in rarity_cards:
 			var card_label := Label.new()
 			card_label.text = str(card["title"]) + " [" + rarity + "]\n" + str(card["desc"])
-			card_label.add_theme_font_size_override("font_size", 15)
+			card_label.add_theme_font_size_override("font_size", 16)
 			card_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 			cards_container.add_child(card_label)
 

@@ -1,11 +1,10 @@
-[gd_scene load_steps=18 format=3 uid="uid://dg03k36pm1y8a"]
+[gd_scene format=3 uid="uid://dg03k36pm1y8a"]
 
+[ext_resource type="Theme" uid="uid://cw00u1brw0yxi" path="res://themes/ui01_theme.tres" id="1_clp4r"]
 [ext_resource type="Script" uid="uid://bdj3lmpeoeea5" path="res://scripts/ui/MainMenu.gd" id="1_mm"]
 [ext_resource type="PackedScene" path="res://scenes/ui/SettingsSection.tscn" id="2_ss"]
 [ext_resource type="PackedScene" path="res://scenes/ui/ConfirmDialog.tscn" id="3_cd"]
-[ext_resource type="FontFile" uid="uid://d0q5ls72jdqnh" path="res://assets/fonts/display-ttf/SkitserCartoon.ttf" id="4_e2per"]
 [ext_resource type="Texture2D" uid="uid://ccw2bv8oohapn" path="res://assets/ui/icons/prestige.png" id="6_7mi0g"]
-[ext_resource type="FontFile" uid="uid://bsk4775kdna1c" path="res://assets/fonts/roboto/Roboto-Black.ttf" id="7_7vr37"]
 [ext_resource type="Texture2D" uid="uid://drn1mukt17ueg" path="res://assets/ui/icons/progress_book.png" id="7_ee60a"]
 [ext_resource type="Texture2D" uid="uid://cl0ryhmly6nf7" path="res://assets/ui/icons/achievements.png" id="8_qjd48"]
 [ext_resource type="Texture2D" uid="uid://dkcptt6wrtxbw" path="res://assets/ui/icons/Joker.png" id="9_ff4wq"]
@@ -14,72 +13,17 @@
 [ext_resource type="Texture2D" uid="uid://ts4equqnr1im" path="res://assets/ui/backgrounds/menu_bg.png" id="tex_bg"]
 [ext_resource type="Texture2D" uid="uid://bnf8gub0jg74" path="res://assets/ui/backgrounds/logo.png" id="tex_logo"]
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_e2per"]
-bg_color = Color(1, 1, 1, 1)
-corner_radius_top_left = 999
-corner_radius_top_right = 999
-corner_radius_bottom_right = 999
-corner_radius_bottom_left = 999
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_play_pressed"]
-bg_color = Color(0.42745474, 0.42409566, 0.84588677, 1)
-border_width_left = 2
-border_width_top = 2
-border_width_right = 2
-border_width_bottom = 2
-border_color = Color(0.42745098, 0.42352942, 0.84705883, 1)
-corner_radius_top_left = 999
-corner_radius_top_right = 999
-corner_radius_bottom_right = 999
-corner_radius_bottom_left = 999
-shadow_color = Color(0, 0, 0, 0.3)
-shadow_size = 3
-shadow_offset = Vector2(0, 2)
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_play_hover"]
-bg_color = Color(0.6309953, 0.70069915, 0.94501597, 1)
-border_width_left = 2
-border_width_top = 2
-border_width_right = 2
-border_width_bottom = 2
-border_color = Color(0.6313726, 0.7019608, 0.94509804, 1)
-corner_radius_top_left = 999
-corner_radius_top_right = 999
-corner_radius_bottom_right = 999
-corner_radius_bottom_left = 999
-shadow_color = Color(0, 0, 0, 0.4)
-shadow_size = 7
-shadow_offset = Vector2(0, 3)
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_settings"]
-content_margin_left = 28.0
-content_margin_top = 24.0
-content_margin_right = 28.0
-content_margin_bottom = 24.0
-bg_color = Color(0.09, 0.11, 0.19, 0.98)
-border_width_left = 2
-border_width_top = 2
-border_width_right = 2
-border_width_bottom = 2
-border_color = Color(0.45, 0.55, 0.85, 1)
-corner_radius_top_left = 18
-corner_radius_top_right = 18
-corner_radius_bottom_right = 18
-corner_radius_bottom_left = 18
-shadow_color = Color(0, 0, 0, 0.5)
-shadow_size = 10
-shadow_offset = Vector2(0, 4)
-
-[node name="MainMenu" type="Control"]
+[node name="MainMenu" type="Control" unique_id=78427337]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+theme = ExtResource("1_clp4r")
 script = ExtResource("1_mm")
 
-[node name="BG" type="TextureRect" parent="."]
+[node name="BG" type="TextureRect" parent="." unique_id=553298813]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -90,25 +34,25 @@ texture = ExtResource("tex_bg")
 expand_mode = 1
 stretch_mode = 6
 
-[node name="VersionLabel" type="Label" parent="."]
+[node name="VersionLabel" type="Label" parent="." unique_id=1908539891]
 layout_mode = 1
 anchors_preset = 3
 anchor_left = 1.0
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = -162.0
-offset_top = -64.0
-offset_right = -82.0
-offset_bottom = -39.0
+offset_left = -150.0
+offset_top = -52.0
+offset_right = -16.0
+offset_bottom = -30.0
 grow_horizontal = 0
 grow_vertical = 0
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_fonts/font = ExtResource("7_7vr37")
-theme_override_font_sizes/font_size = 20
+theme_override_colors/font_color = Color(0.65, 0.72, 0.82, 1)
+theme_override_font_sizes/font_size = 14
 text = "v0.017"
+horizontal_alignment = 2
 
-[node name="HBoxContainer" type="HBoxContainer" parent="."]
+[node name="HBoxContainer" type="HBoxContainer" parent="." unique_id=1448893597]
 layout_mode = 1
 anchors_preset = 10
 anchor_right = 1.0
@@ -116,14 +60,14 @@ offset_bottom = 511.0
 grow_horizontal = 2
 metadata/_edit_use_anchors_ = true
 
-[node name="TextureRect" type="TextureRect" parent="HBoxContainer"]
+[node name="TextureRect" type="TextureRect" parent="HBoxContainer" unique_id=744494906]
 layout_mode = 2
 size_flags_horizontal = 6
 texture = ExtResource("tex_logo")
 expand_mode = 3
 stretch_mode = 3
 
-[node name="CenterVBox" type="VBoxContainer" parent="."]
+[node name="CenterVBox" type="VBoxContainer" parent="." unique_id=1840560888]
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
@@ -139,125 +83,113 @@ grow_vertical = 2
 theme_override_constants/separation = 22
 alignment = 1
 
-[node name="TitleVBox" type="VBoxContainer" parent="CenterVBox"]
+[node name="TitleVBox" type="VBoxContainer" parent="CenterVBox" unique_id=1687227059]
 layout_mode = 2
 size_flags_horizontal = 4
 size_flags_vertical = 6
 theme_override_constants/separation = 50
 metadata/_edit_use_anchors_ = true
 
-[node name="s1" type="Label" parent="CenterVBox/TitleVBox"]
+[node name="s1" type="Label" parent="CenterVBox/TitleVBox" unique_id=1483546501]
 layout_mode = 2
-theme_override_font_sizes/font_size = 56
+custom_minimum_size = Vector2(0, 14)
+theme_override_font_sizes/font_size = 14
 horizontal_alignment = 1
 
-[node name="TitleLabel" type="Label" parent="CenterVBox/TitleVBox"]
+[node name="TitleLabel" type="Label" parent="CenterVBox/TitleVBox" unique_id=1962924208]
 layout_mode = 2
+theme_type_variation = &"TitleLabel"
 theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.8)
 theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
 theme_override_constants/shadow_offset_y = 3
 theme_override_constants/outline_size = 10
-theme_override_fonts/font = ExtResource("4_e2per")
-theme_override_font_sizes/font_size = 51
+theme_override_font_sizes/font_size = 42
 text = "Crazy Fruit"
 horizontal_alignment = 1
 
-[node name="GoalLabel" type="Label" parent="CenterVBox/TitleVBox"]
+[node name="GoalLabel" type="Label" parent="CenterVBox/TitleVBox" unique_id=1980242948]
 layout_mode = 2
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_fonts/font = ExtResource("7_7vr37")
-theme_override_font_sizes/font_size = 28
+theme_type_variation = &"SubtitleLabel"
 text = "🎯 100 días, ¿eso está pelado?"
 horizontal_alignment = 1
 
-[node name="s2" type="Label" parent="CenterVBox/TitleVBox"]
+[node name="s2" type="Label" parent="CenterVBox/TitleVBox" unique_id=190160798]
 layout_mode = 2
-theme_override_font_sizes/font_size = 56
+custom_minimum_size = Vector2(0, 14)
+theme_override_font_sizes/font_size = 14
 horizontal_alignment = 1
 
-[node name="ButtonsVBox" type="VBoxContainer" parent="CenterVBox"]
+[node name="ButtonsVBox" type="VBoxContainer" parent="CenterVBox" unique_id=632926681]
 layout_mode = 2
 theme_override_constants/separation = 10
 
-[node name="PlayButton" type="Button" parent="CenterVBox/ButtonsVBox"]
+[node name="PlayButton" type="Button" parent="CenterVBox/ButtonsVBox" unique_id=1658374002]
 custom_minimum_size = Vector2(0, 64)
 layout_mode = 2
-theme_override_colors/font_color = Color(0.000113828486, 0.000113827875, 0.000113828006, 1)
-theme_override_colors/font_pressed_color = Color(1, 1, 1, 1)
-theme_override_colors/font_hover_color = Color(0.95, 0.95, 0.95, 1)
-theme_override_fonts/font = ExtResource("7_7vr37")
-theme_override_font_sizes/font_size = 50
-theme_override_styles/normal = SubResource("StyleBoxFlat_e2per")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_play_pressed")
-theme_override_styles/hover = SubResource("StyleBoxFlat_play_hover")
+theme_type_variation = &"PrimaryButton"
+theme_override_font_sizes/font_size = 40
 text = "JUGAR"
 
-[node name="PrestigeShopButton" type="Button" parent="CenterVBox/ButtonsVBox"]
+[node name="PrestigeShopButton" type="Button" parent="CenterVBox/ButtonsVBox" unique_id=200775943]
 custom_minimum_size = Vector2(0, 52)
 layout_mode = 2
-theme_override_fonts/font = ExtResource("7_7vr37")
 theme_override_font_sizes/font_size = 18
 text = "MERCADO DE PRESTIGIO"
 icon = ExtResource("6_7mi0g")
 expand_icon = true
 
-[node name="ProgressButton" type="Button" parent="CenterVBox/ButtonsVBox"]
+[node name="ProgressButton" type="Button" parent="CenterVBox/ButtonsVBox" unique_id=921980326]
 custom_minimum_size = Vector2(0, 52)
 layout_mode = 2
-theme_override_fonts/font = ExtResource("7_7vr37")
 theme_override_font_sizes/font_size = 18
 text = " VER PROGRESO"
 icon = ExtResource("7_ee60a")
 expand_icon = true
 
-[node name="AchievementsButton" type="Button" parent="CenterVBox/ButtonsVBox"]
+[node name="AchievementsButton" type="Button" parent="CenterVBox/ButtonsVBox" unique_id=2010979216]
 custom_minimum_size = Vector2(0, 52)
 layout_mode = 2
-theme_override_fonts/font = ExtResource("7_7vr37")
 theme_override_font_sizes/font_size = 18
 text = "LOGROS"
 icon = ExtResource("8_qjd48")
 expand_icon = true
 
-[node name="CardsButton" type="Button" parent="CenterVBox/ButtonsVBox"]
+[node name="CardsButton" type="Button" parent="CenterVBox/ButtonsVBox" unique_id=1043777907]
 custom_minimum_size = Vector2(0, 52)
 layout_mode = 2
-theme_override_fonts/font = ExtResource("7_7vr37")
 theme_override_font_sizes/font_size = 18
 text = "COMODINES"
 icon = ExtResource("9_ff4wq")
 expand_icon = true
 
-[node name="SettingsButton" type="Button" parent="CenterVBox/ButtonsVBox"]
+[node name="SettingsButton" type="Button" parent="CenterVBox/ButtonsVBox" unique_id=211925383]
 custom_minimum_size = Vector2(0, 52)
 layout_mode = 2
-theme_override_fonts/font = ExtResource("7_7vr37")
 theme_override_font_sizes/font_size = 18
 text = " AJUSTES"
 icon = ExtResource("10_nqw28")
 expand_icon = true
 
-[node name="s1" type="Control" parent="CenterVBox/ButtonsVBox"]
+[node name="s1" type="Control" parent="CenterVBox/ButtonsVBox" unique_id=1525991438]
 layout_mode = 2
 
-[node name="s2" type="Control" parent="CenterVBox/ButtonsVBox"]
+[node name="s2" type="Control" parent="CenterVBox/ButtonsVBox" unique_id=1550027706]
 layout_mode = 2
 
-[node name="ResetButton" type="Button" parent="CenterVBox/ButtonsVBox"]
+[node name="ResetButton" type="Button" parent="CenterVBox/ButtonsVBox" unique_id=2124653026]
 custom_minimum_size = Vector2(0, 44)
 layout_mode = 2
-theme_override_colors/font_color = Color(0.7, 0.5, 0.5, 1)
-theme_override_fonts/font = ExtResource("7_7vr37")
+theme_type_variation = &"DangerButton"
 theme_override_font_sizes/font_size = 14
 text = "REINICIAR PROGRESO"
 icon = ExtResource("11_7uy2f")
 expand_icon = true
 
-[node name="ResetConfirmDialog" parent="." instance=ExtResource("3_cd")]
+[node name="ResetConfirmDialog" parent="." unique_id=1353792082 instance=ExtResource("3_cd")]
 layout_mode = 1
 
-[node name="SettingsPanel" type="Control" parent="."]
+[node name="SettingsPanel" type="Control" parent="." unique_id=2092562350]
 visible = false
 layout_mode = 1
 anchors_preset = 15
@@ -266,16 +198,16 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="Scrim" type="ColorRect" parent="SettingsPanel"]
+[node name="Scrim" type="ColorRect" parent="SettingsPanel" unique_id=945550984]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-color = Color(0, 0, 0, 0.55)
+color = Color(0, 0, 0, 0.65)
 
-[node name="SettingsCard" type="PanelContainer" parent="SettingsPanel"]
+[node name="SettingsCard" type="PanelContainer" parent="SettingsPanel" unique_id=1243044022]
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
@@ -288,23 +220,22 @@ offset_right = 310.0
 offset_bottom = 220.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_styles/panel = SubResource("StyleBoxFlat_settings")
+theme_type_variation = &"ModalPanel"
 
-[node name="VBox" type="VBoxContainer" parent="SettingsPanel/SettingsCard"]
+[node name="VBox" type="VBoxContainer" parent="SettingsPanel/SettingsCard" unique_id=398066142]
 layout_mode = 2
 theme_override_constants/separation = 16
 
-[node name="TitleLabel" type="Label" parent="SettingsPanel/SettingsCard/VBox"]
+[node name="TitleLabel" type="Label" parent="SettingsPanel/SettingsCard/VBox" unique_id=154346056]
 layout_mode = 2
-theme_override_colors/font_color = Color(1, 0.88, 0.25, 1)
-theme_override_font_sizes/font_size = 30
+theme_type_variation = &"TitleLabel"
 text = "AJUSTES"
 horizontal_alignment = 1
 
-[node name="SettingsSection" parent="SettingsPanel/SettingsCard/VBox" instance=ExtResource("2_ss")]
+[node name="SettingsSection" parent="SettingsPanel/SettingsCard/VBox" unique_id=1879334553 instance=ExtResource("2_ss")]
 layout_mode = 2
 
-[node name="BackButton" type="Button" parent="SettingsPanel/SettingsCard/VBox"]
+[node name="BackButton" type="Button" parent="SettingsPanel/SettingsCard/VBox" unique_id=333504889]
 custom_minimum_size = Vector2(0, 52)
 layout_mode = 2
 theme_override_font_sizes/font_size = 18

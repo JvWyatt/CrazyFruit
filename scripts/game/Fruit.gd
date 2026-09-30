@@ -16,6 +16,20 @@ const JUICE_SPLASH_SCENE: PackedScene = preload("res://scenes/game/JuiceSplash.t
 
 @export var fruit_data: FruitData
 
+# Parámetros de BALANCE del corte, editables en el inspector (Fruit.tscn).
+# Cooldown entre daños de un mismo corte (evita golpes dobles por frame).
+@export_range(0.01, 1.0, 0.005) var slice_cooldown_duration: float = 0.08
+# Velocidad máxima del giro visual al lanzar (rango simétrico -max..max).
+@export_range(0.0, 10.0, 0.5) var max_spin_speed: float = 3.5
+# El Jackpot de una Fruta Dorada multiplica su recompensa por este factor.
+@export_range(1.0, 5.0, 0.1) var golden_reward_multiplier: float = 2.0
+# Desplazamiento aleatorio de los textos flotantes al cortar (px).
+@export_range(0.0, 60.0, 1.0) var text_offset_x: float = 15.0
+@export_range(0.0, 120.0, 1.0) var text_offset_y: float = 20.0
+# Gotas de zumo por corte: base + radio * juice_per_radius (clamped en JuiceSplash).
+@export_range(0.0, 40.0, 1.0) var juice_base_amount: float = 14.0
+@export_range(0.0, 1.0, 0.05) var juice_per_radius: float = 0.25
+
 var current_hp: float = 10.0
 var max_hp: float = 10.0
 var is_dying: bool = false
@@ -31,7 +45,7 @@ var last_cut_dir: Vector2 = Vector2.RIGHT
 @onready var ballistic: Ballistic = $Ballistic
 
 func _ready() -> void:
-	spin_speed = randf_range(-3.5, 3.5)
+	spin_speed = randf_range(-max_spin_speed, max_spin_speed)
 
 func setup(p_fruit_data: FruitData) -> void:
 	fruit_data = p_fruit_data
@@ -60,9 +74,11 @@ func setup(p_fruit_data: FruitData) -> void:
 
 # Lanza la fruta desde from_position con una velocidad inicial (parábola).
 # Las paredes laterales determinan dónde rebota antes de caer.
-func launch(from_position: Vector2, launch_velocity: Vector2, p_wall_left: float = Ballistic.DEFAULT_WALL_LEFT, p_wall_right: float = Ballistic.DEFAULT_WALL_RIGHT, p_escape_y: float = Ballistic.DEFAULT_ESCAPE_Y) -> void:
+func launch(from_position: Vector2, launch_velocity: Vector2, p_wall_left: float = 0.0, p_wall_right: float = 0.0, p_escape_y: float = 0.0) -> void:
 	if ballistic:
-		ballistic.launch(from_position, launch_velocity, Ballistic.DEFAULT_GRAVITY, p_wall_left, p_wall_right, p_escape_y)
+		# Gravedad/paredes/escape por defecto: los aporta el componente Ballistic
+		# (editables en el inspector). Ver Ballistic.gd (sentinel -1 = por defecto).
+		ballistic.launch(from_position, launch_velocity, -1.0, p_wall_left, p_wall_right, p_escape_y)
 
 func _process(delta: float) -> void:
 	if is_dying:
@@ -88,7 +104,7 @@ func take_damage(amount: float, is_critical: bool, cut_dir: Vector2 = Vector2.ZE
 	if cut_dir.length_squared() > 1.0:
 		last_cut_dir = cut_dir.normalized()
 
-	slice_cooldown = 0.08 # Prevents multi-hit on exact same continuous drag frame
+	slice_cooldown = slice_cooldown_duration # Evita golpes dobles en el mismo arrastre
 	current_hp -= amount
 	if health_bar:
 		health_bar.value = max(0.0, current_hp)
@@ -126,7 +142,7 @@ func _emit_juice_splash() -> void:
 	var splash: JuiceSplash = JUICE_SPLASH_SCENE.instantiate()
 	get_parent().add_child(splash)
 	splash.position = global_position
-	splash.setup(fruit_data.base_color, int(14.0 + fruit_data.radius * 0.25))
+	splash.setup(fruit_data.base_color, int(juice_base_amount + fruit_data.radius * juice_per_radius), fruit_data.id)
 
 func die() -> void:
 	if is_dying:
@@ -147,7 +163,7 @@ func die() -> void:
 	if is_jackpot:
 		base_reward = fruit_data.max_reward * StatsManager.get_final_jackpot_multiplier()
 		if is_golden:
-			base_reward *= 2.0
+			base_reward *= golden_reward_multiplier
 		SoundManager.play_jackpot()
 		var text: String = ("✨ FRUTA DORADA ✨\n" if is_golden else "") + "⭐ JACKPOT! ⭐\n+$" + UiTheme.format_money(base_reward * StatsManager.get_final_money_multiplier() * GameManager.get_streak_multiplier())
 		_spawn_floating_text(text, Color(1.0, 0.88, 0.2), 1.6, 1.2)
@@ -180,7 +196,7 @@ func _spawn_floating_text(text: String, color: Color, scale_mult: float = 1.0, d
 	
 	var ft = FLOATING_TEXT_SCENE.instantiate()
 	if ft and is_instance_valid(ft):
-		ft.position = global_position + Vector2(randf_range(-15.0, 15.0), -20.0)
+		ft.position = global_position + Vector2(randf_range(-text_offset_x, text_offset_x), -text_offset_y)
 		get_parent().add_child(ft)
 		if ft.has_method("setup"):
 			ft.setup(text, color, scale_mult, duration)

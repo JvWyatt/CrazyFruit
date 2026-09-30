@@ -29,9 +29,19 @@ const OBSTACLE_SCENE: PackedScene = preload("res://scenes/game/Obstacle.tscn")
 # (x1.21, ver Fruit.gd/Obstacle.gd/Ballistic.gd) para que las frutas crucen la
 # pantalla un 10% más rápido pero alcancen la MISMA altura y alcance que antes
 # (la parábola mantiene su forma; el tiempo de vuelo es ~0.91x).
-const LAUNCH_SPEED_MIN: float = 880.0
-const LAUNCH_SPEED_MAX: float = 1760.0
-const LAUNCH_ANGLE_MAX_DEG: float = 20.0
+# Todos estos valores se editan en el inspector de la escena (FruitSpawner.tscn).
+@export_range(100.0, 4000.0, 10.0) var launch_speed_min: float = 880.0
+@export_range(100.0, 4000.0, 10.0) var launch_speed_max: float = 1760.0
+@export_range(0.0, 89.0, 1.0) var launch_angle_max_deg: float = 20.0
+# Margen horizontal mínimo desde los bordes y altura de aparición bajo el campo.
+@export_range(0.0, 400.0, 1.0) var spawn_margin_x: float = 70.0
+@export_range(0.0, 400.0, 1.0) var spawn_offset_below: float = 150.0
+# Altura extra por debajo del borde real del viewport donde "escapan" los
+# proyectiles (ver _escape_y).
+@export_range(0.0, 300.0, 1.0) var escape_offset: float = 60.0
+# Fracciones del viewport que definen el campo de juego en pantallas altas.
+@export_range(0.0, 1.0, 0.01) var play_bounds_top_fraction: float = 0.1875
+@export_range(0.0, 1.0, 0.01) var play_bounds_height_fraction: float = 0.703125
 
 var active_fruits: Array[Fruit] = []
 var active_obstacles: Array[Obstacle] = []
@@ -60,9 +70,9 @@ func _adapt_play_bounds() -> void:
 		return
 	play_bounds = Rect2(
 		10.0,
-		vp.size.y * 0.1875,
+		vp.size.y * play_bounds_top_fraction,
 		maxf(10.0, vp.size.x - 20.0),
-		vp.size.y * 0.703125
+		vp.size.y * play_bounds_height_fraction
 	)
 
 func _process(delta: float) -> void:
@@ -118,12 +128,12 @@ func clear_all() -> void:
 	active_obstacles.clear()
 
 func _compute_launch() -> Dictionary:
-	var speed: float = randf_range(LAUNCH_SPEED_MIN, LAUNCH_SPEED_MAX)
-	var angle: float = deg_to_rad(randf_range(0.0, LAUNCH_ANGLE_MAX_DEG))
+	var speed: float = randf_range(launch_speed_min, launch_speed_max)
+	var angle: float = deg_to_rad(randf_range(0.0, launch_angle_max_deg))
 	var dir_x: float = 1.0 if randf() > 0.5 else -1.0
 	var from: Vector2 = Vector2(
-		randf_range(play_bounds.position.x + 70, play_bounds.end.x - 70),
-		play_bounds.end.y + 150.0
+		randf_range(play_bounds.position.x + spawn_margin_x, play_bounds.end.x - spawn_margin_x),
+		play_bounds.end.y + spawn_offset_below
 	)
 	var vel: Vector2 = Vector2(sin(angle) * speed * dir_x, -cos(angle) * speed)
 	return {"from": from, "vel": vel}
@@ -167,7 +177,7 @@ func _launch_obstacle() -> void:
 # valor supera el 1500 fijo de Ballistic; si se dejara fijo, las frutas que
 # nacen a play_bounds.end.y + 150 (> 1500) escaparian apenas lanzadas.
 func _escape_y() -> float:
-	return get_viewport_rect().size.y + 60.0
+	return get_viewport_rect().size.y + escape_offset
 
 func _on_fruit_destroyed(fruit: Fruit) -> void:
 	if fruit in active_fruits:

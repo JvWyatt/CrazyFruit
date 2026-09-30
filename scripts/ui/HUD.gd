@@ -1,27 +1,30 @@
 extends Control
 # ============================================================================
-# HUD: la interfaz que se ve MIENTRAS juegas (dinero, pedido, barra de
-# energía, tiempo restante de la ronda, frecuencia de lanzamiento, arma
-# equipada y botones de Stats/Pausa). Solo muestra datos que vienen de
-# GameManager/StatsManager; no decide reglas.
+# HUD: la interfaz que se ve MIENTRAS juegas (barra de dinero/meta del día
+# superior, barrita de racha a la derecha bajo el dinero, anillo circular doble
+# de energía y tiempo con frutas/s en el centro, arma equipada y botones de
+# Stats/Pausa). Solo muestra datos que vienen de GameManager/StatsManager; no
+# decide reglas.
 #
 # El botón de pausa abre el PausePanel: pausa la ronda (pause_turn), permite
 # ajustar el volumen (SettingsSection), continuar jugando o salir del negocio
 # (con ConfirmDialog estilizado antes de renunciar).
+#
+# Layout superior: la barra de dinero y todo lo que va justo debajo (racha y
+# anillo de energía) viven a partir de TOP_SAFE_MARGIN px para no quedar tapados
+# por la barra de estado / notch del móvil. El aviso de logro (AchToast) NO
+# vive aquí sino en ToastLayer, un CanvasLayer propio con layer = 10: así se
+# dibuja por encima del HUD (aunque comparta su altura) y nunca queda tapado
+# mientras dura el aviso.
 # ============================================================================
 
 signal open_stats_requested
 signal quit_run_requested
 
-@onready var money_label: Label = $TopContainer/VBox/TopHBox/MoneyContainer/MoneyLabel
-@onready var order_label: Label = $TopContainer/VBox/TopHBox/MoneyContainer/OrderLabel
-@onready var order_progress_bar: ProgressBar = $TopContainer/VBox/OrderProgressBar
-@onready var order_progress_label: Label = $TopContainer/VBox/OrderProgressBar/OrderProgressLabel
-@onready var status_info_label: Label = $TopContainer/VBox/TopHBox/MoneyContainer/StatusInfoLabel
-@onready var launch_rate_label: Label = $TopContainer/VBox/StatusHBox/LaunchRateLabel
-@onready var round_time_label: Label = $TopContainer/VBox/StatusHBox/RoundTimeLabel
-@onready var energy_bar: ProgressBar = $TopContainer/VBox/EnergyContainer/EnergyBar
-@onready var energy_label: Label = $TopContainer/VBox/EnergyContainer/EnergyBar/EnergyLabel
+@onready var money_label: Label = $TopContainer/VBox/MoneyBar/MoneyLabel
+@onready var money_bar: ProgressBar = $TopContainer/VBox/MoneyBar
+@onready var day_label: Label = $TopContainer/VBox/TopHBox/DayLabel
+@onready var status_info_label: Label = $TopContainer/VBox/TopHBox/StatusInfoLabel
 @onready var knife_label: Label = $BottomContainer/KnifeInfoLabel
 @onready var stats_btn: Button = $BottomContainer/ButtonsHBox/StatsButton
 @onready var pause_btn: Button = $BottomContainer/ButtonsHBox/PauseButton
@@ -36,14 +39,18 @@ signal quit_run_requested
 @onready var settings_section: SettingsSection = $PausePanel/Card/SettingsVBox/SettingsSection
 @onready var settings_back_btn: Button = $PausePanel/Card/SettingsVBox/SettingsBackButton
 @onready var pause_confirm_dialog: ConfirmDialog = $PauseConfirmDialog
-@onready var streak_label: Label = $StreakPanel/VBox/StreakLabel
-@onready var streak_bar: ProgressBar = $StreakPanel/VBox/StreakBar
-@onready var streak_bar_label: Label = $StreakPanel/VBox/StreakBar/StreakBarLabel
+@onready var streak_ring: StreakRing = $StreakRing
+@onready var time_bar: ProgressBar = $TopContainer/VBox/TimeBar
+@onready var time_label: Label = $TopContainer/VBox/TimeBar/TimeLabel
+@onready var energy_bar: ProgressBar = $TopContainer/VBox/EnergyBar
+@onready var energy_label: Label = $TopContainer/VBox/EnergyBar/EnergyLabel
+@onready var rate_value: Label = $RatePanel/HBox/VBox/RateValue
+@onready var rate_panel: PanelContainer = $RatePanel
 @onready var milestone_label: Label = $MilestoneLabel
-@onready var ach_toast: PanelContainer = $AchToast
-@onready var ach_icon: Label = $AchToast/HBox/AchIcon
-@onready var ach_title: Label = $AchToast/HBox/VBox/AchTitle
-@onready var ach_desc: Label = $AchToast/HBox/VBox/AchDesc
+@onready var ach_toast: PanelContainer = $ToastLayer/AchToast
+@onready var ach_icon: Label = $ToastLayer/AchToast/HBox/AchIcon
+@onready var ach_title: Label = $ToastLayer/AchToast/HBox/VBox/AchTitle
+@onready var ach_desc: Label = $ToastLayer/AchToast/HBox/VBox/AchDesc
 
 # Pool de frases que se muestran en el centro al alcanzar un hito de racha.
 const STREAK_PHRASES: Array[String] = [
@@ -55,6 +62,9 @@ const STREAK_PHRASES: Array[String] = [
 	"¡FRUTALMENTE INSANO!",
 ]
 var _milestone_tween: Tween
+# Último multiplicador de racha mostrado, para saber si acaba de activarse o de
+# subir (streak_changed llega en cada corte de fruta con el valor actual).
+var _last_streak_multiplier: float = 1.0
 
 func _ready() -> void:
 	GameManager.money_changed.connect(_on_money_changed)
@@ -65,7 +75,15 @@ func _ready() -> void:
 	GameManager.run_knife_equipped.connect(func(_id): _update_knife_display())
 	GameManager.streak_changed.connect(_on_streak_changed)
 	GameManager.streak_milestone.connect(_on_streak_milestone)
+	GameManager.streak_broken.connect(_flash_streak_break)
 	AchievementManager.achievement_unlocked.connect(_on_achievement_unlocked)
+
+	# Estilos del tema (themes/ui01_theme.tres): Stats/Pausa en dorado
+	# (PrimaryButton), Continuar dorado y Salir en rojo (DangerButton).
+	UiTheme.apply_button_style(stats_btn, "primary")
+	UiTheme.apply_button_style(pause_btn, "primary")
+	UiTheme.apply_button_style(continue_btn, "primary")
+	UiTheme.apply_button_style(pause_quit_btn, "danger")
 
 	stats_btn.pressed.connect(_on_stats_button_pressed)
 	pause_btn.pressed.connect(_on_pause_button_pressed)
@@ -77,14 +95,18 @@ func _ready() -> void:
 	_update_knife_display()
 	_update_launch_rate_display()
 	_on_streak_changed(GameManager.current_streak, GameManager.get_streak_multiplier())
+	# Estado inicial de las barras de tiempo y estamina (por si el HUD ya
+	# existia cuando arranco la ronda y no llegaron las senales).
+	_on_energy_changed(GameManager.current_energy, StatsManager.get_final_max_energy())
+	_on_round_time_changed(GameManager.round_time_left)
 
 func format_damage(value: float) -> String:
 	return str(snappedf(value, 0.1))
 
 func _update_knife_display() -> void:
-	var knife_data: Dictionary = StatsManager.get_equipped_knife_data()
-	var knife_name: String = str(knife_data.get("name", "Utensilio básico"))
-	var knife_icon: String = str(knife_data.get("icon", "🔪"))
+	var knife_data: KnifeData = StatsManager.get_equipped_knife_data()
+	var knife_name: String = knife_data.name
+	var knife_icon: String = knife_data.icon
 	knife_label.text = knife_icon + " " + knife_name + " (⚔️" + format_damage(StatsManager.get_final_damage()) + ")"
 
 func _on_stats_updated() -> void:
@@ -92,33 +114,54 @@ func _on_stats_updated() -> void:
 	_update_launch_rate_display()
 
 func _update_launch_rate_display() -> void:
+	# Contador informativo: NO es un recurso consumible, asi que va fuera del
+	# anillo de racha, en una pieza compacta con su propia jerarquia visual.
 	var rate: float = StatsManager.get_final_launch_rate()
-	launch_rate_label.text = "🍉 " + str(snappedf(rate, 0.1)) + " frutas/s"
+	rate_value.text = str(snappedf(rate, 0.1))
 
 var _last_money: float = -1.0
+var _order_target: float = 0.0
 
 func _on_money_changed(amount: float) -> void:
-	money_label.text = "💰 $" + UiTheme.format_money(amount)
+	money_label.text = "💰 $" + UiTheme.format_money(amount) + " / $" + UiTheme.format_money(_order_target)
 	if amount > _last_money and _last_money >= 0.0:
 		UiTheme.pulse_label(money_label, 1.12)
 	_last_money = amount
 
 func _on_order_progress_changed(progress: float, target: float) -> void:
-	order_label.text = "📋 Día " + str(GameManager.current_order)
+	_order_target = target
+	day_label.text = "🎯 Día " + str(GameManager.current_order)
 	status_info_label.text = "💼 Negocio " + str(SaveManager.save_data.get("days_started", 1))
-	order_progress_bar.max_value = target
-	order_progress_bar.value = min(progress, target)
-	order_progress_label.text = "$" + UiTheme.format_money(progress) + " / $" + UiTheme.format_money(target)
+	money_bar.max_value = target
+	money_bar.value = minf(progress, target)
+	_on_money_changed(GameManager.run_money)
 
 func _on_energy_changed(current_e: float, max_e: float) -> void:
-	energy_bar.max_value = max_e
-	energy_bar.value = current_e
-	energy_label.text = "⚡ " + str(int(round(current_e))) + " / " + str(int(round(max_e)))
+	# La estamina es estado de partida: barra propia en el panel superior.
+	var total: int = maxi(int(round(max_e)), 1)
+	energy_bar.max_value = float(total)
+	energy_bar.value = clampf(current_e, 0.0, float(total))
+	energy_label.text = "⚡ " + str(int(round(current_e))) + " / " + str(total)
+
+# La señal round_time_changed llega cada frame; los rótulos solo cambian una vez
+# por segundo, asi que se guardan para no reescribirlos 60 veces por segundo.
+var _last_time_text: String = ""
+var _last_time_urgent: bool = false
 
 func _on_round_time_changed(time_left: float) -> void:
+	# El tiempo restante se vacia: la barra muestra lo que queda de la ronda.
 	var secs: int = ceili(maxf(0.0, time_left))
-	round_time_label.text = "⏱ " + str(secs) + "s"
-	round_time_label.add_theme_color_override("font_color", Color(1.0, 0.4, 0.3) if secs <= 10 else Color(1.0, 0.95, 0.6))
+	var total: int = maxi(int(round(GameManager.get_round_time())), 1)
+	time_bar.max_value = float(total)
+	time_bar.value = clampf(time_left, 0.0, float(total))
+	var text: String = "⏱ " + str(secs) + "s / " + str(total) + "s"
+	if text != _last_time_text:
+		_last_time_text = text
+		time_label.text = text
+	var urgent: bool = secs <= 10
+	if urgent != _last_time_urgent:
+		_last_time_urgent = urgent
+		time_label.modulate = Color(1, 0.55, 0.55) if urgent else Color.WHITE
 
 func _on_stats_button_pressed() -> void:
 	SoundManager.play_click()
@@ -126,23 +169,37 @@ func _on_stats_button_pressed() -> void:
 
 # --- Racha de frutas --------------------------------------------------------
 
-# Hitos ordenados ascendentemente para calcular progreso entre hitos.
-const STREAK_ORDER: Array[int] = [5, 10, 20, 30, 50, 75, 100, 140, 190, 250, 320, 400, 490, 590, 700]
+# Hitos ordenados ascendentemente para calcular progreso entre hitos. A partir
+# de 1000 la progresión es por bandas de 1000 frutas (2000, 3000...), sin más.
+const STREAK_ORDER: Array[int] = [10, 50, 100, 250, 500, 1000]
 
 func _on_streak_changed(streak: int, multiplier: float) -> void:
-	streak_label.text = "🔥 Racha: " + str(streak)
+	# El aro del anillo ES el progreso hacia el siguiente nivel, asi que no hace
+	# falta ningun texto del tipo "llega a X": el hueco del aro ya lo dice.
 	var info: Dictionary = _streak_progress(streak)
-	streak_bar.max_value = float(info["range"])
-	streak_bar.value = float(info["progress"])
-	streak_bar_label.text = ("→ " + str(info["next"])) if info["next"] > 0 else "→ MAX"
-	streak_bar_label.text += "  (x" + str(snappedf(multiplier, 0.01)) + ")"
+	var span: int = maxi(int(info["range"]), 1)
+	streak_ring.set_streak(float(info["progress"]) / float(span), streak)
+	# El multiplicador solo se avisa cuando SUBE (se activa o aumenta); entre hito
+	# y hito el anillo se queda mostrando el contador de racha, sin texto extra.
+	if multiplier > _last_streak_multiplier:
+		streak_ring.show_multiplier(multiplier)
+	_last_streak_multiplier = multiplier
+
+# Destello rojo al romperse la racha (al tocar una piedra u obstáculo).
+func _flash_streak_break() -> void:
+	streak_ring.flash_break()
 
 # Calcula el progreso de la barra de racha entre el hito anterior y el siguiente.
 # Devuelve {range: intervalo, progress: avance dentro del intervalo, next: hito}.
 func _streak_progress(streak: int) -> Dictionary:
 	var last: int = STREAK_ORDER[STREAK_ORDER.size() - 1]
 	if streak >= last:
-		return {"range": 1, "progress": 1, "next": 0}
+		# Por encima de 1000 se muestran bandas de 1000 frutas, siempre abiertas:
+		# next = siguiente millar, dentro de una ventana de 1000 frutas.
+		var band: int = int((streak - last) / 1000)
+		var window_start: int = last + band * 1000
+		var next: int = window_start + 1000
+		return {"range": 1000, "progress": streak - window_start, "next": next}
 	var prev: int = 0
 	var next: int = STREAK_ORDER[0]
 	for m in STREAK_ORDER:

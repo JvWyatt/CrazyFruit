@@ -1,85 +1,31 @@
-[gd_scene load_steps=14 format=3 uid="uid://dm28ka4n2e7k0"]
+[gd_scene load_steps=7 format=3 uid="uid://dm28ka4n2e7k0"]
 
+[ext_resource type="Theme" uid="uid://cw00u1brw0yxi" path="res://themes/ui01_theme.tres" id="1_4ed8p"]
 [ext_resource type="Script" uid="uid://obkbe7bebsws" path="res://scripts/ui/HUD.gd" id="1_hud"]
-[ext_resource type="Texture2D" uid="uid://boprjuhpopqwv" path="res://assets/ui/icons/money.png" id="2_ig75s"]
-[ext_resource type="Texture2D" uid="uid://ccw2bv8oohapn" path="res://assets/ui/icons/prestige.png" id="2_jlufg"]
 [ext_resource type="PackedScene" path="res://scenes/ui/SettingsSection.tscn" id="2_ss"]
 [ext_resource type="PackedScene" path="res://scenes/ui/ConfirmDialog.tscn" id="3_cd"]
-[ext_resource type="FontFile" uid="uid://d0q5ls72jdqnh" path="res://assets/fonts/display-ttf/SkitserCartoon.ttf" id="3_l20r4"]
-[ext_resource type="Texture2D" uid="uid://eu6ns4chldvf" path="res://assets/ui/icons/Calendar 2nd Outline 256px.png" id="4_jvmx1"]
+[ext_resource type="Script" path="res://scripts/ui/StreakRing.gd" id="5_ring"]
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_panel"]
-content_margin_left = 16.0
-content_margin_top = 12.0
-content_margin_right = 16.0
-content_margin_bottom = 12.0
-bg_color = Color(0.078, 0.102, 0.18, 0.94)
+[sub_resource type="StyleBoxFlat" id="SB_ach_toast"]
+content_margin_left = 18.0
+content_margin_top = 14.0
+content_margin_right = 18.0
+content_margin_bottom = 14.0
+bg_color = Color(0.055, 0.073, 0.137, 1)
 border_width_left = 2
 border_width_top = 2
 border_width_right = 2
 border_width_bottom = 2
-border_color = Color(0.28, 0.36, 0.58, 0.9)
-corner_radius_top_left = 18
-corner_radius_top_right = 18
-corner_radius_bottom_right = 18
-corner_radius_bottom_left = 18
-shadow_color = Color(0, 0, 0, 0.4)
-shadow_size = 12
-shadow_offset = Vector2(0, 4)
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_order_bg"]
-bg_color = Color(0.06, 0.08, 0.13, 1)
-border_width_left = 1
-border_width_top = 1
-border_width_right = 1
-border_width_bottom = 1
-border_color = Color(0.24, 0.3, 0.5, 0.6)
-corner_radius_top_left = 8
-corner_radius_top_right = 8
-corner_radius_bottom_right = 8
-corner_radius_bottom_left = 8
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_order_fill"]
-bg_color = Color(0.75028175, 0.48846924, 1, 1)
-corner_radius_top_left = 8
-corner_radius_top_right = 8
-corner_radius_bottom_right = 8
-corner_radius_bottom_left = 8
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_energy_fill"]
-bg_color = Color(0.18, 0.65, 0.95, 1)
-corner_radius_top_left = 8
-corner_radius_top_right = 8
-corner_radius_bottom_right = 8
-corner_radius_bottom_left = 8
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_streak_fill"]
-bg_color = Color(1, 0.55, 0.2, 1)
-corner_radius_top_left = 8
-corner_radius_top_right = 8
-corner_radius_bottom_right = 8
-corner_radius_bottom_left = 8
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_pause"]
-content_margin_left = 28.0
-content_margin_top = 24.0
-content_margin_right = 28.0
-content_margin_bottom = 24.0
-bg_color = Color(0.09, 0.11, 0.19, 0.98)
-border_width_left = 2
-border_width_top = 2
-border_width_right = 2
-border_width_bottom = 2
-border_color = Color(0.45, 0.55, 0.85, 1)
+border_color = Color(0.98, 0.78, 0.25, 0.95)
 corner_radius_top_left = 18
 corner_radius_top_right = 18
 corner_radius_bottom_right = 18
 corner_radius_bottom_left = 18
 shadow_color = Color(0, 0, 0, 0.5)
-shadow_size = 10
+shadow_size = 12
 shadow_offset = Vector2(0, 4)
 
-[node name="HUD" type="Control"]
+[node name="HUD" type="Control" unique_id=141023235]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -87,107 +33,53 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
+theme = ExtResource("1_4ed8p")
 script = ExtResource("1_hud")
 
-[node name="TopContainer" type="PanelContainer" parent="."]
+[node name="TopContainer" type="PanelContainer" parent="." unique_id=731681951]
 layout_mode = 1
 anchors_preset = 10
 anchor_right = 1.0
-offset_bottom = 175.0
+offset_left = 20.0
+offset_top = 20.0
+offset_right = -20.0
+offset_bottom = 148.0
 grow_horizontal = 2
 mouse_filter = 2
-theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
 
-[node name="VBox" type="VBoxContainer" parent="TopContainer"]
+[node name="VBox" type="VBoxContainer" parent="TopContainer" unique_id=1582016736]
 layout_mode = 2
-theme_override_constants/separation = 8
-
-[node name="TopHBox" type="HBoxContainer" parent="TopContainer/VBox"]
+theme_override_constants/separation = 4
+[node name="TopHBox" type="HBoxContainer" parent="TopContainer/VBox" unique_id=779290170]
 layout_mode = 2
-alignment = 1
 
-[node name="MoneyContainer" type="HBoxContainer" parent="TopContainer/VBox/TopHBox"]
+[node name="DayLabel" type="Label" parent="TopContainer/VBox/TopHBox" unique_id=1629777134]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.88, 0.3, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.9)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 18
+text = " Día 1"
+
+[node name="Spacer" type="Control" parent="TopContainer/VBox/TopHBox" unique_id=1902699329]
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="TextureRect" type="TextureRect" parent="TopContainer/VBox/TopHBox/MoneyContainer"]
-layout_mode = 2
-texture = ExtResource("2_jlufg")
-expand_mode = 2
-
-[node name="StatusInfoLabel" type="Label" parent="TopContainer/VBox/TopHBox/MoneyContainer"]
+[node name="StatusInfoLabel" type="Label" parent="TopContainer/VBox/TopHBox" unique_id=237710360]
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_colors/font_outline_color = Color(0, 0, 0, 0.8)
 theme_override_constants/outline_size = 3
-theme_override_fonts/font = ExtResource("3_l20r4")
-theme_override_font_sizes/font_size = 20
+theme_override_font_sizes/font_size = 16
 text = "Negocio 1"
 
-[node name="s3" type="Label" parent="TopContainer/VBox/TopHBox/MoneyContainer"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.9, 0.95, 1, 1)
-theme_override_colors/font_outline_color = Color(0, 0, 0, 0.9)
-theme_override_constants/outline_size = 4
-theme_override_font_sizes/font_size = 22
-
-[node name="s4" type="Label" parent="TopContainer/VBox/TopHBox/MoneyContainer"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.9, 0.95, 1, 1)
-theme_override_colors/font_outline_color = Color(0, 0, 0, 0.9)
-theme_override_constants/outline_size = 4
-theme_override_font_sizes/font_size = 22
-
-[node name="TextureRect3" type="TextureRect" parent="TopContainer/VBox/TopHBox/MoneyContainer"]
-layout_mode = 2
-texture = ExtResource("4_jvmx1")
-expand_mode = 2
-
-[node name="OrderLabel" type="Label" parent="TopContainer/VBox/TopHBox/MoneyContainer"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.9, 0.95, 1, 1)
-theme_override_colors/font_outline_color = Color(0, 0, 0, 0.9)
-theme_override_constants/outline_size = 4
-theme_override_fonts/font = ExtResource("3_l20r4")
-theme_override_font_sizes/font_size = 20
-text = " Día 1"
-
-[node name="s2" type="Label" parent="TopContainer/VBox/TopHBox/MoneyContainer"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.9, 0.95, 1, 1)
-theme_override_colors/font_outline_color = Color(0, 0, 0, 0.9)
-theme_override_constants/outline_size = 4
-theme_override_font_sizes/font_size = 22
-
-[node name="s1" type="Label" parent="TopContainer/VBox/TopHBox/MoneyContainer"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.9, 0.95, 1, 1)
-theme_override_colors/font_outline_color = Color(0, 0, 0, 0.9)
-theme_override_constants/outline_size = 4
-theme_override_font_sizes/font_size = 22
-
-[node name="TextureRect2" type="TextureRect" parent="TopContainer/VBox/TopHBox/MoneyContainer"]
-layout_mode = 2
-texture = ExtResource("2_ig75s")
-expand_mode = 2
-
-[node name="MoneyLabel" type="Label" parent="TopContainer/VBox/TopHBox/MoneyContainer"]
-layout_mode = 2
-theme_override_colors/font_outline_color = Color(0, 0, 0, 0.9)
-theme_override_constants/outline_size = 4
-theme_override_fonts/font = ExtResource("3_l20r4")
-theme_override_font_sizes/font_size = 20
-text = "$0"
-
-[node name="OrderProgressBar" type="ProgressBar" parent="TopContainer/VBox"]
+[node name="MoneyBar" type="ProgressBar" parent="TopContainer/VBox" unique_id=439166215]
 custom_minimum_size = Vector2(0, 26)
 layout_mode = 2
-theme_override_styles/background = SubResource("StyleBoxFlat_order_bg")
-theme_override_styles/fill = SubResource("StyleBoxFlat_order_fill")
-value = 40.0
+theme_type_variation = &"MoneyBar"
 show_percentage = false
 
-[node name="OrderProgressLabel" type="Label" parent="TopContainer/VBox/OrderProgressBar"]
+[node name="MoneyLabel" type="Label" parent="TopContainer/VBox/MoneyBar" unique_id=270897453]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -196,23 +88,18 @@ grow_horizontal = 2
 grow_vertical = 2
 theme_override_colors/font_outline_color = Color(0, 0, 0, 0.9)
 theme_override_constants/outline_size = 4
-theme_override_font_sizes/font_size = 15
-text = "$0 / 100"
+theme_override_font_sizes/font_size = 16
+text = "💰 $0 / $0"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="EnergyContainer" type="VBoxContainer" parent="TopContainer/VBox"]
+[node name="TimeBar" type="ProgressBar" parent="TopContainer/VBox"]
+custom_minimum_size = Vector2(0, 26)
 layout_mode = 2
-
-[node name="EnergyBar" type="ProgressBar" parent="TopContainer/VBox/EnergyContainer"]
-custom_minimum_size = Vector2(0, 22)
-layout_mode = 2
-theme_override_styles/background = SubResource("StyleBoxFlat_order_bg")
-theme_override_styles/fill = SubResource("StyleBoxFlat_energy_fill")
-value = 100.0
+theme_type_variation = &"TimeBar"
 show_percentage = false
 
-[node name="EnergyLabel" type="Label" parent="TopContainer/VBox/EnergyContainer/EnergyBar"]
+[node name="TimeLabel" type="Label" parent="TopContainer/VBox/TimeBar" unique_id=912004471]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -221,36 +108,32 @@ grow_horizontal = 2
 grow_vertical = 2
 theme_override_colors/font_outline_color = Color(0, 0, 0, 0.9)
 theme_override_constants/outline_size = 4
-theme_override_font_sizes/font_size = 14
+theme_override_font_sizes/font_size = 16
+text = "⏱ 60s / 60s"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="EnergyBar" type="ProgressBar" parent="TopContainer/VBox"]
+custom_minimum_size = Vector2(0, 26)
+layout_mode = 2
+theme_type_variation = &"EnergyBar"
+show_percentage = false
+
+[node name="EnergyLabel" type="Label" parent="TopContainer/VBox/EnergyBar" unique_id=154738206]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.9)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 16
 text = "⚡ 100 / 100"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="StatusHBox" type="HBoxContainer" parent="TopContainer/VBox"]
-layout_mode = 2
-size_flags_horizontal = 4
-size_flags_vertical = 10
-
-[node name="RoundTimeLabel" type="Label" parent="TopContainer/VBox/StatusHBox"]
-layout_mode = 2
-theme_override_colors/font_color = Color(1, 0.95, 0.6, 1)
-theme_override_colors/font_outline_color = Color(0, 0, 0, 0.9)
-theme_override_constants/outline_size = 4
-theme_override_font_sizes/font_size = 22
-text = "⏱ 60s"
-horizontal_alignment = 1
-
-[node name="LaunchRateLabel" type="Label" parent="TopContainer/VBox/StatusHBox"]
-layout_mode = 2
-size_flags_horizontal = 3
-theme_override_colors/font_color = Color(1, 0.95, 0.6, 1)
-theme_override_colors/font_outline_color = Color(0, 0, 0, 0.8)
-theme_override_constants/outline_size = 3
-theme_override_font_sizes/font_size = 20
-text = "🍉 1.0 frutas/s"
-horizontal_alignment = 2
-
-[node name="BottomContainer" type="HBoxContainer" parent="."]
+[node name="BottomContainer" type="HBoxContainer" parent="." unique_id=193488530]
 layout_mode = 1
 anchors_preset = 12
 anchor_top = 1.0
@@ -264,7 +147,7 @@ grow_horizontal = 2
 grow_vertical = 0
 alignment = 1
 
-[node name="KnifeInfoLabel" type="Label" parent="BottomContainer"]
+[node name="KnifeInfoLabel" type="Label" parent="BottomContainer" unique_id=409289421]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_colors/font_color = Color(0.8, 0.88, 1, 1)
@@ -274,23 +157,26 @@ theme_override_font_sizes/font_size = 18
 text = "👊 Utensilio básico"
 vertical_alignment = 1
 
-[node name="ButtonsHBox" type="HBoxContainer" parent="BottomContainer"]
+[node name="ButtonsHBox" type="HBoxContainer" parent="BottomContainer" unique_id=1636912296]
 layout_mode = 2
 theme_override_constants/separation = 10
 
-[node name="StatsButton" type="Button" parent="BottomContainer/ButtonsHBox"]
+[node name="StatsButton" type="Button" parent="BottomContainer/ButtonsHBox" unique_id=934254969]
 custom_minimum_size = Vector2(130, 56)
 layout_mode = 2
 theme_override_font_sizes/font_size = 18
 text = "📊 Stats"
 
-[node name="PauseButton" type="Button" parent="BottomContainer/ButtonsHBox"]
+[node name="PauseButton" type="Button" parent="BottomContainer/ButtonsHBox" unique_id=1983840188]
 custom_minimum_size = Vector2(130, 56)
 layout_mode = 2
 theme_override_font_sizes/font_size = 18
 text = "⏸ Pausa"
 
-[node name="AchToast" type="PanelContainer" parent="."]
+[node name="ToastLayer" type="CanvasLayer" parent="."]
+layer = 10
+
+[node name="AchToast" type="PanelContainer" parent="ToastLayer"]
 visible = false
 modulate = Color(1, 1, 1, 0)
 layout_mode = 1
@@ -298,89 +184,136 @@ anchors_preset = 5
 anchor_left = 0.5
 anchor_right = 0.5
 offset_left = -340.0
-offset_top = 200.0
+offset_top = 20.0
 offset_right = 340.0
-offset_bottom = 292.0
+offset_bottom = 112.0
 grow_horizontal = 2
 mouse_filter = 2
-theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
+theme = ExtResource("1_4ed8p")
+theme_override_styles/panel = SubResource("SB_ach_toast")
 
-[node name="HBox" type="HBoxContainer" parent="AchToast"]
+[node name="HBox" type="HBoxContainer" parent="ToastLayer/AchToast" unique_id=362565018]
 layout_mode = 2
 theme_override_constants/separation = 16
 
-[node name="AchIcon" type="Label" parent="AchToast/HBox"]
+[node name="AchIcon" type="Label" parent="ToastLayer/AchToast/HBox" unique_id=1949139159]
 layout_mode = 2
-theme_override_font_sizes/font_size = 34
+theme_override_font_sizes/font_size = 28
 text = "🏆"
 
-[node name="VBox" type="VBoxContainer" parent="AchToast/HBox"]
+[node name="VBox" type="VBoxContainer" parent="ToastLayer/AchToast/HBox" unique_id=608594429]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/separation = 2
 
-[node name="AchTitle" type="Label" parent="AchToast/HBox/VBox"]
+[node name="AchTitle" type="Label" parent="ToastLayer/AchToast/HBox/VBox" unique_id=1768680635]
 layout_mode = 2
-theme_override_colors/font_color = Color(1, 0.88, 0.3, 1)
+theme_type_variation = &"SubtitleLabel"
 theme_override_colors/font_outline_color = Color(0, 0, 0, 0.9)
 theme_override_constants/outline_size = 4
-theme_override_font_sizes/font_size = 20
 text = "Logro Desbloqueado"
 
-[node name="AchDesc" type="Label" parent="AchToast/HBox/VBox"]
+[node name="AchDesc" type="Label" parent="ToastLayer/AchToast/HBox/VBox" unique_id=1383078964]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.9, 0.95, 1, 1)
 theme_override_font_sizes/font_size = 14
 text = "¡Desbloqueado!"
 
-[node name="StreakPanel" type="PanelContainer" parent="."]
+[node name="StreakRing" type="Control" parent="." unique_id=1418186780]
+custom_minimum_size = Vector2(150, 150)
 layout_mode = 1
-anchors_preset = 1
-anchor_left = 1.0
-anchor_right = 1.0
-offset_left = -260.0
-offset_top = 195.0
-offset_right = -20.0
-offset_bottom = 285.0
-grow_horizontal = 0
+anchors_preset = 0
+offset_left = 20.0
+offset_top = 176.0
+offset_right = 170.0
+offset_bottom = 326.0
 mouse_filter = 2
-theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
+script = ExtResource("5_ring")
 
-[node name="VBox" type="VBoxContainer" parent="StreakPanel"]
-layout_mode = 2
-theme_override_constants/separation = 2
-
-[node name="StreakLabel" type="Label" parent="StreakPanel/VBox"]
-layout_mode = 2
-theme_override_colors/font_color = Color(1, 0.45, 0.3, 1)
-theme_override_colors/font_outline_color = Color(0, 0, 0, 0.9)
-theme_override_constants/outline_size = 4
-theme_override_font_sizes/font_size = 22
-text = "🔥 Racha: 0"
-horizontal_alignment = 2
-
-[node name="StreakBar" type="ProgressBar" parent="StreakPanel/VBox"]
-custom_minimum_size = Vector2(0, 22)
-layout_mode = 2
-theme_override_styles/background = SubResource("StyleBoxFlat_order_bg")
-theme_override_styles/fill = SubResource("StyleBoxFlat_streak_fill")
-show_percentage = false
-
-[node name="StreakBarLabel" type="Label" parent="StreakPanel/VBox/StreakBar"]
+[node name="Center" type="VBoxContainer" parent="StreakRing" unique_id=34174651]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+mouse_filter = 2
+theme_override_constants/separation = 0
+alignment = 1
+
+[node name="CaptionLabel" type="Label" parent="StreakRing/Center" unique_id=1463241179]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.6, 0.35, 1)
 theme_override_colors/font_outline_color = Color(0, 0, 0, 0.9)
 theme_override_constants/outline_size = 3
-theme_override_font_sizes/font_size = 13
-text = "→ 5  (x1.00)"
+theme_override_font_sizes/font_size = 12
+text = "RACHA"
 horizontal_alignment = 1
+
+[node name="ValueLabel" type="Label" parent="StreakRing/Center" unique_id=2085544077]
+layout_mode = 2
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.9)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 34
+text = "0"
+horizontal_alignment = 1
+
+[node name="MultiplierLabel" type="Label" parent="StreakRing/Center" unique_id=477832939]
+visible = false
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.55, 0.2, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.9)
+theme_override_constants/outline_size = 3
+theme_override_font_sizes/font_size = 16
+text = "x1.00"
+horizontal_alignment = 1
+
+[node name="RatePanel" type="PanelContainer" parent="." unique_id=548176260]
+custom_minimum_size = Vector2(138, 54)
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -158.0
+offset_top = 224.0
+offset_right = -20.0
+offset_bottom = 278.0
+grow_horizontal = 0
+mouse_filter = 2
+
+[node name="HBox" type="HBoxContainer" parent="RatePanel"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 8
+
+[node name="RateIcon" type="Label" parent="RatePanel/HBox" unique_id=912004472]
+layout_mode = 2
+size_flags_vertical = 4
+theme_override_colors/font_color = Color(0.31, 0.84, 0.62, 1)
+theme_override_font_sizes/font_size = 22
+text = "🍉"
 vertical_alignment = 1
 
-[node name="MilestoneLabel" type="Label" parent="."]
+[node name="VBox" type="VBoxContainer" parent="RatePanel/HBox"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = -2
+
+[node name="RateValue" type="Label" parent="RatePanel/HBox/VBox" unique_id=154738207]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.75, 0.82, 0.94, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.85)
+theme_override_constants/outline_size = 3
+theme_override_font_sizes/font_size = 19
+text = "1.0"
+
+[node name="RateUnit" type="Label" parent="RatePanel/HBox/VBox" unique_id=1234567891]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.55, 0.62, 0.74, 1)
+theme_override_font_sizes/font_size = 11
+text = "frutas/s"
+
+[node name="MilestoneLabel" type="Label" parent="." unique_id=1398046872]
 modulate = Color(1, 1, 1, 0)
 layout_mode = 1
 anchors_preset = 8
@@ -397,12 +330,12 @@ grow_vertical = 2
 theme_override_colors/font_color = Color(1, 0.78, 0.25, 1)
 theme_override_colors/font_outline_color = Color(0, 0, 0, 0.95)
 theme_override_constants/outline_size = 8
-theme_override_font_sizes/font_size = 40
+theme_override_font_sizes/font_size = 32
 text = "¡YA PICASTE!"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="PausePanel" type="Control" parent="."]
+[node name="PausePanel" type="Control" parent="." unique_id=1449909531]
 visible = false
 layout_mode = 1
 anchors_preset = 15
@@ -411,16 +344,16 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="Scrim" type="ColorRect" parent="PausePanel"]
+[node name="Scrim" type="ColorRect" parent="PausePanel" unique_id=1650526445]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-color = Color(0, 0, 0, 0.6)
+color = Color(0, 0, 0, 0.65)
 
-[node name="Card" type="PanelContainer" parent="PausePanel"]
+[node name="Card" type="PanelContainer" parent="PausePanel" unique_id=326716640]
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
@@ -433,65 +366,63 @@ offset_right = 300.0
 offset_bottom = 280.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_styles/panel = SubResource("StyleBoxFlat_pause")
+theme_type_variation = &"ModalPanel"
 
-[node name="PauseVBox" type="VBoxContainer" parent="PausePanel/Card"]
+[node name="PauseVBox" type="VBoxContainer" parent="PausePanel/Card" unique_id=1242514794]
 layout_mode = 2
 theme_override_constants/separation = 16
 
-[node name="PauseTitle" type="Label" parent="PausePanel/Card/PauseVBox"]
+[node name="PauseTitle" type="Label" parent="PausePanel/Card/PauseVBox" unique_id=1364902588]
 layout_mode = 2
-theme_override_colors/font_color = Color(1, 0.88, 0.25, 1)
-theme_override_font_sizes/font_size = 32
+theme_type_variation = &"TitleLabel"
 text = "⏸ PAUSA"
 horizontal_alignment = 1
 
-[node name="PauseDayLabel" type="Label" parent="PausePanel/Card/PauseVBox"]
+[node name="PauseDayLabel" type="Label" parent="PausePanel/Card/PauseVBox" unique_id=606148712]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.75, 0.8, 0.92, 1)
 theme_override_font_sizes/font_size = 16
 horizontal_alignment = 1
 
-[node name="ContinueButton" type="Button" parent="PausePanel/Card/PauseVBox"]
+[node name="ContinueButton" type="Button" parent="PausePanel/Card/PauseVBox" unique_id=1124531529]
 custom_minimum_size = Vector2(0, 56)
 layout_mode = 2
-theme_override_colors/font_color = Color(0.94, 0.96, 1, 1)
-theme_override_font_sizes/font_size = 20
+theme_type_variation = &"PrimaryButton"
+theme_override_font_sizes/font_size = 18
 text = "▶ CONTINUAR"
 
-[node name="SettingsButton" type="Button" parent="PausePanel/Card/PauseVBox"]
+[node name="SettingsButton" type="Button" parent="PausePanel/Card/PauseVBox" unique_id=369007885]
 custom_minimum_size = Vector2(0, 56)
 layout_mode = 2
-theme_override_font_sizes/font_size = 20
+theme_override_font_sizes/font_size = 18
 text = "⚙️ AJUSTES"
 
-[node name="PauseQuitButton" type="Button" parent="PausePanel/Card/PauseVBox"]
+[node name="PauseQuitButton" type="Button" parent="PausePanel/Card/PauseVBox" unique_id=11446429]
 custom_minimum_size = Vector2(0, 48)
 layout_mode = 2
-theme_override_colors/font_color = Color(1, 0.55, 0.5, 1)
+theme_type_variation = &"DangerButton"
 theme_override_font_sizes/font_size = 16
 text = "🚪 SALIR"
 
-[node name="SettingsVBox" type="VBoxContainer" parent="PausePanel/Card"]
+[node name="SettingsVBox" type="VBoxContainer" parent="PausePanel/Card" unique_id=1935636313]
 visible = false
 layout_mode = 2
 theme_override_constants/separation = 16
 
-[node name="SettingsTitle" type="Label" parent="PausePanel/Card/SettingsVBox"]
+[node name="SettingsTitle" type="Label" parent="PausePanel/Card/SettingsVBox" unique_id=1341342988]
 layout_mode = 2
-theme_override_colors/font_color = Color(1, 0.88, 0.25, 1)
-theme_override_font_sizes/font_size = 28
+theme_type_variation = &"TitleLabel"
 text = "AJUSTES"
 horizontal_alignment = 1
 
-[node name="SettingsSection" parent="PausePanel/Card/SettingsVBox" instance=ExtResource("2_ss")]
+[node name="SettingsSection" parent="PausePanel/Card/SettingsVBox" unique_id=1561902042 instance=ExtResource("2_ss")]
 layout_mode = 2
 
-[node name="SettingsBackButton" type="Button" parent="PausePanel/Card/SettingsVBox"]
+[node name="SettingsBackButton" type="Button" parent="PausePanel/Card/SettingsVBox" unique_id=430230446]
 custom_minimum_size = Vector2(0, 52)
 layout_mode = 2
 theme_override_font_sizes/font_size = 18
 text = "← VOLVER"
 
-[node name="PauseConfirmDialog" parent="." instance=ExtResource("3_cd")]
+[node name="PauseConfirmDialog" parent="." unique_id=43942158 instance=ExtResource("3_cd")]
 layout_mode = 1

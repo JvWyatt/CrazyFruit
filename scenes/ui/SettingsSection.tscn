@@ -1,8 +1,10 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene load_steps=3 format=3]
 
+[ext_resource type="Theme" uid="uid://cw00u1brw0yxi" path="res://themes/ui01_theme.tres" id="1_theme"]
 [ext_resource type="Script" path="res://scripts/ui/SettingsSection.gd" id="1_ss"]
 
 [node name="SettingsSection" type="VBoxContainer"]
+theme = ExtResource("1_theme")
 theme_override_constants/separation = 16
 script = ExtResource("1_ss")
 
@@ -13,7 +15,7 @@ theme_override_constants/separation = 12
 [node name="MasterLabel" type="Label" parent="MasterRow"]
 custom_minimum_size = Vector2(150, 0)
 layout_mode = 2
-theme_override_font_sizes/font_size = 17
+theme_override_font_sizes/font_size = 16
 text = "Volumen general"
 vertical_alignment = 1
 
@@ -27,7 +29,7 @@ step = 1.0
 [node name="MasterValue" type="Label" parent="MasterRow"]
 custom_minimum_size = Vector2(52, 0)
 layout_mode = 2
-theme_override_font_sizes/font_size = 17
+theme_override_font_sizes/font_size = 16
 text = "100%"
 horizontal_alignment = 2
 
@@ -38,7 +40,7 @@ theme_override_constants/separation = 12
 [node name="MusicLabel" type="Label" parent="MusicRow"]
 custom_minimum_size = Vector2(150, 0)
 layout_mode = 2
-theme_override_font_sizes/font_size = 17
+theme_override_font_sizes/font_size = 16
 text = "Música"
 vertical_alignment = 1
 
@@ -52,7 +54,7 @@ step = 1.0
 [node name="MusicValue" type="Label" parent="MusicRow"]
 custom_minimum_size = Vector2(52, 0)
 layout_mode = 2
-theme_override_font_sizes/font_size = 17
+theme_override_font_sizes/font_size = 16
 text = "100%"
 horizontal_alignment = 2
 
@@ -63,7 +65,7 @@ theme_override_constants/separation = 12
 [node name="SfxLabel" type="Label" parent="SfxRow"]
 custom_minimum_size = Vector2(150, 0)
 layout_mode = 2
-theme_override_font_sizes/font_size = 17
+theme_override_font_sizes/font_size = 16
 text = "Efectos (SFX)"
 vertical_alignment = 1
 
@@ -77,6 +79,6 @@ step = 1.0
 [node name="SfxValue" type="Label" parent="SfxRow"]
 custom_minimum_size = Vector2(52, 0)
 layout_mode = 2
-theme_override_font_sizes/font_size = 17
+theme_override_font_sizes/font_size = 16
 text = "100%"
 horizontal_alignment = 2

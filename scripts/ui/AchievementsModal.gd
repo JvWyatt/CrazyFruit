@@ -24,7 +24,7 @@ func open_modal() -> void:
 # Acceso / desbloqueo según progreso (6.2)
 # ---------------------------------------------------------------------------
 # La Lista COMPLETA de logros (con los pendientes a la vista) se revela SOLO
-# tras cruzar la meta del juego (día WIN_DAY). Antes, la sección muestra
+# tras cruzar la meta del juego (día 100). Antes, la sección muestra
 # únicamente los logros ya conseguidos, sin spoilear los que faltan.
 var _game_completed: bool = false
 
@@ -161,7 +161,7 @@ func _make_row(def: Dictionary) -> Control:
 	# Descripción.
 	var desc_lbl := Label.new()
 	desc_lbl.text = str(def.get("desc", ""))
-	desc_lbl.add_theme_font_size_override("font_size", 12)
+	desc_lbl.add_theme_font_size_override("font_size", 14)
 	desc_lbl.modulate = Color(0.6, 0.68, 0.78)
 	vbox.add_child(desc_lbl)
 
@@ -175,7 +175,7 @@ func _make_row(def: Dictionary) -> Control:
 		vbox.add_child(bar)
 		var prog_lbl := Label.new()
 		prog_lbl.text = "Progreso: " + AchievementManager.get_progress_text(id)
-		prog_lbl.add_theme_font_size_override("font_size", 11)
+		prog_lbl.add_theme_font_size_override("font_size", 14)
 		prog_lbl.modulate = Color(0.55, 0.85, 0.7) if not unlocked else Color(0.4, 0.7, 0.55)
 		vbox.add_child(prog_lbl)
 

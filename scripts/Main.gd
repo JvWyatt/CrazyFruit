@@ -170,10 +170,10 @@ func _on_quit_run_requested() -> void:
 
 func _on_order_completed(order_num: int) -> void:
 	fruit_spawner.clear_all()
-	# Objetivo del juego: al completar el día WIN_DAY se muestran los CRÉDITOS
+	# Objetivo del juego: al completar el día de victoria (get_win_day()) se muestran los CRÉDITOS
 	# en lugar del flujo normal de fin de día. Desde ahí se puede continuar
 	# (nuevos récords) o salir al menú.
-	if order_num >= GameManager.WIN_DAY:
+	if order_num >= GameManager.get_win_day():
 		credits_modal.open_modal(order_num)
 		return
 	# Resumen del día (conseguido/impuesto/ganancia) y comodines se muestran
@@ -183,7 +183,7 @@ func _on_order_completed(order_num: int) -> void:
 func _on_credits_continue_requested() -> void:
 	# Tras los créditos, retomar el flujo normal de fin de día (comodín + tienda)
 	# para seguir haciendo récords a partir del día 100.
-	card_selection_modal.open_modal(GameManager.WIN_DAY)
+	card_selection_modal.open_modal(GameManager.get_win_day())
 
 func _on_credits_exit_requested() -> void:
 	_show_main_menu()

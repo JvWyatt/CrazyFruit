@@ -4,6 +4,13 @@ extends Node2D
 # aparece brevemente y desaparece. Puramente visual, sin valores de balance.
 # ============================================================================
 
+# Desplazamiento aleatorio y "pop" del texto flotante (editables en el
+# inspector de FloatingText.tscn).
+@export_range(0.0, 120.0, 1.0) var offset_x_range: float = 30.0
+@export_range(0.0, 300.0, 1.0) var offset_y_per_scale: float = 60.0
+# Factor de escala con el que el texto "salta" al aparecer.
+@export_range(0.0, 2.0, 0.05) var pop_scale_multiplier: float = 1.25
+
 @onready var label: Label = $Label
 
 func _ready() -> void:
@@ -22,9 +29,9 @@ func setup(text: String, color: Color, scale_multiplier: float = 1.0, duration: 
 	tween.set_parallel(true)
 	tween.set_trans(Tween.TRANS_QUAD)
 	
-	var target_pos: Vector2 = position + Vector2(randf_range(-30.0, 30.0), -60.0 * scale_multiplier)
+	var target_pos: Vector2 = position + Vector2(randf_range(-offset_x_range, offset_x_range), -offset_y_per_scale * scale_multiplier)
 	tween.tween_property(self, "position", target_pos, duration).set_ease(Tween.EASE_OUT)
-	tween.tween_property(self, "scale", scale * 1.25, duration * 0.3).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	tween.tween_property(self, "scale", scale * pop_scale_multiplier, duration * 0.3).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	
 	tween.tween_callback(func():
 		if is_instance_valid(self):

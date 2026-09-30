@@ -1,26 +1,12 @@
 [gd_scene load_steps=4 format=3 uid="uid://df72mk4w870p1"]
 
+[ext_resource type="Theme" uid="uid://cw00u1brw0yxi" path="res://themes/ui01_theme.tres" id="1_theme"]
 [ext_resource type="Script" uid="uid://cb37pyc3foyhx" path="res://scripts/ui/RunUpgradeModal.gd" id="1_upm"]
 [ext_resource type="Script" uid="uid://b5kdfot8rrbtk" path="res://scripts/ui/TouchScrollContainer.gd" id="2_touch_scroll"]
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_modal_bg"]
-content_margin_left = 20.0
-content_margin_top = 20.0
-content_margin_right = 20.0
-content_margin_bottom = 20.0
-bg_color = Color(0.08, 0.09, 0.14, 0.96)
-border_width_left = 2
-border_width_top = 2
-border_width_right = 2
-border_width_bottom = 2
-border_color = Color(0.32, 0.41, 0.63, 0.9)
-corner_radius_top_left = 18
-corner_radius_top_right = 18
-corner_radius_bottom_right = 18
-corner_radius_bottom_left = 18
-shadow_size = 20
+[ext_resource type="Script" path="res://scripts/ui/ResponsiveGrid.gd" id="3_grid"]
 
 [node name="RunUpgradeModal" type="Control"]
+theme = ExtResource("1_theme")
 z_index = 30
 layout_mode = 3
 anchors_preset = 15
@@ -37,7 +23,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-color = Color(0, 0, 0, 0.6)
+color = Color(0, 0, 0, 0.65)
 
 [node name="Panel" type="PanelContainer" parent="."]
 layout_mode = 1
@@ -52,7 +38,7 @@ offset_right = 320.0
 offset_bottom = 420.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_styles/panel = SubResource("StyleBoxFlat_modal_bg")
+theme_type_variation = "ModalPanel"
 
 [node name="VBox" type="VBoxContainer" parent="Panel"]
 layout_mode = 2
@@ -64,14 +50,13 @@ layout_mode = 2
 [node name="TitleLabel" type="Label" parent="Panel/VBox/HeaderHBox"]
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_colors/font_color = Color(1, 0.88, 0.3, 1)
-theme_override_font_sizes/font_size = 22
+theme_type_variation = &"TitleLabel"
 text = "🛒 Mercado de mejoras"
 
 [node name="MoneyLabel" type="Label" parent="Panel/VBox/HeaderHBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.3, 1, 0.4, 1)
-theme_override_font_sizes/font_size = 20
+theme_override_font_sizes/font_size = 18
 text = "💰 $0"
 
 [node name="CloseButton" type="Button" parent="Panel/VBox/HeaderHBox"]
@@ -94,10 +79,12 @@ size_flags_horizontal = 3
 script = ExtResource("2_touch_scroll")
 metadata/_tab_index = 0
 
-[node name="ItemsVBox" type="VBoxContainer" parent="Panel/VBox/TabContainer/Mejoras"]
+[node name="ItemsGrid" type="GridContainer" parent="Panel/VBox/TabContainer/Mejoras"]
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_constants/separation = 12
+theme_override_constants/h_separation = 12
+theme_override_constants/v_separation = 12
+script = ExtResource("3_grid")
 
 [node name="Frutería" type="ScrollContainer" parent="Panel/VBox/TabContainer"]
 visible = false
@@ -106,10 +93,12 @@ size_flags_horizontal = 3
 script = ExtResource("2_touch_scroll")
 metadata/_tab_index = 1
 
-[node name="ItemsVBox" type="VBoxContainer" parent="Panel/VBox/TabContainer/Frutería"]
+[node name="ItemsGrid" type="GridContainer" parent="Panel/VBox/TabContainer/Frutería"]
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_constants/separation = 12
+theme_override_constants/h_separation = 12
+theme_override_constants/v_separation = 12
+script = ExtResource("3_grid")
 
 [node name="Armas" type="ScrollContainer" parent="Panel/VBox/TabContainer"]
 visible = false
@@ -118,10 +107,12 @@ size_flags_horizontal = 3
 script = ExtResource("2_touch_scroll")
 metadata/_tab_index = 2
 
-[node name="ItemsVBox" type="VBoxContainer" parent="Panel/VBox/TabContainer/Armas"]
+[node name="ItemsGrid" type="GridContainer" parent="Panel/VBox/TabContainer/Armas"]
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_constants/separation = 12
+theme_override_constants/h_separation = 12
+theme_override_constants/v_separation = 12
+script = ExtResource("3_grid")
 
 [node name="BottomHBox" type="HBoxContainer" parent="Panel/VBox"]
 layout_mode = 2
@@ -137,5 +128,6 @@ text = "📊 Ver Stats"
 custom_minimum_size = Vector2(0, 56)
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_font_sizes/font_size = 20
+theme_type_variation = "PrimaryButton"
+theme_override_font_sizes/font_size = 18
 text = "⚔️ INICIAR SIGUIENTE DÍA"

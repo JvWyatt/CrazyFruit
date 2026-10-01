@@ -59,6 +59,10 @@ var run_upgrade_levels: Dictionary = {
 # cambios (mercado +10% / prestigio +25%).
 var run_upgrade_definitions: Dictionary = {}
 
+# Factor real acumulado al comprar daño. El mínimo se decide con el daño
+# actual de esa compra, no con la base del arma ni con un valor redondeado.
+var run_damage_multiplier: float = 1.0
+
 # ----------------------------------------------------------------------------
 # BONOS DE COMODINES (CARTAS) - también se resetean cada partida
 # ----------------------------------------------------------------------------
@@ -195,6 +199,7 @@ func reset_run_stats() -> void:
 	invalidate_stat_cache()
 	for key in run_upgrade_levels.keys():
 		run_upgrade_levels[key] = 0
+	run_damage_multiplier = 1.0
 	card_damage_multiplier = 1.0
 	card_energy_multiplier = 1.0
 	card_money_multiplier = 1.0
@@ -240,14 +245,8 @@ func get_sorted_knife_ids() -> Array[String]:
 	)
 	return ids
 
-# Daño final de un golpe = daño base del arma equipada
-#   x multiplicador de comodines
-#   x (1 + prestige_damage_bonus_per_level por nivel de prestigio "experience")
-# Para la mejora "Afilado de Hoja": mientras el daño esté por debajo de
-# balance.damage_pity_floor, cada nivel suma balance.damage_pity_flat_per_level
-# de daño plano; al llegar al piso se estabiliza en el
-# balance.run_damage_bonus_per_level por nivel. El valor devuelto se entrega
-# siempre con un decimal.
+# Daño final sin redondear: arma x mercado x comodines x prestigio.
+# El mínimo del mercado se aplica exclusivamente al comprar (ver abajo).
 func get_final_damage() -> float:
 	if _final_damage < 0.0:
 		_final_damage = _compute_final_damage()
@@ -257,14 +256,34 @@ func get_final_damage() -> float:
 # el valor está marcado como sucio).
 func _compute_final_damage() -> float:
 	var knife: KnifeData = get_equipped_knife_data()
-	var base_dmg: float = knife.damage
-	var level: int = run_upgrade_levels["damage"]
-	var prestige_bonus: float = 1.0 + (SaveManager.get_prestige_level("experience") * balance.prestige_damage_bonus_per_level)
-	# Daño sin el bono de la mejora del mercado (base x comodines x prestigio).
-	var base_final: float = base_dmg * card_damage_multiplier * prestige_bonus
-	if base_final < balance.damage_pity_floor and level > 0:
-		return snappedf(base_final + (level * balance.damage_pity_flat_per_level), 0.1)
-	return snappedf(base_dmg * (1.0 + (level * balance.run_damage_bonus_per_level)) * card_damage_multiplier * prestige_bonus, 0.1)
+	return knife.damage * run_damage_multiplier * card_damage_multiplier * get_prestige_multiplier("experience", balance.prestige_damage_bonus_per_level)
+
+# Prestigio consulta solo la base de una nueva partida y sus niveles guardados.
+# No depende del arma de la run, comodines, mejoras temporales ni cachés finales.
+func get_prestige_multiplier(upgrade_id: String, bonus: float) -> float:
+	return pow(1.0 + bonus, SaveManager.get_prestige_level(upgrade_id))
+
+func get_permanent_stat(upgrade_id: String) -> float:
+	match upgrade_id:
+		"experience":
+			var knife: KnifeData = knives_db["weapon_fist"] as KnifeData
+			return knife.damage * get_prestige_multiplier(upgrade_id, balance.prestige_damage_bonus_per_level)
+		"expert_hand":
+			return balance.base_max_energy * get_prestige_multiplier(upgrade_id, balance.prestige_energy_bonus_per_level)
+		"good_provider":
+			return get_prestige_multiplier(upgrade_id, balance.prestige_money_bonus_per_level)
+		"good_fortune":
+			return SaveManager.get_prestige_level(upgrade_id) * balance.prestige_jackpot_bonus_per_level
+		"launch_speed":
+			return balance.base_launch_rate * get_prestige_multiplier(upgrade_id, balance.prestige_launch_bonus_per_level)
+	return 0.0
+
+func get_run_damage_upgrade_next_value() -> float:
+	var current: float = get_final_damage()
+	var next_value: float = current * (1.0 + balance.run_damage_bonus_per_level)
+	if current < balance.damage_pity_floor:
+		next_value = maxf(next_value, current + balance.damage_pity_flat_per_level)
+	return next_value
 
 # Resistencia máxima final = 100 base x mejoras del mercado x comodines x prestigio
 func get_final_max_energy() -> float:
@@ -274,8 +293,8 @@ func get_final_max_energy() -> float:
 
 func _compute_final_max_energy() -> float:
 	var base_energy: float = balance.base_max_energy
-	var run_bonus: float = 1.0 + (run_upgrade_levels["energy_max"] * balance.run_energy_bonus_per_level)
-	var prestige_bonus: float = 1.0 + (SaveManager.get_prestige_level("expert_hand") * balance.prestige_energy_bonus_per_level)
+	var run_bonus: float = pow(1.0 + balance.run_energy_bonus_per_level, run_upgrade_levels["energy_max"])
+	var prestige_bonus: float = get_prestige_multiplier("expert_hand", balance.prestige_energy_bonus_per_level)
 	return base_energy * run_bonus * card_energy_multiplier * prestige_bonus
 
 # Cuánta resistencia se gasta por cada golpe con el arma equipada (ver
@@ -296,8 +315,8 @@ func get_final_money_multiplier() -> float:
 	return _final_money_multiplier
 
 func _compute_final_money_multiplier() -> float:
-	var run_bonus: float = 1.0 + (run_upgrade_levels["money"] * balance.run_money_bonus_per_level)
-	var prestige_bonus: float = 1.0 + (SaveManager.get_prestige_level("good_provider") * balance.prestige_money_bonus_per_level)
+	var run_bonus: float = pow(1.0 + balance.run_money_bonus_per_level, run_upgrade_levels["money"])
+	var prestige_bonus: float = get_prestige_multiplier("good_provider", balance.prestige_money_bonus_per_level)
 	return 1.0 * run_bonus * card_money_multiplier * prestige_bonus
 
 # Probabilidad extra (sumada, no multiplicada) de que una fruta sea "Gran Venta"/Jackpot.
@@ -370,8 +389,8 @@ func get_final_launch_rate() -> float:
 	return _final_launch_rate
 
 func _compute_final_launch_rate() -> float:
-	var run_bonus: float = 1.0 + (run_upgrade_levels["launch_rate"] * balance.run_launch_bonus_per_level)
-	var prestige_bonus: float = 1.0 + (SaveManager.get_prestige_level("launch_speed") * balance.prestige_launch_bonus_per_level)
+	var run_bonus: float = pow(1.0 + balance.run_launch_bonus_per_level, run_upgrade_levels["launch_rate"])
+	var prestige_bonus: float = get_prestige_multiplier("launch_speed", balance.prestige_launch_bonus_per_level)
 	return balance.base_launch_rate * run_bonus * card_launch_rate_multiplier * prestige_bonus
 
 # Intervalo ALEATORIO (en segundos) entre obstáculos: 1 a 2 s. Independiente
@@ -398,6 +417,9 @@ func get_order_target_multiplier() -> float:
 
 func buy_run_upgrade(upgrade_id: String) -> void:
 	if run_upgrade_levels.has(upgrade_id):
+		if upgrade_id == "damage":
+			var current_damage: float = get_final_damage()
+			run_damage_multiplier *= get_run_damage_upgrade_next_value() / current_damage
 		run_upgrade_levels[upgrade_id] += 1
 		GameManager._upgrades_bought_this_run += 1
 		AchievementManager.record_metric("upgrades_bought_run", 1)

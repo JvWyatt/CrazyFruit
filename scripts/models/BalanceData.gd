@@ -21,7 +21,7 @@ extends Resource
 @export var critical_damage_multiplier: float = 1.5
 
 # ---- Frecuencia de lanzamiento (frutas/obstáculos por segundo) -------------
-# La frecuencia final = base x (1 + bonus run) x (1 + bonus prestigio) x comodines.
+# La frecuencia final = base x (1 + bonus run)^nivel x (1 + bonus prestigio)^nivel x comodines.
 @export var base_launch_rate: float = 1.0
 # +10% de frecuencia por cada compra de la mejora "Cosecha Veloz" del mercado.
 @export var run_launch_bonus_per_level: float = 0.10
@@ -55,9 +55,9 @@ extends Resource
 
 # ---- Bonos por nivel de las mejoras del mercado --------------------------------
 @export var run_damage_bonus_per_level: float = 0.10
-# Piso de la mejora "Afilado de Hoja": por debajo de él, cada nivel otorga
-# damage_pity_flat_per_level de daño plano en lugar del porcentaje.
-@export var damage_pity_floor: float = 20.0
+# Umbral exclusivo del mercado: por debajo, el incremento porcentual tiene
+# un mínimo de damage_pity_flat_per_level; desde el umbral solo se multiplica.
+@export var damage_pity_floor: float = 10.0
 @export var damage_pity_flat_per_level: float = 1.0
 @export var run_energy_bonus_per_level: float = 0.10
 @export var run_money_bonus_per_level: float = 0.10

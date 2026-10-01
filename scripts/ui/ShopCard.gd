@@ -143,20 +143,30 @@ func setup(icon: String, title: String, subtitle: String, desc: String, action_t
 	action_button.text = action_text
 	action_button.disabled = not action_enabled
 
-# Presentación compartida de valores finales para mejoras y prestigio.
-# Los alias identifican la misma estadística sin recalcular sus bonificaciones.
+# Las claves de prestigio leen exclusivamente estadísticas permanentes.
+# Solo las claves del mercado consultan los valores finales de la run.
 func update_current_stat(stat_key: String) -> void:
 	var text: String = ""
 	match stat_key:
-		"damage", "experience":
-			text = "Daño: " + String.num(StatsManager.get_final_damage(), 3)
-		"energy_max", "expert_hand":
-			text = "Resistencia: " + String.num(StatsManager.get_final_max_energy(), 3)
-		"luck", "good_fortune":
-			text = "Jackpot: " + String.num(StatsManager.get_final_jackpot_bonus() * 100.0, 3) + "%"
-		"money", "good_provider":
-			text = "Dinero: x" + String.num(StatsManager.get_final_money_multiplier(), 3)
-		"launch_rate", "launch_speed":
-			text = "Velocidad: " + String.num(StatsManager.get_final_launch_rate(), 3) + " frutas/s"
+		"experience":
+			text = "Daño: " + UiTheme.format_stat(StatsManager.get_permanent_stat(stat_key))
+		"expert_hand":
+			text = "Resistencia: " + UiTheme.format_stat(StatsManager.get_permanent_stat(stat_key))
+		"good_fortune":
+			text = "Jackpot: " + UiTheme.format_stat(StatsManager.get_permanent_stat(stat_key) * 100.0) + "%"
+		"good_provider":
+			text = "Dinero: x" + UiTheme.format_stat(StatsManager.get_permanent_stat(stat_key))
+		"launch_speed":
+			text = "Velocidad: " + UiTheme.format_stat(StatsManager.get_permanent_stat(stat_key)) + " frutas/s"
+		"damage":
+			text = "Daño: " + UiTheme.format_stat(StatsManager.get_final_damage())
+		"energy_max":
+			text = "Resistencia: " + UiTheme.format_stat(StatsManager.get_final_max_energy())
+		"luck":
+			text = "Jackpot: " + UiTheme.format_stat(StatsManager.get_final_jackpot_bonus() * 100.0) + "%"
+		"money":
+			text = "Dinero: x" + UiTheme.format_stat(StatsManager.get_final_money_multiplier())
+		"launch_rate":
+			text = "Velocidad: " + UiTheme.format_stat(StatsManager.get_final_launch_rate()) + " frutas/s"
 	current_stat_label.text = text
 	current_stat_label.visible = not text.is_empty()

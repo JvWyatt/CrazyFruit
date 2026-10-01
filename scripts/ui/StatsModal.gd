@@ -104,9 +104,9 @@ func _add_stat(icon: String, title: String, value: String, value_color: Color) -
 	card.setup(icon, title, value, value_color)
 	_stats_grid.add_child(card)
 
-# Conserva decimales reales; los valores enteros no llevan ceros sobrantes.
+# Presentación uniforme a un decimal; no modifica el valor interno.
 func _number(value: float) -> String:
-	return String.num(value, 3)
+	return UiTheme.format_stat(value)
 
 func _on_close_pressed() -> void:
 	SoundManager.play_click()

@@ -104,7 +104,7 @@ func _ready() -> void:
 	_on_round_time_changed(GameManager.round_time_left)
 
 func format_damage(value: float) -> String:
-	return str(snappedf(value, 0.1))
+	return UiTheme.format_stat(value)
 
 func _update_knife_display() -> void:
 	var knife_data: KnifeData = StatsManager.get_equipped_knife_data()
@@ -121,7 +121,7 @@ func _update_launch_rate_display() -> void:
 	# Contador informativo: NO es un recurso consumible, asi que va fuera del
 	# anillo de racha, en una pieza compacta con su propia jerarquia visual.
 	var rate: float = StatsManager.get_final_launch_rate()
-	rate_value.text = "🍓 " + String.num(rate, 1) + " frutas/s"
+	rate_value.text = "🍓 " + UiTheme.format_stat(rate) + " frutas/s"
 
 var _last_money: float = -1.0
 var _order_target: float = 0.0
@@ -142,23 +142,22 @@ func _on_order_progress_changed(progress: float, target: float) -> void:
 
 func _on_energy_changed(current_e: float, max_e: float) -> void:
 	# La estamina es estado de partida: barra propia en el panel superior.
-	var total: int = maxi(int(round(max_e)), 1)
-	energy_bar.max_value = float(total)
-	energy_bar.value = clampf(current_e, 0.0, float(total))
-	energy_label.text = "⚡ " + str(int(round(current_e))) + " / " + str(total)
+	energy_bar.max_value = max_e
+	energy_bar.value = clampf(current_e, 0.0, max_e)
+	energy_label.text = "⚡ " + UiTheme.format_stat(current_e) + " / " + UiTheme.format_stat(max_e)
 
 # La señal round_time_changed llega cada frame; los rótulos solo cambian una vez
-# por segundo, asi que se guardan para no reescribirlos 60 veces por segundo.
+# por décima de segundo, así que se guardan para evitar escrituras redundantes.
 var _last_time_text: String = ""
 var _last_time_urgent: bool = false
 
 func _on_round_time_changed(time_left: float) -> void:
 	# El tiempo restante se vacia: la barra muestra lo que queda de la ronda.
 	var secs: int = ceili(maxf(0.0, time_left))
-	var total: int = maxi(int(round(GameManager.get_round_time())), 1)
-	time_bar.max_value = float(total)
-	time_bar.value = clampf(time_left, 0.0, float(total))
-	var text: String = "⏱ " + str(secs) + "s / " + str(total) + "s"
+	var total: float = GameManager.get_round_time()
+	time_bar.max_value = total
+	time_bar.value = clampf(time_left, 0.0, total)
+	var text: String = "⏱ " + UiTheme.format_stat(maxf(0.0, time_left)) + "s / " + UiTheme.format_stat(total) + "s"
 	if text != _last_time_text:
 		_last_time_text = text
 		time_label.text = text
@@ -198,7 +197,7 @@ func _on_streak_changed(streak: int, multiplier: float) -> void:
 	_last_streak_multiplier = multiplier
 
 func _set_multiplier_display(multiplier: float) -> void:
-	multiplier_value.text = "🔥 Multi: x" + String.num(multiplier, 2)
+	multiplier_value.text = "🔥 Multi: x" + UiTheme.format_stat(multiplier)
 
 func _cancel_multiplier_fly() -> void:
 	if _multiplier_fly_tween and _multiplier_fly_tween.is_valid():
@@ -208,7 +207,7 @@ func _cancel_multiplier_fly() -> void:
 
 func _animate_multiplier_fly(multiplier: float) -> void:
 	_cancel_multiplier_fly()
-	multiplier_fly_label.text = "x" + String.num(multiplier, 2)
+	multiplier_fly_label.text = "x" + UiTheme.format_stat(multiplier)
 	multiplier_fly_label.visible = true
 	multiplier_fly_label.modulate = Color.WHITE
 	# El recorrido queda en la franja superior, lejos de las frases del centro.

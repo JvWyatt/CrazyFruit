@@ -56,7 +56,7 @@ func set_streak(ratio: float, streak: int) -> void:
 # un pequeño rebote, espera y devuelve el control al número de la racha.
 # Se llama solo cuando el multiplicador se activa o sube (ver HUD.gd).
 func show_multiplier(multiplier: float) -> void:
-	multiplier_label.text = "x" + str(snappedf(multiplier, 0.01))
+	multiplier_label.text = "x" + UiTheme.format_stat(multiplier)
 	if _multiplier_tween and _multiplier_tween.is_valid():
 		_multiplier_tween.kill()
 

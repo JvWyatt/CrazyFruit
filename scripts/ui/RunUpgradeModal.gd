@@ -90,7 +90,7 @@ func _rebuild_ui() -> void:
 	_rebuild_fruit_shop()
 	_rebuild_weapon_shop()
 
-# Incremento base configurado: no depende del arma, del nivel ni del daño plano.
+# Texto del incremento real de la próxima compra; redondeo solo visual.
 func _upgrade_effect_text(key: String) -> String:
 	var bonus: float = 0.0
 	var stat_name: String = ""
@@ -98,19 +98,23 @@ func _upgrade_effect_text(key: String) -> String:
 		"damage":
 			bonus = StatsManager.balance.run_damage_bonus_per_level
 			stat_name = "Daño"
+			var current: float = StatsManager.get_final_damage()
+			var increment: float = StatsManager.get_run_damage_upgrade_next_value() - current
+			if current < StatsManager.balance.damage_pity_floor and increment > current * bonus:
+				return "+" + UiTheme.format_stat(increment) + " Daño (mínimo)"
 		"energy_max":
 			bonus = StatsManager.balance.run_energy_bonus_per_level
 			stat_name = "Resistencia"
 		"luck":
 			bonus = StatsManager.balance.run_jackpot_bonus_per_level
-			stat_name = "Jackpot"
+			return "+" + UiTheme.format_stat(bonus * 100.0) + " p.p. Jackpot"
 		"money":
 			bonus = StatsManager.balance.run_money_bonus_per_level
 			stat_name = "Dinero"
 		"launch_rate":
 			bonus = StatsManager.balance.run_launch_bonus_per_level
 			stat_name = "Velocidad"
-	return "+" + String.num(bonus * 100.0, 3) + "% " + stat_name
+	return "+" + UiTheme.format_stat(bonus * 100.0) + "% " + stat_name
 
 # Update a single upgrade row (level text + cost) after purchase, no rebuild
 func _update_upgrade_row(key: String) -> void:
@@ -202,10 +206,10 @@ func _rebuild_fruit_shop() -> void:
 		if not chain_ok:
 			prev_name = FruitDatabase.get_fruit_data(prev_id).display_name
 
-		var stats_lbl: String = "Vida: " + str(int(fruit_data.max_hp))
+		var stats_lbl: String = "Vida: " + UiTheme.format_stat(fruit_data.max_hp)
 		stats_lbl += "\nGanancias:\n$" + UiTheme.format_money(fruit_data.min_reward)
 		stats_lbl += " - $" + UiTheme.format_money(fruit_data.max_reward)
-		stats_lbl += "\nJackpot: " + str(int(fruit_data.jackpot_chance * 100.0)) + "%"
+		stats_lbl += "\nJackpot: " + UiTheme.format_stat(fruit_data.jackpot_chance * 100.0) + "%"
 
 		# Cara = la fruta; reverso = sus numeros. Las bloqueadas conservan su
 		# hueco en el grid pero con el velo, sin arte ni nombre.
@@ -249,9 +253,9 @@ func _rebuild_weapon_shop() -> void:
 		if not chain_ok:
 			prev_name = (StatsManager.knives_db[prev_id] as KnifeData).name
 
-		var effective_energy: float = snappedf(knife_data.energy_cost * StatsManager.balance.resistance_cost_multiplier, 0.01)
-		var stats_lbl: String = "Daño: " + str(snappedf(knife_data.damage, 0.1))
-		stats_lbl += "\nEnergía por golpe: " + str(effective_energy)
+		var effective_energy: float = knife_data.energy_cost * StatsManager.balance.resistance_cost_multiplier
+		var stats_lbl: String = "Daño: " + UiTheme.format_stat(knife_data.damage)
+		stats_lbl += "\nEnergía por golpe: " + UiTheme.format_stat(effective_energy)
 
 		# Cara = el arma; reverso = sus numeros y descripcion. Sin imagen propia
 		# todavia, el anverso usa el icono del arma.

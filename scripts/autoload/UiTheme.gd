@@ -176,10 +176,12 @@ func apply_card(panel: PanelContainer, border_color: Color = COLOR_BORDER, bg_co
 			return
 	panel.add_theme_stylebox_override("panel", card_style(border_color, bg_color))
 
-# Formato de dinero consistente: enteros simplificados con sufijos de letras
-# para cantidades grandes (ej: 1250 -> "1.25K", 2500000 -> "2.50M",
-# 3500000000 -> "3.50B", 4000000000000 -> "4.00T"). Siempre muestra 2
-# decimales SIN redondear ni ocultar los centavos. Usado en TODA la UI.
+# Redondeo exclusivo de presentación: siempre un decimal, incluida la parte .0.
+# El texto devuelto nunca se usa como entrada de los cálculos de estadísticas.
+func format_stat(value: float) -> String:
+	return "%.1f" % snappedf(value, 0.1)
+
+# Dinero con un decimal y sufijos para cantidades grandes (1250 -> "1.3K").
 func format_money(value: float) -> String:
 	var v: float = float(value)
 	var suffixes: Array = ["", "K", "M", "B", "T", "Qa", "Qi", "Sx", "Sp"]
@@ -187,7 +189,7 @@ func format_money(value: float) -> String:
 	while v >= 1000.0 and idx < suffixes.size() - 1:
 		v /= 1000.0
 		idx += 1
-	return ("%.2f" % snappedf(v, 0.01)) + (suffixes[idx] if idx > 0 else "")
+	return format_stat(v) + (suffixes[idx] if idx > 0 else "")
 
 # Entrada suave de modales/paneles: fade + escala con rebote suave.
 func pop_in(control: Control) -> void:

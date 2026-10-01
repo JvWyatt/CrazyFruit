@@ -125,7 +125,7 @@ func take_damage(amount: float, is_critical: bool, cut_dir: Vector2 = Vector2.ZE
 
 	# Spawn Damage Text (daño con 2 decimales, ej. "-5.70").
 	_spawn_floating_text(
-		("-" + String.num(amount, 2)) if not is_critical else ("¡CRÍTICO! -" + String.num(amount, 2)),
+		("-" + UiTheme.format_stat(amount)) if not is_critical else ("¡CRÍTICO! -" + UiTheme.format_stat(amount)),
 		Color(1.0, 0.3, 0.3) if not is_critical else Color(1.0, 0.85, 0.1),
 		1.0 if not is_critical else 1.35
 	)

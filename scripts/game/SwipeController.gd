@@ -241,7 +241,7 @@ func _spawn_obstacle_feedback(pos: Vector2, penalty: float) -> void:
 	var ft = FLOATING_TEXT_SCENE.instantiate()
 	ft.position = pos
 	get_parent().add_child(ft)
-	var penalty_text: String = "¡PIEDRA! -%s ⚡" % snappedf(penalty, 0.1)
+	var penalty_text: String = "¡PIEDRA! -%s ⚡" % UiTheme.format_stat(penalty)
 	ft.setup(penalty_text, Color(0.75, 0.3, 0.3), 1.2, 0.6)
 
 func _spawn_obstacle_free_feedback(pos: Vector2) -> void:

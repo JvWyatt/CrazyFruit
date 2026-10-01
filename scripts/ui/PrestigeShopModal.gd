@@ -9,6 +9,8 @@ extends Control
 @onready var close_button: Button = $Panel/VBox/HeaderHBox/CloseButton
 @onready var items_container: ResponsiveGrid = $Panel/VBox/ScrollContainer/ItemsGrid
 
+var _upgrade_cards: Dictionary = {}
+
 func _ready() -> void:
 	close_button.pressed.connect(_on_close_pressed)
 	SaveManager.prestige_changed.connect(func(_p): _refresh_ui())
@@ -20,10 +22,7 @@ func open_modal() -> void:
 	_refresh_ui()
 
 func _refresh_ui() -> void:
-	prestige_label.text = "⭐ " + ("%.2f" % SaveManager.get_prestige_points()) + " Rep."
-
-	for child in items_container.get_children():
-		child.queue_free()
+	prestige_label.text = "⭐ " + UiTheme.format_stat(SaveManager.get_prestige_points()) + " Rep."
 
 	for key in StatsManager.prestige_definitions.keys():
 		var def: PrestigeUpgradeData = StatsManager.prestige_definitions[key]
@@ -33,33 +32,35 @@ func _refresh_ui() -> void:
 
 		var effect_text: String = ""
 		match key:
-			"experience": effect_text = "+" + String.num(StatsManager.balance.prestige_damage_bonus_per_level * 100.0, 3) + "% Daño"
-			"expert_hand": effect_text = "+" + String.num(StatsManager.balance.prestige_energy_bonus_per_level * 100.0, 3) + "% Resistencia"
-			"good_provider": effect_text = "+" + String.num(StatsManager.balance.prestige_money_bonus_per_level * 100.0, 3) + "% Dinero"
-			"good_fortune": effect_text = "+" + String.num(StatsManager.balance.prestige_jackpot_bonus_per_level * 100.0, 3) + "% Jackpot"
-			"launch_speed": effect_text = "+" + String.num(StatsManager.balance.prestige_launch_bonus_per_level * 100.0, 3) + "% Velocidad"
+			"experience": effect_text = "+" + UiTheme.format_stat(StatsManager.balance.prestige_damage_bonus_per_level * 100.0) + "% Daño"
+			"expert_hand": effect_text = "+" + UiTheme.format_stat(StatsManager.balance.prestige_energy_bonus_per_level * 100.0) + "% Resistencia"
+			"good_provider": effect_text = "+" + UiTheme.format_stat(StatsManager.balance.prestige_money_bonus_per_level * 100.0) + "% Dinero"
+			"good_fortune": effect_text = "+" + UiTheme.format_stat(StatsManager.balance.prestige_jackpot_bonus_per_level * 100.0) + " p.p. Jackpot"
+			"launch_speed": effect_text = "+" + UiTheme.format_stat(StatsManager.balance.prestige_launch_bonus_per_level * 100.0) + "% Velocidad"
 
 		# Tarjeta compacta del grid (scripts/ui/ShopCard.gd). Todo el diseno de
 		# la tarjeta vive ahi; aqui solo se conectan los datos y la compra.
-		var card := ShopCard.create()
+		var card: ShopCard
+		if _upgrade_cards.has(key):
+			card = _upgrade_cards[key]
+		else:
+			card = ShopCard.create()
+			_upgrade_cards[key] = card
+			var captured_key: String = str(key)
+			card.action_button.pressed.connect(func():
+				if StatsManager.buy_prestige_upgrade(captured_key):
+					SoundManager.play_victory()
+			)
+			items_container.add_child(card)
 		card.setup(
 			def.icon,
 			def.name,
 			"Nivel " + str(level),
 			effect_text,
-			("%.2f" % cost) + " ⭐",
+			UiTheme.format_stat(cost) + " ⭐",
 			can_buy
 		)
 		card.update_current_stat(str(key))
-
-		var captured_key = key
-		card.action_button.pressed.connect(func():
-			if StatsManager.buy_prestige_upgrade(captured_key):
-				SoundManager.play_victory()
-				_refresh_ui()
-		)
-
-		items_container.add_child(card)
 
 func _on_close_pressed() -> void:
 	SoundManager.play_click()

@@ -1,8 +1,8 @@
 extends Control
 # ============================================================================
 # HUD: la interfaz que se ve MIENTRAS juegas (barra de dinero/meta del día
-# superior, barrita de racha a la derecha bajo el dinero, anillo circular doble
-# de energía y tiempo con frutas/s en el centro, arma equipada y botones de
+# superior, barrita de racha a la derecha bajo el dinero, anillo circular de
+# racha, panel de frutas/s y multiplicador, arma equipada y botones de
 # Stats/Pausa). Solo muestra datos que vienen de GameManager/StatsManager; no
 # decide reglas.
 #
@@ -44,7 +44,8 @@ signal quit_run_requested
 @onready var time_label: Label = $TopContainer/VBox/TimeBar/TimeLabel
 @onready var energy_bar: ProgressBar = $TopContainer/VBox/EnergyBar
 @onready var energy_label: Label = $TopContainer/VBox/EnergyBar/EnergyLabel
-@onready var rate_value: Label = $RatePanel/HBox/VBox/RateValue
+@onready var rate_value: Label = $RatePanel/VBox/RateValue
+@onready var multiplier_value: Label = $RatePanel/VBox/MultiplierValue
 @onready var rate_panel: PanelContainer = $RatePanel
 @onready var milestone_label: Label = $MilestoneLabel
 @onready var ach_toast: PanelContainer = $ToastLayer/AchToast
@@ -94,7 +95,9 @@ func _ready() -> void:
 	pause_confirm_dialog.confirmed.connect(_on_quit_confirmed)
 	_update_knife_display()
 	_update_launch_rate_display()
-	_on_streak_changed(GameManager.current_streak, GameManager.get_streak_multiplier())
+	_last_streak_multiplier = GameManager.get_streak_multiplier()
+	_set_multiplier_display(_last_streak_multiplier)
+	_on_streak_changed(GameManager.current_streak, _last_streak_multiplier)
 	# Estado inicial de las barras de tiempo y estamina (por si el HUD ya
 	# existia cuando arranco la ronda y no llegaron las senales).
 	_on_energy_changed(GameManager.current_energy, StatsManager.get_final_max_energy())
@@ -112,12 +115,13 @@ func _update_knife_display() -> void:
 func _on_stats_updated() -> void:
 	_update_knife_display()
 	_update_launch_rate_display()
+	_on_streak_changed(GameManager.current_streak, GameManager.get_streak_multiplier())
 
 func _update_launch_rate_display() -> void:
 	# Contador informativo: NO es un recurso consumible, asi que va fuera del
 	# anillo de racha, en una pieza compacta con su propia jerarquia visual.
 	var rate: float = StatsManager.get_final_launch_rate()
-	rate_value.text = str(snappedf(rate, 0.1))
+	rate_value.text = "🍓 " + String.num(rate, 1) + " frutas/s"
 
 var _last_money: float = -1.0
 var _order_target: float = 0.0
@@ -172,8 +176,13 @@ func _on_stats_button_pressed() -> void:
 # Hitos ordenados ascendentemente para calcular progreso entre hitos. A partir
 # de 1000 la progresión es por bandas de 1000 frutas (2000, 3000...), sin más.
 const STREAK_ORDER: Array[int] = [10, 50, 100, 250, 500, 1000]
+@onready var multiplier_fly_label: Label = $MultiplierFlyLabel
+var _multiplier_fly_tween: Tween
 
 func _on_streak_changed(streak: int, multiplier: float) -> void:
+	# La señal de reinicio envía x1; el valor real también incluye comodines.
+	if streak == 0:
+		multiplier = GameManager.get_streak_multiplier()
 	# El aro del anillo ES el progreso hacia el siguiente nivel, asi que no hace
 	# falta ningun texto del tipo "llega a X": el hueco del aro ya lo dice.
 	var info: Dictionary = _streak_progress(streak)
@@ -182,8 +191,47 @@ func _on_streak_changed(streak: int, multiplier: float) -> void:
 	# El multiplicador solo se avisa cuando SUBE (se activa o aumenta); entre hito
 	# y hito el anillo se queda mostrando el contador de racha, sin texto extra.
 	if multiplier > _last_streak_multiplier:
-		streak_ring.show_multiplier(multiplier)
+		_animate_multiplier_fly(multiplier)
+	elif multiplier < _last_streak_multiplier or streak == 0:
+		_cancel_multiplier_fly()
+		_set_multiplier_display(GameManager.get_streak_multiplier())
 	_last_streak_multiplier = multiplier
+
+func _set_multiplier_display(multiplier: float) -> void:
+	multiplier_value.text = "🔥 Multi: x" + String.num(multiplier, 2)
+
+func _cancel_multiplier_fly() -> void:
+	if _multiplier_fly_tween and _multiplier_fly_tween.is_valid():
+		_multiplier_fly_tween.kill()
+	multiplier_fly_label.visible = false
+	streak_ring.value_label.visible = true
+
+func _animate_multiplier_fly(multiplier: float) -> void:
+	_cancel_multiplier_fly()
+	multiplier_fly_label.text = "x" + String.num(multiplier, 2)
+	multiplier_fly_label.visible = true
+	multiplier_fly_label.modulate = Color.WHITE
+	# El recorrido queda en la franja superior, lejos de las frases del centro.
+	var start_pos: Vector2 = streak_ring.global_position + streak_ring.size * 0.5 - multiplier_fly_label.size * 0.5
+	var end_pos: Vector2 = multiplier_value.global_position + multiplier_value.size * 0.5 - multiplier_fly_label.size * 0.5
+	multiplier_fly_label.global_position = start_pos
+	multiplier_fly_label.scale = Vector2(0.5, 0.5)
+	multiplier_fly_label.pivot_offset = multiplier_fly_label.size * 0.5
+	streak_ring.value_label.visible = false
+
+	_multiplier_fly_tween = create_tween()
+	_multiplier_fly_tween.tween_property(multiplier_fly_label, "scale", Vector2(1.2, 1.2), 0.25).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	_multiplier_fly_tween.tween_property(multiplier_fly_label, "scale", Vector2.ONE, 0.15)
+	_multiplier_fly_tween.tween_interval(0.2)
+	_multiplier_fly_tween.tween_callback(func(): streak_ring.value_label.visible = true)
+	_multiplier_fly_tween.set_parallel(true)
+	_multiplier_fly_tween.tween_property(multiplier_fly_label, "global_position", end_pos, 0.4).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN_OUT)
+	_multiplier_fly_tween.tween_property(multiplier_fly_label, "scale", Vector2(0.35, 0.35), 0.4)
+	_multiplier_fly_tween.tween_property(multiplier_fly_label, "modulate:a", 0.0, 0.1).set_delay(0.3)
+	_multiplier_fly_tween.chain().tween_callback(func():
+		multiplier_fly_label.visible = false
+		_set_multiplier_display(multiplier)
+	)
 
 # Destello rojo al romperse la racha (al tocar una piedra u obstáculo).
 func _flash_streak_break() -> void:

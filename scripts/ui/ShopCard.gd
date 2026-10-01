@@ -5,7 +5,7 @@ extends PanelContainer
 # prestigio). Sustituye a la fila horizontal icono + texto + boton para que las
 # tiendas se lean como un mazo de cartas en rejilla en vez de una lista.
 #
-# Contenido: icono grande, nombre, nivel y descripcion corta, y el boton de
+# Contenido: icono grande, nombre, nivel, valor final e incremento, y el boton de
 # compra/abrir abajo, fuera de cualquier animacion.
 #
 # MODULAR: toda la construccion vive aqui. Quien llama solo hace
@@ -17,9 +17,12 @@ extends PanelContainer
 # estaba antes. Este archivo se puede borrar sin tocar la logica del juego.
 # ============================================================================
 
-const CARD_HEIGHT: float = 156.0
+const CARD_HEIGHT: float = 184.0
 const BUTTON_HEIGHT: float = 44.0
-const ICON_SIZE: int = 30
+const ICON_SIZE: int = 24
+# Alto reservado al icono (el glifo a ICON_SIZE mide ~26 px; va holgado para que
+# no se recorte) en lugar de dejar que lo imponga la fuente de reserva del emoji.
+const ICON_HEIGHT: float = 28.0
 const NAME_SIZE: int = 14
 const SUBTITLE_SIZE: int = 12
 const DESC_SIZE: int = 11
@@ -30,6 +33,7 @@ const TEXT_MIN_WIDTH: float = 96.0
 var action_button: Button
 var name_label: Label
 var subtitle_label: Label
+var current_stat_label: Label
 var _icon_label: Label
 var _desc_label: Label
 
@@ -43,26 +47,46 @@ static func create(border_color: Variant = null) -> ShopCard:
 		UiTheme.apply_card(card)
 	else:
 		UiTheme.apply_card(card, border_color as Color)
+	# Márgenes compactos propios: no modificar el estilo compartido del tema.
+	var compact_style: StyleBox = card.get_theme_stylebox("panel").duplicate()
+	compact_style.content_margin_top = 6.0
+	compact_style.content_margin_bottom = 6.0
+	compact_style.content_margin_left = 12.0
+	compact_style.content_margin_right = 12.0
+	card.add_theme_stylebox_override("panel", compact_style)
 
 	var vbox := VBoxContainer.new()
 	vbox.add_theme_constant_override("separation", 2)
 	vbox.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	card.add_child(vbox)
 
+	# El icono va en un Control pelado en vez de directo en el VBox: asi el alto
+	# minimo de la etiqueta (que sale de las metricas de la fuente, no del glifo)
+	# no se propaga al contenedor y la tarjeta no se estira. El alto lo marca
+	# ICON_HEIGHT; el Label se dibuja al tamano que le da su padre.
+	var icon_holder := Control.new()
+	icon_holder.name = "IconHolder"
+	icon_holder.custom_minimum_size = Vector2(0, ICON_HEIGHT)
+	icon_holder.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	vbox.add_child(icon_holder)
+
 	card._icon_label = Label.new()
 	var icon_label: Label = card._icon_label
 	icon_label.name = "IconLabel"
 	icon_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	icon_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	icon_label.add_theme_font_size_override("font_size", ICON_SIZE)
 	icon_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	vbox.add_child(icon_label)
+	icon_holder.add_child(icon_label)
+	icon_label.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 
 	card.name_label = Label.new()
 	card.name_label.name = "NameLabel"
 	card.name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	card.name_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	card.name_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
-	card.name_label.custom_minimum_size = Vector2(TEXT_MIN_WIDTH, NAME_SIZE + 6)
+	card.name_label.clip_text = true
+	card.name_label.custom_minimum_size = Vector2(TEXT_MIN_WIDTH, 34)
 	card.name_label.add_theme_font_size_override("font_size", NAME_SIZE)
 	card.name_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	vbox.add_child(card.name_label)
@@ -76,13 +100,24 @@ static func create(border_color: Variant = null) -> ShopCard:
 	card.subtitle_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	vbox.add_child(card.subtitle_label)
 
+	card.current_stat_label = Label.new()
+	card.current_stat_label.name = "CurrentStatLabel"
+	card.current_stat_label.visible = false
+	card.current_stat_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	card.current_stat_label.custom_minimum_size = Vector2(TEXT_MIN_WIDTH, 20)
+	card.current_stat_label.add_theme_font_override("font", preload("res://assets/fonts/roboto/Roboto-Regular.ttf"))
+	card.current_stat_label.add_theme_font_size_override("font_size", 14)
+	card.current_stat_label.add_theme_color_override("font_color", Color.WHITE)
+	card.current_stat_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	vbox.add_child(card.current_stat_label)
+
 	card._desc_label = Label.new()
 	var desc_label: Label = card._desc_label
 	desc_label.name = "DescLabel"
 	desc_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	desc_label.vertical_alignment = VERTICAL_ALIGNMENT_TOP
+	desc_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	desc_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	desc_label.custom_minimum_size = Vector2(TEXT_MIN_WIDTH, 0)
+	desc_label.custom_minimum_size = Vector2(TEXT_MIN_WIDTH, 18)
 	desc_label.add_theme_font_size_override("font_size", DESC_SIZE)
 	desc_label.modulate = Color(0.78, 0.84, 0.9)
 	desc_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -107,3 +142,21 @@ func setup(icon: String, title: String, subtitle: String, desc: String, action_t
 	_desc_label.text = desc
 	action_button.text = action_text
 	action_button.disabled = not action_enabled
+
+# Presentación compartida de valores finales para mejoras y prestigio.
+# Los alias identifican la misma estadística sin recalcular sus bonificaciones.
+func update_current_stat(stat_key: String) -> void:
+	var text: String = ""
+	match stat_key:
+		"damage", "experience":
+			text = "Daño: " + String.num(StatsManager.get_final_damage(), 3)
+		"energy_max", "expert_hand":
+			text = "Resistencia: " + String.num(StatsManager.get_final_max_energy(), 3)
+		"luck", "good_fortune":
+			text = "Jackpot: " + String.num(StatsManager.get_final_jackpot_bonus() * 100.0, 3) + "%"
+		"money", "good_provider":
+			text = "Dinero: x" + String.num(StatsManager.get_final_money_multiplier(), 3)
+		"launch_rate", "launch_speed":
+			text = "Velocidad: " + String.num(StatsManager.get_final_launch_rate(), 3) + " frutas/s"
+	current_stat_label.text = text
+	current_stat_label.visible = not text.is_empty()

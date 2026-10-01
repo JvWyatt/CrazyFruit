@@ -16,7 +16,7 @@ border_width_left = 2
 border_width_top = 2
 border_width_right = 2
 border_width_bottom = 2
-border_color = Color(0.98, 0.78, 0.25, 0.95)
+border_color = Color(0.4, 0.78, 0.55, 0.95)
 corner_radius_top_left = 18
 corner_radius_top_right = 18
 corner_radius_bottom_right = 18
@@ -269,49 +269,58 @@ text = "x1.00"
 horizontal_alignment = 1
 
 [node name="RatePanel" type="PanelContainer" parent="." unique_id=548176260]
-custom_minimum_size = Vector2(138, 54)
+custom_minimum_size = Vector2(180, 88)
 layout_mode = 1
 anchors_preset = 1
 anchor_left = 1.0
 anchor_right = 1.0
-offset_left = -158.0
-offset_top = 224.0
+offset_left = -200.0
+offset_top = 207.0
 offset_right = -20.0
-offset_bottom = 278.0
+offset_bottom = 295.0
 grow_horizontal = 0
 mouse_filter = 2
 
-[node name="HBox" type="HBoxContainer" parent="RatePanel"]
+[node name="VBox" type="VBoxContainer" parent="RatePanel"]
 layout_mode = 2
 mouse_filter = 2
-theme_override_constants/separation = 8
+theme_override_constants/separation = 6
+alignment = 1
 
-[node name="RateIcon" type="Label" parent="RatePanel/HBox" unique_id=912004472]
+[node name="RateValue" type="Label" parent="RatePanel/VBox" unique_id=154738207]
 layout_mode = 2
-size_flags_vertical = 4
-theme_override_colors/font_color = Color(0.31, 0.84, 0.62, 1)
-theme_override_font_sizes/font_size = 22
-text = "🍉"
+theme_override_colors/font_color = Color(1, 0.9, 0.9, 1)
+theme_override_font_sizes/font_size = 18
+text = "🍓 1 frutas/s"
+horizontal_alignment = 1
+
+[node name="MultiplierValue" type="Label" parent="RatePanel/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.65, 0.25, 1)
+theme_override_font_sizes/font_size = 18
+text = "🔥 Multi: x1"
+horizontal_alignment = 1
+
+[node name="MultiplierFlyLabel" type="Label" parent="." unique_id=1234567899]
+visible = false
+mouse_filter = 2
+z_index = 1
+modulate = Color(1, 1, 1, 0)
+layout_mode = 1
+anchors_preset = 0
+offset_left = 0.0
+offset_top = 0.0
+offset_right = 140.0
+offset_bottom = 80.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_color = Color(1, 0.55, 0.2, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.95)
+theme_override_constants/outline_size = 8
+theme_override_font_sizes/font_size = 54
+text = "x2"
+horizontal_alignment = 1
 vertical_alignment = 1
-
-[node name="VBox" type="VBoxContainer" parent="RatePanel/HBox"]
-layout_mode = 2
-mouse_filter = 2
-theme_override_constants/separation = -2
-
-[node name="RateValue" type="Label" parent="RatePanel/HBox/VBox" unique_id=154738207]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.75, 0.82, 0.94, 1)
-theme_override_colors/font_outline_color = Color(0, 0, 0, 0.85)
-theme_override_constants/outline_size = 3
-theme_override_font_sizes/font_size = 19
-text = "1.0"
-
-[node name="RateUnit" type="Label" parent="RatePanel/HBox/VBox" unique_id=1234567891]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.55, 0.62, 0.74, 1)
-theme_override_font_sizes/font_size = 11
-text = "frutas/s"
 
 [node name="MilestoneLabel" type="Label" parent="." unique_id=1398046872]
 modulate = Color(1, 1, 1, 0)

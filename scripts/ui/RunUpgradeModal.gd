@@ -32,6 +32,7 @@ var _upgrade_rows: Dictionary = {} # key -> {name_lbl, buy_btn}
 var _fruit_rows: Dictionary = {} # fruit_id -> {card, buy_btn, price}
 
 func _ready() -> void:
+	StatsManager.stats_updated.connect(_refresh_upgrade_stats)
 	close_button.pressed.connect(_on_close_pressed)
 	continue_button.pressed.connect(_on_continue_pressed)
 	stats_button.pressed.connect(_on_stats_pressed)
@@ -65,15 +66,18 @@ func _rebuild_ui() -> void:
 		var cost: float = StatsManager.get_run_upgrade_cost(key)
 		var can_buy: bool = GameManager.run_money >= cost
 
+		var effect_text: String = _upgrade_effect_text(str(key))
+
 		var card := ShopCard.create()
 		card.setup(
 			def.icon,
 			def.name,
-			"x" + str(level),
-			def.desc,
+			"Nivel " + str(level),
+			effect_text,
 			"$" + UiTheme.format_money(cost),
 			can_buy
 		)
+		card.update_current_stat(str(key))
 
 		var up_key = key
 		card.action_button.pressed.connect(func():
@@ -81,10 +85,32 @@ func _rebuild_ui() -> void:
 		)
 
 		items_container.add_child(card)
-		_upgrade_rows[key] = {"subtitle_lbl": card.subtitle_label, "buy_btn": card.action_button, "def": def}
+		_upgrade_rows[key] = {"card": card, "subtitle_lbl": card.subtitle_label, "buy_btn": card.action_button, "desc_lbl": card._desc_label}
 
 	_rebuild_fruit_shop()
 	_rebuild_weapon_shop()
+
+# Incremento base configurado: no depende del arma, del nivel ni del daño plano.
+func _upgrade_effect_text(key: String) -> String:
+	var bonus: float = 0.0
+	var stat_name: String = ""
+	match key:
+		"damage":
+			bonus = StatsManager.balance.run_damage_bonus_per_level
+			stat_name = "Daño"
+		"energy_max":
+			bonus = StatsManager.balance.run_energy_bonus_per_level
+			stat_name = "Resistencia"
+		"luck":
+			bonus = StatsManager.balance.run_jackpot_bonus_per_level
+			stat_name = "Jackpot"
+		"money":
+			bonus = StatsManager.balance.run_money_bonus_per_level
+			stat_name = "Dinero"
+		"launch_rate":
+			bonus = StatsManager.balance.run_launch_bonus_per_level
+			stat_name = "Velocidad"
+	return "+" + String.num(bonus * 100.0, 3) + "% " + stat_name
 
 # Update a single upgrade row (level text + cost) after purchase, no rebuild
 func _update_upgrade_row(key: String) -> void:
@@ -93,8 +119,15 @@ func _update_upgrade_row(key: String) -> void:
 	var row: Dictionary = _upgrade_rows[key]
 	var level: int = StatsManager.run_upgrade_levels[key]
 	var cost: float = StatsManager.get_run_upgrade_cost(key)
-	row["subtitle_lbl"].text = "x" + str(level)
+	row["card"].update_current_stat(key)
+	row["subtitle_lbl"].text = "Nivel " + str(level)
+	row["desc_lbl"].text = _upgrade_effect_text(key)
 	row["buy_btn"].text = "$" + UiTheme.format_money(float(cost))
+
+# Actualiza los valores finales también al cambiar armas, comodines o prestigio.
+func _refresh_upgrade_stats() -> void:
+	for key in _upgrade_rows:
+		_update_upgrade_row(str(key))
 
 # Fruta anterior en la cadena de desbloqueo ("" si es la primera). Regla de
 # la Frutería: no se puede comprar una fruta sin haber comprado la anterior.
@@ -139,7 +172,7 @@ func _sync_fruit_row(fruit_id: String) -> void:
 	var chain_ok: bool = prev_id == "" or GameManager.is_fruit_unlocked_this_run(prev_id)
 
 	if unlocked:
-		# Ya desbloqueada: fuera el velo y se ve el arte con sus datos.
+		# Ya desbloqueada: fuera el velo y se ve el emoji con sus datos.
 		card.set_locked(false)
 		buy_btn.text = "DISPONIBLE"
 		buy_btn.disabled = true
@@ -183,7 +216,7 @@ func _rebuild_fruit_shop() -> void:
 			fruit_data.display_name,
 			stats_lbl,
 			"Fruta " + str(int(fruit_data.unlock_order)),
-			CollectionCard.fruit_texture(fruit_data.id)
+			null
 		)
 		card.set_locked(true, "Necesitas " + prev_name + " antes." if not chain_ok else "")
 

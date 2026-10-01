@@ -73,9 +73,11 @@ layout_mode = 2
 size_flags_vertical = 3
 script = ExtResource("2_touch_scroll")
 
-[node name="ItemsGrid" type="GridContainer" parent="Panel/VBox/ScrollContainer" unique_id=433537826]
+[node name="ItemsGrid" type="Container" parent="Panel/VBox/ScrollContainer" unique_id=433537826]
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_constants/h_separation = 12
-theme_override_constants/v_separation = 12
 script = ExtResource("3_grid")
+fixed_columns = 2
+uniform_card_size = true
+h_separation = 8
+v_separation = 8

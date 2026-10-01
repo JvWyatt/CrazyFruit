@@ -69,6 +69,7 @@ script = ExtResource("2_touch_scroll")
 [node name="StatsVBox" type="VBoxContainer" parent="Panel/VBox/ScrollContainer" unique_id=1876914469]
 layout_mode = 2
 size_flags_horizontal = 3
+size_flags_vertical = 3
 theme_override_constants/separation = 12
 
 [node name="ContinueButton" type="Button" parent="Panel/VBox" unique_id=171541792]
@@ -76,9 +77,3 @@ custom_minimum_size = Vector2(0, 52)
 layout_mode = 2
 theme_override_font_sizes/font_size = 18
 text = "CERRAR"
-
-[node name="CardsButton" type="Button" parent="Panel/VBox" unique_id=573456837]
-custom_minimum_size = Vector2(0, 48)
-layout_mode = 2
-theme_override_font_sizes/font_size = 18
-text = "ⓘ Ver comodines activos"

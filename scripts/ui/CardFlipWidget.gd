@@ -1,14 +1,21 @@
 class_name CardFlipWidget
 extends Control
 # ============================================================================
-# CardFlipWidget: carta seleccionable con FRENTE y REVERSO para la pantalla de
-# elección de comodines (CardSelectionModal).
+# CardFlipWidget: la carta de comodín con FRENTE y REVERSO. Es el componente
+# visual único del juego y se reutiliza tal cual en tres sitios:
+#
+#   - PICK (por defecto): la pantalla de elección de comodines
+#     (CardSelectionModal), con el botón ELEGIR debajo.
+#   - THUMBNAIL: la miniatura de la galería de comodines del menú
+#     (CardsModal). Sin botón: al tocarla avisa con `previewed`.
+#   - DETAIL: la carta en grande de esa misma galería. Sin botón y con el
+#     MISMO efecto flip para leer el reverso con su descripción.
 #
 # IMPORTANTE: este widget NO contiene lógica de selección ni efectos. Solo
 # PRESENTA la Dictionary de CardDatabase que ya generaba el sistema y emite
-# "chosen(card_data)" para que CardSelectionModal._on_card_selected() siga
-# aplicando la carta exactamente igual que antes. No se tocan get_random_cards(),
-# las probabilidades ni effect_type/effect_value.
+# "chosen(card_data)" (modo PICK) o "previewed(card_data)" (modo THUMBNAIL)
+# para que quien lo usa decida. No se tocan get_random_cards(), las
+# probabilidades ni effect_type/effect_value.
 #
 # MAQUETA (las dos caras son idénticas para que el giro sea simétrico):
 #
@@ -17,11 +24,14 @@ extends Control
 #     │  la carta     │  <- ilustración, ceñida al marco (sin estirar)
 #     │               │
 #     └───────────────┘
-#      [  ELEGIR  ]     <- DEBAJO del marco, FUERA de la carta
+#      [  ELEGIR  ]     <- DEBAJO del marco, FUERA de la carta (solo modo PICK)
 #
 # El marco se dimensiona a partir del aspect ratio real de la ilustración, de
 # modo que la caja nunca queda más alta que la imagen. El botón va fuera para
 # que no se confunda con parte de la carta.
+#
+# TAMAÑO: todo se mide a partir del ancho pedido con set_mode(), así que la
+# misma carta sirve como miniatura (galería) y como carta grande (detalle).
 #
 # IMPORTANTE (tamaño del reverso): las dos caras miden SIEMPRE lo mismo, la
 # del widget entero. El reverso no se encoge ni se estira para que quepa el
@@ -30,6 +40,14 @@ extends Control
 # ============================================================================
 
 signal chosen(card_data: Dictionary)
+signal previewed(card_data: Dictionary)
+
+# Cómo se presenta la carta. El ancho se pasa aparte en set_mode().
+enum Presentation {
+	PICK,       # carta elegible con botón ELEGIR (CardSelectionModal)
+	THUMBNAIL,  # miniatura de la galería: al tocarla avisa con previewed
+	DETAIL,     # carta grande de la galería: se gira para leer el reverso
+}
 
 const CARD_SIZE: Vector2 = Vector2(180, 300)
 const COLOR_CARD_BG: Color = Color(0.09, 0.11, 0.19, 0.98)
@@ -47,12 +65,19 @@ const COLOR_BACK_SCRIM: Color = Color(0.04, 0.05, 0.1, 0.62)
 const BACK_TEXTURE: Texture2D = preload("res://assets/card/back.png")
 const FRONT_ART_TEXTURE: Texture2D = preload("res://assets/card/Joker2.png")
 
+# Pista que se añade al final de la descripción del reverso, según el modo.
+const HINT_PICK: String = "\n\n⟳ Toca para elegirla"
+const HINT_DETAIL: String = "\n\n⟳ Toca para ver el anverso"
+
 var _data: Dictionary = {}
 var _flipping: bool = false
 var _showing_back: bool = false
 
-var _front: Control = Control.new()
-var _back: Control = Control.new()
+var _presentation: Presentation = Presentation.PICK
+var _card_width: float = CARD_SIZE.x
+
+var _front: Control
+var _back: Control
 var _front_panel: PanelContainer
 var _back_panel: PanelContainer
 var _art_container: Control
@@ -64,17 +89,21 @@ var _back_title: Label
 var _back_desc: Label
 
 func _init() -> void:
-	# El alto lo marca el contenido (carta + botón), no el modal: así el marco
-	# queda ceñido a la ilustración y la carta no se estira en vertical.
-	custom_minimum_size = Vector2(CARD_SIZE.x, _total_height())
-	size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	mouse_filter = Control.MOUSE_FILTER_PASS
-	_front.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	_back.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	_front.visible = true
-	_back.visible = false
+	_front = Control.new()
+	_back = Control.new()
 	add_child(_front)
 	add_child(_back)
+	_front.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_back.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_apply_metrics()
+
+# Elige cómo se presenta la carta y de qué ancho. Debe llamarse ANTES de
+# configure(); si se cambia después, la carta se reconstruye sola.
+func set_mode(mode: Presentation, card_width: float = CARD_SIZE.x) -> void:
+	_presentation = mode
+	_card_width = maxf(card_width, 40.0)
+	_rebuild()
 
 # ---------------------------------------------------------------------------
 # Medidas: el marco se calcula a partir del aspect ratio real de la imagen para
@@ -82,28 +111,71 @@ func _init() -> void:
 # ---------------------------------------------------------------------------
 
 # Espacio que ocupa el marco por cada lado (grosor + aire interior).
-func _card_inset() -> float:
+static func _card_inset() -> float:
 	return CARD_FRAME + CARD_PADDING
 
 # Altura sobre ancho de la ilustración (352x512 -> 1.4545 en estas cartas).
-func _art_ratio() -> float:
+static func _art_ratio() -> float:
 	var tex_size: Vector2 = FRONT_ART_TEXTURE.get_size()
 	if tex_size.x <= 0.0:
 		return 1.45
 	return tex_size.y / tex_size.x
 
+# Alto que ocuparía una carta de este ancho, sin contar el botón ELEGIR. La
+# galería lo usa para encajar la carta grande en el hueco disponible.
+static func height_for(card_width: float) -> float:
+	var inset: float = _card_inset()
+	return (card_width - inset * 2.0) * _art_ratio() + inset * 2.0
+
 # Tamaño del hueco donde va la ilustración, ya dentro del marco.
 func _art_size() -> Vector2:
-	var width: float = CARD_SIZE.x - _card_inset() * 2.0
+	var width: float = _card_width - _card_inset() * 2.0
 	return Vector2(width, width * _art_ratio())
 
 # Tamaño de la caja con marco.
 func _card_box() -> Vector2:
-	return Vector2(CARD_SIZE.x, _art_size().y + _card_inset() * 2.0)
+	return Vector2(_card_width, _art_size().y + _card_inset() * 2.0)
 
-# Alto total del widget: carta + hueco + botón.
+# ¿Esta presentación lleva el botón ELEGIR colgando fuera del marco?
+func _has_choose_button() -> bool:
+	return _presentation == Presentation.PICK
+
+# Pista que se añade al reverso. En miniatura no se pone: el reverso es diminuto.
+func _hint_text() -> String:
+	match _presentation:
+		Presentation.PICK:
+			return HINT_PICK
+		Presentation.DETAIL:
+			return HINT_DETAIL
+		_:
+			return ""
+
+# Alto total del widget: carta (+ botón, si lo lleva).
 func _total_height() -> float:
-	return _card_box().y + CARD_GAP + BUTTON_HEIGHT
+	var height: float = _card_box().y
+	if _has_choose_button():
+		height += CARD_GAP + BUTTON_HEIGHT
+	return height
+
+func _apply_metrics() -> void:
+	# El alto lo marca el contenido (carta + botón), no el modal: así el marco
+	# queda ceñido a la ilustración y la carta no se estira en vertical.
+	custom_minimum_size = Vector2(_card_width, _total_height())
+	size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	_front.visible = not _showing_back
+	_back.visible = _showing_back
+
+# Descarta las caras actuales y las vuelve a montar con la presentación actual.
+func _rebuild() -> void:
+	_flipping = false
+	_showing_back = false
+	for face in [_front, _back]:
+		for child in face.get_children():
+			face.remove_child(child)
+			child.queue_free()
+	_apply_metrics()
+	if not _data.is_empty():
+		configure(_data)
 
 # Rellena el widget con los datos de una carta de CardDatabase.
 func configure(card_data: Dictionary) -> void:
@@ -122,7 +194,7 @@ func configure(card_data: Dictionary) -> void:
 	_back_rarity.text = rarity_text
 	_back_rarity.modulate = border
 	_back_title.text = title_text
-	_back_desc.text = desc_text + "\n\n⟳ Toca para elegirla"
+	_back_desc.text = desc_text + _hint_text()
 
 	var image: Variant = card_data.get("image", FRONT_ART_TEXTURE)
 	if image != null:
@@ -157,12 +229,21 @@ func flip() -> void:
 # Solo la carta da la vuelta. El boton ELEGIR vive FUERA del marco, asi que al
 # pulsarlo no le llega este evento: se limita a elegir la carta, sin girar nada.
 func _on_card_gui_input(event: InputEvent) -> void:
-	if event is InputEventMouseButton:
+	var pressed: bool = false
+	if event is InputEventScreenTouch:
+		pressed = (event as InputEventScreenTouch).pressed
+	elif event is InputEventMouseButton:
 		var mb := event as InputEventMouseButton
-		if mb.pressed and mb.button_index == MOUSE_BUTTON_LEFT:
-			accept_event()
-			SoundManager.play_click()
-			flip()
+		pressed = mb.pressed and mb.button_index == MOUSE_BUTTON_LEFT
+	if not pressed:
+		return
+	accept_event()
+	SoundManager.play_click()
+	# En miniatura no hay nada que girar: el toque solo pide abrirla en grande.
+	if _presentation == Presentation.THUMBNAIL:
+		previewed.emit(_data)
+		return
+	flip()
 
 # ---------------------------------------------------------------------------
 # Construcción de caras
@@ -205,7 +286,8 @@ func _build_face(is_front: bool, border: Color) -> void:
 	else:
 		_build_back_art(frame)
 
-	column.add_child(_make_choose_button())
+	if _has_choose_button():
+		column.add_child(_make_choose_button())
 
 # Marco del color de la rareza. SIZE_SHRINK_BEGIN para que NUNCA crezca: si el
 # modal deja más alto, sobra espacio abajo en vez de estirar la carta.
@@ -263,16 +345,17 @@ func _build_front_art(frame: Control) -> void:
 	var art_label := Label.new()
 	art_label.name = "ArtLabel"
 	art_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	art_label.add_theme_font_size_override("font_size", 44)
+	art_label.add_theme_font_size_override("font_size", _hint_font_size())
 	art_label.modulate = Color(1, 1, 1, 0.9)
 	art_vbox.add_child(art_label)
 	_art_label = art_label
 	var art_hint := Label.new()
-	art_hint.text = "ILUSTRACIÓN PRÓXIMAMENTE"
+	art_hint.name = "ArtHint"
 	art_hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	art_hint.add_theme_font_size_override("font_size", 8)
+	art_hint.add_theme_font_size_override("font_size", _hint_font_size() / 5.0)
 	art_hint.modulate = Color(1, 1, 1, 0.45)
 	art_vbox.add_child(art_hint)
+	art_hint.text = "ILUSTRACIÓN PRÓXIMAMENTE" if _presentation == Presentation.PICK else ""
 
 # El reverso es la MISMA carta girada: no se redimensiona nunca. La imagen del
 # dorso llena el hueco del marco (que ya tiene su proporción) y el texto
@@ -331,13 +414,24 @@ func _build_back_art(frame: Control) -> void:
 	_back_desc.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_back_desc.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_back_desc.custom_minimum_size = Vector2(text_width, 0)
-	_back_desc.add_theme_font_size_override("font_size", 13)
-	_back_desc.add_theme_color_override("font_color", COLOR_TEXT_DIM)
+	_back_desc.add_theme_font_size_override("font_size", _desc_font_size())
+	_back_desc.add_theme_color_override("font_color", Color.WHITE)
 	_back_desc.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.85))
 	_back_desc.add_theme_constant_override("outline_size", 3)
 	text_box.add_child(_back_rarity)
 	text_box.add_child(_back_title)
 	text_box.add_child(_back_desc)
+
+# El tamaño del texto del reverso y del icono del anverso baja con el ancho de
+# la carta: a 180 px caben con holgura, en miniatura (100 px) se reducirían a
+# ilegibles, así que el texto se queda en grande y se recorta (clip_contents).
+func _desc_font_size() -> float:
+	if _presentation == Presentation.THUMBNAIL:
+		return 20.0
+	return 13.0 if _card_width < 200.0 else 16.0
+
+func _hint_font_size() -> float:
+	return clampf(_card_width * 0.24, 12.0, 44.0)
 
 func _make_rarity_label(min_width: float) -> Label:
 	var rarity := Label.new()
@@ -366,8 +460,13 @@ func _make_title_label(min_width: float) -> Label:
 	title.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.9))
 	title.add_theme_constant_override("outline_size", 4)
 	title.add_theme_font_override("font", UiTheme.FONT_DISPLAY)
-	title.add_theme_font_size_override("font_size", 20)
+	title.add_theme_font_size_override("font_size", _title_font_size())
 	return title
+
+func _title_font_size() -> float:
+	if _presentation == Presentation.THUMBNAIL:
+		return 34.0
+	return 20.0 if _card_width < 200.0 else 30.0
 
 func _make_choose_button() -> Button:
 	var choose_btn := Button.new()

@@ -1,10 +1,18 @@
 class_name CollectionCard
-extends VBoxContainer
+extends PanelContainer
 # ============================================================================
 # CollectionCard: tarjeta coleccionable de la Frutería y la Armería. Cada fruta
 # o arma ocupa una posición fija en el grid (también las bloqueadas) y se ve
 # como una carta: CARA con la representación visual del objeto, y REVERSO con
 # sus estadísticas y descripción.
+#
+# TODO el contenido de compra vive DENTRO del recuadro de la carta:
+#
+#     ┌──────────────────┐  <- marco de la tarjeta (UiTheme.apply_card)
+#     │     la fruta     │  <- FRENTE, o el REVERSO con sus datos al girarla
+#     │    ────────────  │
+#     │  DESBLOQUEAR $75 │  <- acción, dentro del mismo recuadro
+#     └──────────────────┘
 #
 # REGLA DE ORO (misma que en CardFlipWidget): el botón de acción (desbloquear /
 # equipar) está FUERA de la zona que gira. Al pulsar la tarjeta gira la carta;
@@ -31,7 +39,7 @@ extends VBoxContainer
 
 const FACE_HEIGHT: float = 176.0
 const BUTTON_HEIGHT: float = 44.0
-const BUTTON_GAP: float = 8.0
+const BUTTON_GAP: float = 6.0
 const ART_SIZE: float = 92.0
 const FLIP_TIME: float = 0.16
 
@@ -43,6 +51,7 @@ const TEXT_MIN_WIDTH: float = 128.0
 var action_button: Button
 var is_locked: bool = true
 
+var _column: VBoxContainer
 var _face: Control
 var _front: Control
 var _back: Control
@@ -62,12 +71,19 @@ var _flipped: bool = false
 
 static func create() -> CollectionCard:
 	var card := CollectionCard.new()
-	card.add_theme_constant_override("separation", BUTTON_GAP)
+	# Alto minimo del CONTENIDO (los margenes del estilo los suma el
+	# PanelContainer por su cuenta): cara + separacion + boton.
 	card.custom_minimum_size = Vector2(0, FACE_HEIGHT + BUTTON_GAP + BUTTON_HEIGHT)
 	card.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	card.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-	# PASS: el boton de abajo sigue siendo pulsable a traves de la tarjeta.
-	card.mouse_filter = Control.MOUSE_FILTER_PASS
+	UiTheme.apply_card(card)
+
+	# Columna interna: lo que gira (cara) arriba, la acción abajo. Ambos dentro
+	# del mismo recuadro de la tarjeta.
+	card._column = VBoxContainer.new()
+	card._column.name = "Column"
+	card._column.add_theme_constant_override("separation", int(BUTTON_GAP))
+	card.add_child(card._column)
 
 	card._build_face()
 	card._build_button()
@@ -78,16 +94,16 @@ func _build_face() -> void:
 	_face.name = "Face"
 	_face.custom_minimum_size = Vector2(0, FACE_HEIGHT)
 	_face.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	_face.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	_face.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
 	_face.mouse_filter = Control.MOUSE_FILTER_STOP
 	_face.clip_contents = true
 	_face.gui_input.connect(_on_face_gui_input)
-	add_child(_face)
+	_column.add_child(_face)
 	_face.resized.connect(_layout_faces)
 
 	_front = PanelContainer.new()
 	_front.name = "Front"
-	_front.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_front.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	_front.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_face.add_child(_front)
 
@@ -129,7 +145,7 @@ func _build_face() -> void:
 	# --- Reverso: mismas medidas, solo cambian los datos ---
 	_back = PanelContainer.new()
 	_back.name = "Back"
-	_back.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_back.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	_back.visible = false
 	_back.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_face.add_child(_back)
@@ -173,7 +189,7 @@ func _build_face() -> void:
 	# --- Capa de bloqueo: tapa la cara y esconde que objeto es ---
 	_scrim = ColorRect.new()
 	_scrim.name = "LockScrim"
-	_scrim.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_scrim.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	_scrim.color = SCRIM_COLOR
 	_scrim.visible = false
 	_scrim.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -181,7 +197,7 @@ func _build_face() -> void:
 
 	_badge = Label.new()
 	_badge.name = "LockBadge"
-	_badge.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_badge.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	_badge.text = "🔒\nBLOQUEADO"
 	_badge.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_badge.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
@@ -196,7 +212,7 @@ func _build_button() -> void:
 	action_button.custom_minimum_size = Vector2(0, BUTTON_HEIGHT)
 	action_button.add_theme_font_size_override("font_size", 12)
 	action_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	add_child(action_button)
+	_column.add_child(action_button)
 
 func _ready() -> void:
 	_layout_faces()

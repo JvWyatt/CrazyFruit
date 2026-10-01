@@ -31,6 +31,14 @@ func _refresh_ui() -> void:
 		var cost: float = StatsManager.get_prestige_upgrade_cost(key)
 		var can_buy: bool = SaveManager.get_prestige_points() >= cost
 
+		var effect_text: String = ""
+		match key:
+			"experience": effect_text = "+" + String.num(StatsManager.balance.prestige_damage_bonus_per_level * 100.0, 3) + "% Daño"
+			"expert_hand": effect_text = "+" + String.num(StatsManager.balance.prestige_energy_bonus_per_level * 100.0, 3) + "% Resistencia"
+			"good_provider": effect_text = "+" + String.num(StatsManager.balance.prestige_money_bonus_per_level * 100.0, 3) + "% Dinero"
+			"good_fortune": effect_text = "+" + String.num(StatsManager.balance.prestige_jackpot_bonus_per_level * 100.0, 3) + "% Jackpot"
+			"launch_speed": effect_text = "+" + String.num(StatsManager.balance.prestige_launch_bonus_per_level * 100.0, 3) + "% Velocidad"
+
 		# Tarjeta compacta del grid (scripts/ui/ShopCard.gd). Todo el diseno de
 		# la tarjeta vive ahi; aqui solo se conectan los datos y la compra.
 		var card := ShopCard.create()
@@ -38,10 +46,11 @@ func _refresh_ui() -> void:
 			def.icon,
 			def.name,
 			"Nivel " + str(level),
-			def.desc,
+			effect_text,
 			("%.2f" % cost) + " ⭐",
 			can_buy
 		)
+		card.update_current_stat(str(key))
 
 		var captured_key = key
 		card.action_button.pressed.connect(func():

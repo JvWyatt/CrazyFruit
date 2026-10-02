@@ -68,6 +68,7 @@ var _last_streak_multiplier: float = 1.0
 func _ready() -> void:
 	GameManager.money_changed.connect(_on_money_changed)
 	GameManager.order_progress_changed.connect(_on_order_progress_changed)
+	GameManager.order_goal_reached.connect(_on_order_goal_reached)
 	GameManager.energy_changed.connect(_on_energy_changed)
 	GameManager.round_time_changed.connect(_on_round_time_changed)
 	StatsManager.stats_updated.connect(_on_stats_updated)
@@ -122,18 +123,58 @@ var _last_money: float = -1.0
 var _order_target: float = 0.0
 
 func _on_money_changed(amount: float) -> void:
-	money_label.text = "💰 $" + UiTheme.format_money(amount) + " / $" + UiTheme.format_money(_order_target)
+	_update_money_display(amount)
 	if amount > _last_money and _last_money >= 0.0:
 		UiTheme.pulse_label(money_label)
 	_last_money = amount
 
+# En fase de BONUS (cuota ya cumplida) el rótulo deja de mostrar el progreso hacia
+# el objetivo y pasa a mostrar la ganancia extra del día, que es lo único que
+# sigue aumentando al seguir cortando fruta.
+func _update_money_display(amount: float) -> void:
+	if _is_bonus_phase():
+		money_label.text = "💰 BONUS  +$" + UiTheme.format_money(GameManager.get_order_bonus())
+		money_label.modulate = UiTheme.COLOR_ACCENT
+	else:
+		money_label.text = "💰 $" + UiTheme.format_money(amount) + " / $" + UiTheme.format_money(_order_target)
+		money_label.modulate = Color.WHITE
+
+# ¿Se ha cumplido ya la cuota del día? A partir de ese momento todo el dinero que
+# se genere es ganancia extra y la interfaz lo dice (barra dorada + rótulo BONUS).
+func _is_bonus_phase() -> bool:
+	return GameManager.daily_goal_reached
+
 func _on_order_progress_changed(progress: float, target: float) -> void:
 	_order_target = target
-	day_label.text = "🎯 Día " + str(GameManager.current_order)
+	var bonus_phase: bool = _is_bonus_phase()
+	day_label.text = ("🎯 Día " + str(GameManager.current_order) + " · BONUS") if bonus_phase else ("🎯 Día " + str(GameManager.current_order))
+	day_label.modulate = UiTheme.COLOR_ACCENT if bonus_phase else Color.WHITE
 	status_info_label.text = "💼 Negocio " + str(SaveManager.save_data.get("days_started", 1))
 	money_bar.max_value = target
-	money_bar.value = minf(progress, target)
-	_on_money_changed(GameManager.run_money)
+	# La barra no crece con el bonus: se queda llena y en dorado, para que se lea
+	# "objetivo cumplido" y no "todavía no llego".
+	money_bar.value = target if bonus_phase else minf(progress, target)
+	money_bar.modulate = UiTheme.COLOR_ACCENT if bonus_phase else Color.WHITE
+	_update_money_display(GameManager.run_money)
+
+# El día se cumple con una fruta: confeti dorado discreto (una sola vez) + aviso
+# en el centro. A partir de ese momento la interfaz se queda en modo BONUS.
+func _on_order_goal_reached(_bonus: float) -> void:
+	UiTheme.golden_confetti(self, size.x)
+	_show_bonus_banner()
+	_on_order_progress_changed(GameManager.order_progress, GameManager.order_target)
+
+func _show_bonus_banner() -> void:
+	milestone_label.text = "🎯 ¡META CUMPLIDA!  BONUS"
+	milestone_label.modulate = UiTheme.COLOR_ACCENT
+	milestone_label.scale = Vector2(0.85, 0.85)
+	if _milestone_tween and _milestone_tween.is_valid():
+		_milestone_tween.kill()
+	_milestone_tween = create_tween()
+	_milestone_tween.set_parallel(true)
+	_milestone_tween.tween_property(milestone_label, "scale", Vector2(1.1, 1.1), 0.28).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	_milestone_tween.tween_property(milestone_label, "scale", Vector2(1.0, 1.0), 0.3).set_delay(0.28).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	_milestone_tween.tween_property(milestone_label, "modulate:a", 0.0, 0.45).set_delay(1.3).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
 
 func _on_energy_changed(current_e: float, max_e: float) -> void:
 	# La estamina es estado de partida: barra propia en el panel superior.

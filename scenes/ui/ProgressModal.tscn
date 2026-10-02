@@ -1,8 +1,9 @@
-[gd_scene load_steps=4 format=3]
+[gd_scene load_steps=5 format=3]
 
 [ext_resource type="Theme" uid="uid://cw00u1brw0yxi" path="res://themes/ui01_theme.tres" id="1_theme"]
 [ext_resource type="Script" path="res://scripts/ui/ProgressModal.gd" id="1_progress"]
 [ext_resource type="Script" path="res://scripts/ui/ContentSizedModal.gd" id="fit"]
+[ext_resource type="Script" path="res://scripts/ui/TouchScrollContainer.gd" id="2_touch_scroll"]
 
 [node name="ProgressModal" type="Control"]
 theme = ExtResource("1_theme")
@@ -89,6 +90,7 @@ autowrap_mode = 3
 [node name="ScrollContainer" type="ScrollContainer" parent="Panel/VBox"]
 layout_mode = 2
 size_flags_vertical = 3
+script = ExtResource("2_touch_scroll")
 
 [node name="ProgressVBox" type="VBoxContainer" parent="Panel/VBox/ScrollContainer"]
 layout_mode = 2

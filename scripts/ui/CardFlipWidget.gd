@@ -231,8 +231,12 @@ func flip() -> void:
 		_set_cards_filter(Control.MOUSE_FILTER_PASS)
 	)
 
-# Solo la carta da la vuelta. El boton ELEGIR vive FUERA del marco, asi que al
-# pulsarlo no le llega este evento: se limita a elegir la carta, sin girar nada.
+# Solo la carta da la vuelta. Este manejador esta conectado UNICAMENTE al
+# marco (CardFrame), que envuelve la cara entera: asi la pulsacion y la suelta
+# llegan siempre al mismo control y en las MISMAS coordenadas locales, de modo
+# que cualquier punto de la carta (tambien el texto del reverso) cuenta como
+# toque. El boton ELEGIR vive FUERA del marco, asi que al pulsarlo no le llega
+# este evento: se limita a elegir la carta, sin girar nada.
 func _on_card_gui_input(event: InputEvent) -> void:
 	if event.device == InputEvent.DEVICE_ID_EMULATION:
 		return
@@ -320,7 +324,13 @@ func _make_card_frame(border: Color) -> PanelContainer:
 	frame.name = "CardFrame"
 	frame.mouse_filter = Control.MOUSE_FILTER_PASS
 	frame.gui_input.connect(_on_card_gui_input)
-	frame.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	# La carta NO se estira a lo ancho: se queda con el ancho pedido en
+	# set_mode() y se CENTRA en el hueco que le deja la celda. Si el marco
+	# creciera hasta llenarla (la rejilla reparte entre las columnas el ancho
+	# sobrante) la ilustración, que conserva su proporción, quedaría con aire a
+	# los lados y el borde de rareza se despegaría de la carta. Ceñido al
+	# perímetro, igual que en la pantalla de selección.
+	frame.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	frame.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
 	frame.custom_minimum_size = _card_box()
 	frame.clip_contents = true
@@ -412,7 +422,13 @@ func _build_back_art(frame: Control) -> void:
 	text_scroll.name = "TextScroll"
 	text_scroll.set_script(preload("res://scripts/ui/TouchScrollContainer.gd"))
 	text_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
-	text_scroll.gui_input.connect(_on_card_gui_input)
+	# El texto NO escucha toques: el giro lo lleva el marco (que lo envuelve) para
+	# que pulsación y suelta lleguen siempre al mismo control. Si el ScrollContainer
+	# también los recibiera, cada uno mezclaría sus coordenadas locales con las del
+	# otro y el mismo toque parecería un arrastre largo (la carta no giraba).
+	# Sigue pudiendo desplazarse con el dedo: TouchScrollContainer lo hace en
+	# _input(), que no depende del mouse_filter.
+	text_scroll.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	overlay.add_child(text_scroll)
 	text_scroll.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	text_scroll.offset_left = BACK_TEXT_INSET

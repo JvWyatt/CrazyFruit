@@ -101,7 +101,7 @@ func _upgrade_effect_text(key: String) -> String:
 			var current: float = StatsManager.get_final_damage()
 			var increment: float = StatsManager.get_run_damage_upgrade_next_value() - current
 			if current < StatsManager.balance.damage_pity_floor and increment > current * bonus:
-				return "+" + UiTheme.format_stat(increment) + " Daño (mínimo)"
+				return "+" + UiTheme.format_stat(increment) + " Daño"
 		"energy_max":
 			bonus = StatsManager.balance.run_energy_bonus_per_level
 			stat_name = "Resistencia"

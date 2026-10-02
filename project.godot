@@ -16,7 +16,7 @@ compatibility/default_parent_skeleton_in_mesh_instance_3d=true
 
 config/name="Crazy Fruit"
 config/description="Crazy Fruit - Incremental 2D Fruit Cutting Mobile Game"
-config/version="0.021"
+config/version="0.033"
 run/main_scene="res://scenes/Main.tscn"
 config/features=PackedStringArray("4.7", "GL Compatibility")
 config/icon="res://assets/icon_app.png"

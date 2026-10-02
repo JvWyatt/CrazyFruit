@@ -278,6 +278,54 @@ func _cleanup_confetti_later(particles: Node) -> void:
 	if is_instance_valid(particles):
 		particles.queue_free()
 
+# Lluvia de confeti DORADO para un momento puntual (p. ej. cumplir la cuota del
+# día). A diferencia de confetti_burst(), que explota desde un punto, aquí las
+# partículas caen desde una franja ancha de la pantalla: es un aviso de que el
+# objetivo del día se ha cumplido y que a partir de ahora el dinero es ganancia
+# extra. Es DISCRETA a propósito (pocas partículas, caída lenta, sin
+# explosividad) para no tapar el juego ni interrumpir la partida, y se limpia
+# sola al terminar.
+func golden_confetti(parent: Node, width: float) -> void:
+	if parent == null:
+		return
+	var particles := CPUParticles2D.new()
+	particles.position = Vector2(maxf(width, 1.0) * 0.5, -12.0)
+	particles.z_index = 5
+	particles.emitting = true
+	particles.amount = 56
+	particles.lifetime = 2.0
+	particles.preprocess = 0.0
+	particles.one_shot = true
+	particles.explosiveness = 0.0
+	particles.emission_shape = CPUParticles2D.EMISSION_SHAPE_RECTANGLE
+	particles.emission_rect_extents = Vector2(maxf(width, 1.0) * 0.5, 8.0)
+	particles.direction = Vector2(0, 1)
+	particles.spread = 18.0
+	particles.gravity = Vector2(0, 130)
+	particles.initial_velocity_min = 26.0
+	particles.initial_velocity_max = 70.0
+	particles.angular_velocity_min = -110.0
+	particles.angular_velocity_max = 110.0
+	particles.damping_min = 6.0
+	particles.damping_max = 18.0
+	particles.scale_amount_min = 2.0
+	particles.scale_amount_max = 4.0
+	var ramp := Gradient.new()
+	ramp.offsets = PackedFloat32Array([0.0, 0.35, 0.75, 1.0])
+	ramp.colors = PackedColorArray([
+		Color(1.0, 0.95, 0.72, 0.95),
+		Color(1.0, 0.835, 0.29, 1.0),
+		Color(0.98, 0.7, 0.22, 0.9),
+		Color(0.95, 0.65, 0.2, 0.0),
+	])
+	particles.color_ramp = ramp
+	var scale_curve := Curve.new()
+	scale_curve.add_point(Vector2(0, 0.6), 0, 0, 0, 0)
+	scale_curve.add_point(Vector2(1, 1.0), 0, 0, 0, 0)
+	particles.scale_amount_curve = scale_curve
+	parent.add_child(particles)
+	_cleanup_confetti_later(particles)
+
 # Ráfaga de partículas de un solo color (p. ej. polvo gris al romper una
 # piedra). Se autolimpia solo.
 func dust_burst(parent: Node, global_position: Vector2, color: Color, amount: int = 24) -> void:

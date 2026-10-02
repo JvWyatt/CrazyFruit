@@ -118,6 +118,14 @@ func _run() -> void:
 	_gesture(thumb_frame, Vector2(20, 20), InputEvent.DEVICE_ID_EMULATION)
 	_check(preview_count["value"] == 1, "Un toque abre exactamente un detalle, sin duplicación emulada")
 	_check(thumb.tooltip_text.contains(CardDatabase.ALL_CARDS[0]["desc"]), "PC dispone de descripción al hacer hover")
+	# El borde de rareza va PEGADO a la carta en la galería: la celda reparte el
+	# ancho sobrante, pero el marco se ceñe a la carta y la ilustración llena su
+	# hueco interior (si no, el marco crece y el aire lo separa del dibujo).
+	_check(thumb.size.x > thumb._card_width + 1.0, "La celda de la rejilla es más ancha que la miniatura")
+	_check(absf(thumb_frame.size.x - thumb._card_box().x) <= 1.0, "El marco de rareza no se estira hasta la celda")
+	_check(absf(thumb_frame.size.y - thumb._card_box().y) <= 1.0, "El marco de rareza mantiene la proporción de la carta")
+	_check(absf(thumb_frame.position.x + thumb_frame.size.x * 0.5 - thumb.size.x * 0.5) <= 1.0, "La miniatura queda centrada en su celda")
+	_check(absf(thumb_frame.get_node("ArtPanel").size.x - thumb._art_size().x) <= 1.0, "La ilustración llena el hueco interior del marco")
 	var hover_tip: Control = thumb._make_custom_tooltip(thumb.tooltip_text)
 	host.add_child(hover_tip)
 	_check(hover_tip.get_node("Text").text == thumb.tooltip_text, "Hover y toque comparten el mismo tooltip de texto")

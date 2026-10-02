@@ -33,7 +33,7 @@ func _run() -> void:
 	_reset()
 	var market: Control = load("res://scenes/ui/RunUpgradeModal.tscn").instantiate()
 	root.add_child(market)
-	_check(market._upgrade_effect_text("damage") == "+1.0 Daño (mínimo)", "Mercado muestra el mínimo real")
+	_check(market._upgrade_effect_text("damage") == "+1.0 Daño", "Mercado muestra el valor real de la mejora")
 	_near(stats.get_final_damage(), 5.0, "Daño inicial")
 	for expected: float in [6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.1, 13.31]:
 		stats.buy_run_upgrade("damage")

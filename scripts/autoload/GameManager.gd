@@ -19,6 +19,10 @@ extends Node
 signal money_changed(current_money: float)
 signal order_progress_changed(progress: float, target: float)
 signal order_completed(order_num: int)
+# Se emite UNA sola vez al cruzar la cuota del día: a partir de ahí el resto del
+# dinero del día es ganancia extra (fase de BONUS). Llega el bonus ya calculado
+# (el dinero generado por encima de la cuota en ese instante).
+signal order_goal_reached(bonus: float)
 signal energy_changed(current_energy: float, max_energy: float)
 signal round_time_changed(time_left: float)
 signal run_started
@@ -62,6 +66,10 @@ var current_state: GameState = GameState.MENU
 var current_order: int = 1        # Pedido/día actual (1, 2, 3...)
 var order_target: float = 0.0                      # Dinero necesario para completar el pedido actual
 var order_progress: float = 0.0   # Dinero ganado hasta ahora en este pedido
+# La cuota del día ya se ha alcanzado AL MENOS una vez en esta ronda. Desde ese
+# momento todo el dinero que se genere es ganancia extra (BONUS). Se reinicia en
+# cada día nuevo (advance_to_next_order) y en cada negocio (start_new_run).
+var daily_goal_reached: bool = false
 var run_money: float = 0.0        # Dinero disponible para gastar en la tienda (se resetea cada negocio)
 
 var total_money_generated_run: float = 0.0
@@ -201,6 +209,11 @@ func get_order_target_for(order_num: int) -> float:
 	var base: float = StatsManager.balance.base_order_target * pow(StatsManager.balance.order_target_growth, order_num - 2)
 	return base * StatsManager.get_order_target_multiplier()
 
+# Dinero generado por encima de la cuota del día: la ganancia extra (BONUS) que
+# se lleva el jugador si sigue cortando fruta después de cumplir el objetivo.
+func get_order_bonus() -> float:
+	return maxf(0.0, order_progress - order_target)
+
 # Empieza un negocio nuevo desde cero: reinicia dinero, pedido, energía y
 # TAMBIÉN las frutas/armas desbloqueadas de la partida anterior (solo el
 # progreso permanente en SaveManager sobrevive a esto).
@@ -209,6 +222,7 @@ func start_new_run() -> void:
 	current_order = 1
 	order_target = get_order_target_for(current_order)
 	order_progress = 0.0
+	daily_goal_reached = false
 	run_money = 0.0
 	total_money_generated_run = 0.0
 	total_fruits_cut_run = 0
@@ -289,6 +303,13 @@ func register_fruit_cut(fruit_data: FruitData, base_reward: float, is_jackpot: b
 	# Logro "Rápido y Furioso": ALCANZAR la cuota del día faltando 5s o menos.
 	if target_unreached and order_progress >= order_target and round_time_left <= 5.0:
 		AchievementManager.set_flag("beat_day_rushed")
+	# Fin de la fase de "llegar a la cuota": a partir de aquí todo el dinero del
+	# día es ganancia extra. Se avisa UNA sola vez por día. El "> 0" cubre el día
+	# 1, cuya cuota es $0 y por tanto ya está "cumplida" antes de cortar nada:
+	# el bonus empieza con la primera fruta.
+	if not daily_goal_reached and order_progress > 0.0 and order_progress >= order_target:
+		daily_goal_reached = true
+		emit_signal("order_goal_reached", get_order_bonus())
 	total_money_generated_run += final_reward
 	total_fruits_cut_run += 1
 	if is_jackpot:
@@ -435,6 +456,8 @@ func advance_to_next_order() -> void:
 		AchievementManager.set_flag("surpassed_day_100")
 	order_target = get_order_target_for(current_order)
 	order_progress = 0.0
+	# Cada día arranca con la meta pendiente: el bonus vuelve a estar "por ganar".
+	daily_goal_reached = false
 	current_state = GameState.PLAYING
 	_stones_hit_this_day = 0
 	_first_stone_consumed_this_day = false

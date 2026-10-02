@@ -5,36 +5,27 @@ extends Control
 #
 # PRESENTACION: rejilla de miniaturas reales —el mismo CardFlipWidget que se usa
 # en la pantalla de elección, en modo THUMBNAIL— en lugar del listado de texto.
-# Al tocar una miniatura se abre la carta en grande (modo DETAIL) y desde ahí se
-# puede girar con el MISMO efecto flip para leer el reverso y su descripción.
+# PC: descripción al pasar el ratón. Móvil: panel de texto al tocar la carta.
+# No hay reversos ni cartas ampliadas en esta sección.
 # ============================================================================
 
-const THUMBNAIL_WIDTH: float = 104.0
-const GRID_SEPARATION: int = 12
-# Techo de la carta grande. Es solo un tope: el ancho real sale de lo que cabe en
-# alto dentro del hueco del detalle, asi que en pantallas grandes la carta crece
-# hasta llenar el panel sin dejar un vacio enorme debajo.
-const DETAIL_MAX_WIDTH: float = 420.0
-const DETAIL_STEP: float = 10.0
+@export_range(104.0, 240.0) var thumbnail_width: float = 144.0
 
 @onready var title_label: Label = $Panel/VBox/HeaderHBox/TitleLabel
 @onready var close_button: Button = $Panel/VBox/HeaderHBox/CloseButton
 @onready var rarity_legend: RichTextLabel = $Panel/VBox/RarityLegend
 @onready var empty_label: Label = $Panel/VBox/EmptyLabel
 @onready var cards_grid: ResponsiveGrid = $Panel/VBox/ScrollContainer/CardsGrid
-@onready var detail_layer: Control = $DetailLayer
-@onready var detail_panel: PanelContainer = $DetailLayer/DetailPanel
-@onready var detail_title: Label = $DetailLayer/DetailPanel/DetailVBox/DetailTitle
-@onready var detail_host: CenterContainer = $DetailLayer/DetailPanel/DetailVBox/CardHost
-@onready var detail_back_button: Button = $DetailLayer/DetailPanel/DetailVBox/DetailBackButton
+@onready var card_tooltip: PanelContainer = $CardTooltip
 
 func _ready() -> void:
 	close_button.pressed.connect(_on_close_pressed)
-	detail_back_button.pressed.connect(_close_detail)
-	$DetailLayer/DetailDimmer.gui_input.connect(_on_detail_dimmer_input)
-	# La rejilla de miniaturas usa el mismo ritmo que el resto de grids.
-	cards_grid.h_separation = GRID_SEPARATION
-	cards_grid.v_separation = GRID_SEPARATION
+	get_viewport().size_changed.connect(_close_detail)
+	visibility_changed.connect(_close_detail)
+
+func _input(event: InputEvent) -> void:
+	if (event is InputEventScreenTouch and event.pressed) or (event is InputEventMouseButton and event.pressed):
+		_close_detail()
 
 func open_discovered_cards() -> void:
 	title_label.text = "🃏 Comodines descubiertos"
@@ -81,8 +72,9 @@ func _refresh_cards(card_ids: Array) -> void:
 # elección, en modo THUMBNAIL (sin botón: al tocarla pide abrirla en grande).
 func _make_thumbnail(card_data: Dictionary) -> CardFlipWidget:
 	var thumb := CardFlipWidget.new()
-	thumb.set_mode(CardFlipWidget.Presentation.THUMBNAIL, THUMBNAIL_WIDTH)
+	thumb.set_mode(CardFlipWidget.Presentation.THUMBNAIL, thumbnail_width)
 	thumb.configure(card_data)
+	thumb.set_meta("card_id", str(card_data.get("id", "")))
 	thumb.previewed.connect(_on_thumbnail_pressed)
 	return thumb
 
@@ -91,56 +83,18 @@ func _make_thumbnail(card_data: Dictionary) -> CardFlipWidget:
 func _on_thumbnail_pressed(card_data: Dictionary) -> void:
 	_open_detail(card_data)
 
-# Abre la carta grande. El tamaño se calcula con CardFlipWidget.height_for() para
-# que la carta entre siempre en el hueco, sin recortarse ni dejarse sitio de mas.
-#
-# La capa tiene que estar visible ANTES de medir: un Container oculto todavia no
-# ha repartido su tamano a los hijos, asi que detail_host.size valdria 0 y la carta
-# se quedaria en el ancho de reserva en vez de aprovechar el hueco.
+# Descripción pequeña sobre la galería; el grid conserva su distribución.
 func _open_detail(card_data: Dictionary) -> void:
-	for child in detail_host.get_children():
-		child.queue_free()
-	detail_title.text = str(card_data.get("title", "Comodín"))
-	detail_layer.visible = true
-	await get_tree().process_frame
-	if not is_instance_valid(detail_host):
-		return
-	var big := CardFlipWidget.new()
-	big.set_mode(CardFlipWidget.Presentation.DETAIL, _detail_width())
-	big.configure(card_data)
-	detail_host.add_child(big)
-	UiTheme.pop_in(detail_panel)
+	var anchor_rect := Rect2(get_global_mouse_position(), Vector2.ZERO)
+	for thumb in cards_grid.get_children():
+		if thumb is CardFlipWidget and not thumb.is_queued_for_deletion() and thumb.get_meta("card_id", "") == str(card_data.get("id", "")):
+			anchor_rect = thumb.get_global_rect()
+			break
+	card_tooltip.show_at(str(card_data.get("title", "Comodín")) + "\n" + str(card_data.get("desc", "")), anchor_rect, get_viewport().get_visible_rect())
 
 func _close_detail() -> void:
-	if not detail_layer.visible:
-		return
-	detail_layer.visible = false
-	for child in detail_host.get_children():
-		child.queue_free()
-
-# Ancho maximo de la carta grande que cabe en el hueco del detalle.
-func _detail_width() -> float:
-	var available: Vector2 = detail_host.size
-	if available.y <= 0.0:
-		return 280.0
-	var width: float = THUMBNAIL_WIDTH
-	while width < DETAIL_MAX_WIDTH and CardFlipWidget.height_for(width + DETAIL_STEP) <= available.y:
-		width += DETAIL_STEP
-	if available.x > 0.0:
-		width = minf(width, maxf(available.x - 8.0, THUMBNAIL_WIDTH))
-	return width
-
-# Tocar fuera del panel de detalle es lo mismo que pulsar VOLVER.
-func _on_detail_dimmer_input(event: InputEvent) -> void:
-	var pressed: bool = false
-	if event is InputEventScreenTouch:
-		pressed = (event as InputEventScreenTouch).pressed
-	elif event is InputEventMouseButton:
-		var mb := event as InputEventMouseButton
-		pressed = mb.pressed and mb.button_index == MOUSE_BUTTON_LEFT
-	if pressed:
-		accept_event()
-		_close_detail()
+	if is_instance_valid(card_tooltip):
+		card_tooltip.hide()
 
 # --- Leyenda de rarezas -----------------------------------------------------
 

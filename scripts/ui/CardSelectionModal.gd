@@ -14,6 +14,8 @@ extends Control
 signal card_chosen(order_num: int)
 signal unpayable
 
+@export_range(148.0, 280.0) var card_max_width: float = 220.0
+
 @onready var cards_container: HBoxContainer = $Panel/VBox/CardsHBox
 @onready var title_label: Label = $Panel/VBox/TitleLabel
 @onready var subtitle_label: Label = $Panel/VBox/SubtitleLabel
@@ -26,6 +28,7 @@ var current_completed_order: int = 1
 
 func _ready() -> void:
 	visible = false
+	cards_container.resized.connect(_resize_cards)
 
 func open_modal(order_completed_num: int) -> void:
 	current_completed_order = order_completed_num
@@ -65,6 +68,17 @@ func open_modal(order_completed_num: int) -> void:
 		widget.configure(card_data)
 		widget.chosen.connect(_on_card_selected)
 		cards_container.add_child(widget)
+	_resize_cards.call_deferred()
+
+func _resize_cards() -> void:
+	var widgets := cards_container.get_children()
+	if widgets.is_empty():
+		return
+	var gap: int = cards_container.get_theme_constant("separation")
+	var width: float = minf(card_max_width, (cards_container.size.x - gap * (widgets.size() - 1)) / widgets.size())
+	for widget in widgets:
+		if widget is CardFlipWidget and not widget.is_queued_for_deletion() and not is_equal_approx(widget.custom_minimum_size.x, width):
+			widget.set_mode(CardFlipWidget.Presentation.PICK, width)
 
 func _on_card_selected(card_data: Dictionary) -> void:
 	SoundManager.play_victory()

@@ -18,7 +18,6 @@ extends RefCounted
 #                     = el MÁXIMO de la fruta anterior (sin factor): el factor
 #                     (×2) SOLO se aplica al nuevo máximo. Fruta 1 (fresa) es la
 #                     base: min $0.10 – max $1.00.
-#   - jackpot_chance: probabilidad base (0.0 a 1.0) de "Gran Venta"/Jackpot
 #   - price:          precio de desbloqueo en la Frutería (0 = gratis)
 #   - unlock_order:   orden de aparición histórico (no cambia el precio)
 #   - base_color/inner_color/accent_color/radius/shape_type: solo apariencia
@@ -41,7 +40,6 @@ static func _build_fallback() -> FruitData:
 	fd.max_hp = 20.0
 	fd.min_reward = 0.1
 	fd.max_reward = 1.0
-	fd.jackpot_chance = 0.0
 	fd.unlock_order = 1
 	fd.price = 0
 	fd.base_color = Color(0.95, 0.22, 0.32)

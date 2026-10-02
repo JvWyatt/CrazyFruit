@@ -10,7 +10,6 @@ icon_emoji = "🍎"
 max_hp = 495.0
 min_reward = 16
 max_reward = 32
-jackpot_chance = 0.0
 unlock_order = 6
 price = 380
 base_color = Color(0.88, 0.12, 0.18, 1.0)

@@ -39,7 +39,7 @@ func _run() -> void:
 		stats.buy_run_upgrade("damage")
 		_near(stats.get_final_damage(), expected, "Mínimo solo debajo de 10 y precisión acumulada")
 	_check(market._upgrade_effect_text("damage") == "+10.0% Daño", "Mercado muestra solo el porcentaje tras el umbral")
-	_check(market._upgrade_effect_text("luck") == "+0.8 p.p. Jackpot", "Jackpot se presenta como incremento aditivo redondeado")
+	_check(market._upgrade_effect_text("luck") == "+0.777 p.p. Jackpot", "Jackpot del mercado conserva sus tres decimales visuales")
 
 	_reset()
 	stats.card_damage_multiplier = 1.99
@@ -100,8 +100,8 @@ func _run() -> void:
 	shop.open_modal()
 	var expected_base: Dictionary = {"experience": 5.0, "expert_hand": 100.0, "good_provider": 1.0, "good_fortune": 0.0, "launch_speed": 1.0}
 	var bonuses: Dictionary = {"experience": 0.2, "expert_hand": 0.2, "good_provider": 0.2, "good_fortune": 0.0777, "launch_speed": 0.25}
-	var base_labels: Dictionary = {"experience": "Daño: 5.0", "expert_hand": "Resistencia: 100.0", "good_provider": "Dinero: x1.0", "good_fortune": "Jackpot: 0.0%", "launch_speed": "Velocidad: 1.0 frutas/s"}
-	var purchased_labels: Dictionary = {"experience": "Daño: 6.0", "expert_hand": "Resistencia: 120.0", "good_provider": "Dinero: x1.2", "good_fortune": "Jackpot: 7.8%", "launch_speed": "Velocidad: 1.3 frutas/s"}
+	var base_labels: Dictionary = {"experience": "Daño: 5.0", "expert_hand": "Resistencia: 100.0", "good_provider": "Dinero: x1.0", "good_fortune": "Jackpot: 0.00%", "launch_speed": "Velocidad: 1.0 frutas/s"}
+	var purchased_labels: Dictionary = {"experience": "Daño: 6.0", "expert_hand": "Resistencia: 120.0", "good_provider": "Dinero: x1.2", "good_fortune": "Jackpot: 7.77%", "launch_speed": "Velocidad: 1.3 frutas/s"}
 	for key: String in expected_base:
 		_near(stats.get_permanent_stat(key), expected_base[key], "Prestigio sin restos temporales: " + key)
 		var card: Node = shop._upgrade_cards[key]
@@ -123,6 +123,19 @@ func _run() -> void:
 	_near(stats.get_final_money_multiplier(), stats.get_permanent_stat("good_provider"), "Nueva run coincide con dinero permanente")
 	_near(stats.get_final_jackpot_bonus(), stats.get_permanent_stat("good_fortune"), "Nueva run coincide con jackpot permanente")
 	_near(stats.get_final_launch_rate(), stats.get_permanent_stat("launch_speed"), "Nueva run coincide con frecuencia permanente")
+	# Las características de armas/frutas ya no incorporan coste ni jackpot.
+	var expected_cost: float = stats.balance.base_energy_cost * stats.balance.resistance_cost_multiplier
+	var expected_chance: float = stats.get_final_jackpot_bonus()
+	for knife_id: String in stats.get_sorted_knife_ids():
+		game.run_equipped_knife = knife_id
+		stats.invalidate_stat_cache()
+		_near(stats.get_final_energy_cost(), expected_cost, "Todas las armas consumen la resistencia global: " + knife_id)
+		_near(stats.get_final_jackpot_bonus(), expected_chance, "Cambiar arma no cambia el jackpot global")
+	stats.apply_card_upgrade("cost_test", "energy_cost", -0.12, "Corte Eficiente")
+	for knife_id: String in stats.get_sorted_knife_ids():
+		game.run_equipped_knife = knife_id
+		stats.invalidate_stat_cache()
+		_near(stats.get_final_energy_cost(), expected_cost * 0.88, "Bonificación global igual para todas las armas")
 	shop.queue_free()
 	market.queue_free()
 	# Detener el sonido de derrota antes de cerrar el servidor de audio.

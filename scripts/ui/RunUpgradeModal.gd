@@ -41,11 +41,11 @@ func open_modal(order_completed_num: int = 0) -> void:
 	visible = true
 	UiTheme.pop_in($Panel)
 	if order_completed_num > 0:
-		title_label.text = "🛒 MERCADO — FIN DEL DÍA #" + str(order_completed_num)
-		continue_button.text = "⚔️ INICIAR SIGUIENTE DÍA"
+		title_label.text = "MERCADO · DÍA " + str(order_completed_num)
+		continue_button.text = "▶ SIGUIENTE DÍA"
 	else:
-		title_label.text = "🛒 Mercado de Mejoras"
-		continue_button.text = "⚔️ CONTINUAR NEGOCIO"
+		title_label.text = "MERCADO"
+		continue_button.text = "▶ CONTINUAR"
 	_rebuild_ui()
 
 func _refresh_ui() -> void:
@@ -74,7 +74,7 @@ func _rebuild_ui() -> void:
 			def.name,
 			"Nivel " + str(level),
 			effect_text,
-			"$" + UiTheme.format_money(cost),
+			"MEJORAR $" + UiTheme.format_money(cost),
 			can_buy
 		)
 		card.update_current_stat(str(key))
@@ -107,7 +107,7 @@ func _upgrade_effect_text(key: String) -> String:
 			stat_name = "Resistencia"
 		"luck":
 			bonus = StatsManager.balance.run_jackpot_bonus_per_level
-			return "+" + UiTheme.format_stat(bonus * 100.0) + " p.p. Jackpot"
+			return "+" + UiTheme.format_jackpot(bonus * 100.0, false) + " p.p. Jackpot"
 		"money":
 			bonus = StatsManager.balance.run_money_bonus_per_level
 			stat_name = "Dinero"
@@ -126,7 +126,7 @@ func _update_upgrade_row(key: String) -> void:
 	row["card"].update_current_stat(key)
 	row["subtitle_lbl"].text = "Nivel " + str(level)
 	row["desc_lbl"].text = _upgrade_effect_text(key)
-	row["buy_btn"].text = "$" + UiTheme.format_money(float(cost))
+	row["buy_btn"].text = "MEJORAR $" + UiTheme.format_money(float(cost))
 
 # Actualiza los valores finales también al cambiar armas, comodines o prestigio.
 func _refresh_upgrade_stats() -> void:
@@ -182,13 +182,13 @@ func _sync_fruit_row(fruit_id: String) -> void:
 		buy_btn.disabled = true
 		return
 	if not chain_ok:
-		var prev_data: FruitData = FruitDatabase.get_fruit_data(prev_id)
-		card.set_locked(true, "Necesitas " + prev_data.display_name + " antes.")
-		buy_btn.text = "🔒 BLOQUEADO"
+		card.set_locked(true)
+		buy_btn.text = "BLOQUEADO"
 		buy_btn.disabled = true
 		return
 	card.set_locked(true)
-	buy_btn.text = "DESBLOQUEAR\n$" + UiTheme.format_money(float(row["price"]))
+	buy_btn.text = "$" + UiTheme.format_money(float(row["price"]))
+	buy_btn.tooltip_text = "Desbloquear fruta"
 	buy_btn.disabled = GameManager.run_money < int(row["price"])
 
 func _rebuild_fruit_shop() -> void:
@@ -200,16 +200,10 @@ func _rebuild_fruit_shop() -> void:
 	for fruit_id in fruit_ids:
 		var fruit_data: FruitData = FruitDatabase.get_fruit_data(fruit_id)
 		var price: int = StatsManager.get_fruit_price(fruit_data.price)
-		var prev_id: String = _get_prev_fruit_id(fruit_id)
-		var chain_ok: bool = prev_id == "" or GameManager.is_fruit_unlocked_this_run(prev_id)
-		var prev_name: String = ""
-		if not chain_ok:
-			prev_name = FruitDatabase.get_fruit_data(prev_id).display_name
 
 		var stats_lbl: String = "Vida: " + UiTheme.format_stat(fruit_data.max_hp)
 		stats_lbl += "\nGanancias:\n$" + UiTheme.format_money(fruit_data.min_reward)
 		stats_lbl += " - $" + UiTheme.format_money(fruit_data.max_reward)
-		stats_lbl += "\nJackpot: " + UiTheme.format_stat(fruit_data.jackpot_chance * 100.0) + "%"
 
 		# Cara = la fruta; reverso = sus numeros. Las bloqueadas conservan su
 		# hueco en el grid pero con el velo, sin arte ni nombre.
@@ -219,10 +213,10 @@ func _rebuild_fruit_shop() -> void:
 			fruit_data.icon_emoji,
 			fruit_data.display_name,
 			stats_lbl,
-			"Fruta " + str(int(fruit_data.unlock_order)),
+			"",
 			null
 		)
-		card.set_locked(true, "Necesitas " + prev_name + " antes." if not chain_ok else "")
+		card.set_locked(true)
 
 		var captured_id: String = str(fruit_id)
 		card.action_button.pressed.connect(func():
@@ -249,13 +243,8 @@ func _rebuild_weapon_shop() -> void:
 		var price: int = StatsManager.get_weapon_price(knife_data.price)
 		var prev_id: String = _get_prev_knife_id(str(knife_id))
 		var chain_ok: bool = prev_id == "" or GameManager.is_knife_unlocked_this_run(prev_id)
-		var prev_name: String = ""
-		if not chain_ok:
-			prev_name = (StatsManager.knives_db[prev_id] as KnifeData).name
 
-		var effective_energy: float = knife_data.energy_cost * StatsManager.balance.resistance_cost_multiplier
 		var stats_lbl: String = "Daño: " + UiTheme.format_stat(knife_data.damage)
-		stats_lbl += "\nEnergía por golpe: " + UiTheme.format_stat(effective_energy)
 
 		# Cara = el arma; reverso = sus numeros y descripcion. Sin imagen propia
 		# todavia, el anverso usa el icono del arma.
@@ -265,12 +254,12 @@ func _rebuild_weapon_shop() -> void:
 			knife_data.icon,
 			knife_data.name,
 			stats_lbl,
-			knife_data.description,
+			"",
 			null
 		)
 		# Los Arms ya desbloqueados (o en uso) se ven con normalidad; los de la
 		# cadena bloqueados conservan su hueco pero van velados.
-		card.set_locked(not is_unlocked, "Necesitas " + prev_name + " antes." if not chain_ok else "")
+		card.set_locked(not is_unlocked)
 
 		var captured_id: String = str(knife_id)
 		if is_equipped:
@@ -283,10 +272,11 @@ func _rebuild_weapon_shop() -> void:
 				_rebuild_weapon_shop()
 			)
 		elif not chain_ok:
-			card.action_button.text = "🔒 BLOQUEADO"
+			card.action_button.text = "BLOQUEADO"
 			card.action_button.disabled = true
 		else:
-			card.action_button.text = "DESBLOQUEAR\n$" + UiTheme.format_money(float(price))
+			card.action_button.text = "$" + UiTheme.format_money(float(price))
+			card.action_button.tooltip_text = "Desbloquear arma"
 			card.action_button.disabled = GameManager.run_money < price
 			card.action_button.pressed.connect(func():
 				if _get_prev_knife_id(captured_id) != "" and not GameManager.is_knife_unlocked_this_run(_get_prev_knife_id(captured_id)):
@@ -320,6 +310,7 @@ func _on_buy_upgrade(upgrade_id: String) -> void:
 		StatsManager.buy_run_upgrade(upgrade_id)
 		_refresh_ui()
 		_update_upgrade_row(upgrade_id)
+		UiTheme.pulse_label(_upgrade_rows[upgrade_id]["card"].current_stat_label)
 		_refresh_affordability()
 
 func _on_stats_pressed() -> void:

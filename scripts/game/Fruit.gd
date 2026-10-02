@@ -155,7 +155,7 @@ func die() -> void:
 	# Gran venta calculation: la probabilidad de Jackpot la gestiona SOLO la
 	# stat pura global (StatsManager.get_final_jackpot_bonus), procedente de la
 	# suerte: mejoras del mercado + comodines + prestigio. Las frutas en sí ya
-	# no aportan probabilidad base (todas tienen jackpot_chance = 0).
+	# no aportan probabilidad base: todas usan la estadística global.
 	var total_jackpot_chance: float = StatsManager.get_final_jackpot_bonus()
 	var is_jackpot: bool = is_golden or randf() < total_jackpot_chance
 	var base_reward: float = 0.0

@@ -13,14 +13,13 @@ layout_mode = 2
 theme_override_constants/separation = 12
 
 [node name="MasterLabel" type="Label" parent="MasterRow"]
-custom_minimum_size = Vector2(150, 0)
+custom_minimum_size = Vector2(160, 0)
 layout_mode = 2
-theme_override_font_sizes/font_size = 16
 text = "Volumen general"
 vertical_alignment = 1
 
 [node name="MasterSlider" type="HSlider" parent="MasterRow"]
-custom_minimum_size = Vector2(0, 40)
+custom_minimum_size = Vector2(0, 56)
 layout_mode = 2
 size_flags_horizontal = 3
 max_value = 100.0
@@ -29,7 +28,6 @@ step = 1.0
 [node name="MasterValue" type="Label" parent="MasterRow"]
 custom_minimum_size = Vector2(52, 0)
 layout_mode = 2
-theme_override_font_sizes/font_size = 16
 text = "100%"
 horizontal_alignment = 2
 
@@ -38,14 +36,13 @@ layout_mode = 2
 theme_override_constants/separation = 12
 
 [node name="MusicLabel" type="Label" parent="MusicRow"]
-custom_minimum_size = Vector2(150, 0)
+custom_minimum_size = Vector2(160, 0)
 layout_mode = 2
-theme_override_font_sizes/font_size = 16
 text = "Música"
 vertical_alignment = 1
 
 [node name="MusicSlider" type="HSlider" parent="MusicRow"]
-custom_minimum_size = Vector2(0, 40)
+custom_minimum_size = Vector2(0, 56)
 layout_mode = 2
 size_flags_horizontal = 3
 max_value = 100.0
@@ -54,7 +51,6 @@ step = 1.0
 [node name="MusicValue" type="Label" parent="MusicRow"]
 custom_minimum_size = Vector2(52, 0)
 layout_mode = 2
-theme_override_font_sizes/font_size = 16
 text = "100%"
 horizontal_alignment = 2
 
@@ -63,14 +59,13 @@ layout_mode = 2
 theme_override_constants/separation = 12
 
 [node name="SfxLabel" type="Label" parent="SfxRow"]
-custom_minimum_size = Vector2(150, 0)
+custom_minimum_size = Vector2(160, 0)
 layout_mode = 2
-theme_override_font_sizes/font_size = 16
 text = "Efectos (SFX)"
 vertical_alignment = 1
 
 [node name="SfxSlider" type="HSlider" parent="SfxRow"]
-custom_minimum_size = Vector2(0, 40)
+custom_minimum_size = Vector2(0, 56)
 layout_mode = 2
 size_flags_horizontal = 3
 max_value = 100.0
@@ -79,6 +74,5 @@ step = 1.0
 [node name="SfxValue" type="Label" parent="SfxRow"]
 custom_minimum_size = Vector2(52, 0)
 layout_mode = 2
-theme_override_font_sizes/font_size = 16
 text = "100%"
 horizontal_alignment = 2

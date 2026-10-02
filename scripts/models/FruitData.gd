@@ -14,7 +14,6 @@ extends Resource
 @export var max_hp: float = 10.0
 @export var min_reward: float = 1.0
 @export var max_reward: float = 3.0
-@export var jackpot_chance: float = 0.0
 @export var unlock_order: int = 1
 # Precio de desbloqueo en la Frutería del mercado (0 = gratis, la primera).
 # Antes vivía hardcodeado en RunUpgradeModal.gd (fruit_prices).

@@ -371,7 +371,7 @@ func get_progress(id: String) -> Dictionary:
 func get_progress_text(id: String) -> String:
 	var p := get_progress(id)
 	if p["unlocked"]:
-		return "DESBLOQUEADO"
+		return "COMPLETADO"
 	if p["target"] <= 1.0:
 		return "PENDIENTE"
 	var cur: float = p["progress"]

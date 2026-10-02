@@ -4,6 +4,7 @@
 [ext_resource type="Script" uid="uid://c78wu28skh3tb" path="res://scripts/ui/PrestigeShopModal.gd" id="1_psm"]
 [ext_resource type="Script" uid="uid://b5kdfot8rrbtk" path="res://scripts/ui/TouchScrollContainer.gd" id="2_touch_scroll"]
 [ext_resource type="Script" path="res://scripts/ui/ResponsiveGrid.gd" id="3_grid"]
+[ext_resource type="Script" path="res://scripts/ui/ContentSizedModal.gd" id="fit"]
 
 [node name="PrestigeShopModal" type="Control" unique_id=891501063]
 z_index = 30
@@ -27,18 +28,14 @@ color = Color(0, 0, 0, 0.65)
 
 [node name="Panel" type="PanelContainer" parent="." unique_id=802623110]
 layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -320.0
-offset_top = -380.0
-offset_right = 320.0
-offset_bottom = 380.0
+anchor_left = 0.05
+anchor_top = 0.06
+anchor_right = 0.95
+anchor_bottom = 0.94
 grow_horizontal = 2
 grow_vertical = 2
 theme_type_variation = &"ModalPanel"
+script = ExtResource("fit")
 
 [node name="VBox" type="VBoxContainer" parent="Panel" unique_id=740822595]
 layout_mode = 2
@@ -51,22 +48,27 @@ layout_mode = 2
 layout_mode = 2
 size_flags_horizontal = 3
 theme_type_variation = &"TitleLabel"
-text = "⭐ Mercado de Prestigio"
+text = "PRESTIGIO"
+autowrap_mode = 3
 
 [node name="PrestigeLabel" type="Label" parent="Panel/VBox/HeaderHBox" unique_id=337771644]
 layout_mode = 2
-theme_override_colors/font_color = Color(1, 0.9, 0.3, 1)
-theme_override_font_sizes/font_size = 18
+theme_type_variation = &"Body"
 text = "⭐ 0 Rep."
 
 [node name="CloseButton" type="Button" parent="Panel/VBox/HeaderHBox" unique_id=1674309861]
-custom_minimum_size = Vector2(40, 40)
+custom_minimum_size = Vector2(56, 56)
 layout_mode = 2
-theme_override_font_sizes/font_size = 18
 text = "✖"
 
 [node name="HSeparator" type="HSeparator" parent="Panel/VBox" unique_id=1053700887]
 layout_mode = 2
+
+[node name="HelpLabel" type="Label" parent="Panel/VBox"]
+layout_mode = 2
+theme_type_variation = &"CaptionLabel"
+text = "Mejoras permanentes para todos tus negocios."
+autowrap_mode = 3
 
 [node name="ScrollContainer" type="ScrollContainer" parent="Panel/VBox" unique_id=1404349458]
 layout_mode = 2
@@ -77,7 +79,8 @@ script = ExtResource("2_touch_scroll")
 layout_mode = 2
 size_flags_horizontal = 3
 script = ExtResource("3_grid")
-fixed_columns = 2
+min_card_width = 240.0
+max_columns = 2
 uniform_card_size = true
-h_separation = 8
-v_separation = 8
+h_separation = 16
+v_separation = 16

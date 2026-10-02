@@ -6,9 +6,9 @@ extends Resource
 # StatsManager al iniciar (si el .tres falta, usa los valores por defecto).
 # ============================================================================
 
-# Base normal = 1.0: el "energy_cost" de cada arma (ver data/knives/) YA es el
-# gasto real de resistencia por golpe. Se deja como factor para ajustar todo
-# el gasto de un plumazo (ej. puño 1.0 = 1 energía/golpe).
+# Gasto global por corte: todas las armas comparten la misma resistencia.
+@export var base_energy_cost: float = 1.0
+# Factor global para ajustar el gasto sin modificar armas individuales.
 @export var resistance_cost_multiplier: float = 1.0
 # Probabilidad base (0.0 a 1.0) de que aparezca una fruta dorada al generarse.
 # 0%: la Fruta Dorada SOLO se activa mediante comodines (card_golden_fruit_chance).

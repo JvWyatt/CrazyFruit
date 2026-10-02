@@ -4,6 +4,7 @@
 
 [resource]
 script = ExtResource("1_balance")
+base_energy_cost = 1.0
 resistance_cost_multiplier = 1.0
 golden_fruit_chance = 0.0
 reward_rebalance_multiplier = 1.0

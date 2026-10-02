@@ -4,6 +4,7 @@
 [ext_resource type="Script" uid="uid://cb37pyc3foyhx" path="res://scripts/ui/RunUpgradeModal.gd" id="1_upm"]
 [ext_resource type="Script" uid="uid://b5kdfot8rrbtk" path="res://scripts/ui/TouchScrollContainer.gd" id="2_touch_scroll"]
 [ext_resource type="Script" path="res://scripts/ui/ResponsiveGrid.gd" id="3_grid"]
+[ext_resource type="Script" path="res://scripts/ui/ContentSizedModal.gd" id="fit"]
 
 [node name="RunUpgradeModal" type="Control"]
 theme = ExtResource("1_theme")
@@ -27,18 +28,15 @@ color = Color(0, 0, 0, 0.65)
 
 [node name="Panel" type="PanelContainer" parent="."]
 layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -320.0
-offset_top = -420.0
-offset_right = 320.0
-offset_bottom = 420.0
+anchor_left = 0.05
+anchor_top = 0.06
+anchor_right = 0.95
+anchor_bottom = 0.94
 grow_horizontal = 2
 grow_vertical = 2
 theme_type_variation = "ModalPanel"
+script = ExtResource("fit")
+tab_height_reference = NodePath("VBox/TabContainer/Mejoras")
 
 [node name="VBox" type="VBoxContainer" parent="Panel"]
 layout_mode = 2
@@ -51,18 +49,17 @@ layout_mode = 2
 layout_mode = 2
 size_flags_horizontal = 3
 theme_type_variation = &"TitleLabel"
-text = "🛒 Mercado de mejoras"
+text = "MERCADO"
+autowrap_mode = 3
 
 [node name="MoneyLabel" type="Label" parent="Panel/VBox/HeaderHBox"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.3, 1, 0.4, 1)
-theme_override_font_sizes/font_size = 18
+theme_type_variation = &"Body"
 text = "💰 $0"
 
 [node name="CloseButton" type="Button" parent="Panel/VBox/HeaderHBox"]
-custom_minimum_size = Vector2(36, 36)
+custom_minimum_size = Vector2(56, 56)
 layout_mode = 2
-theme_override_font_sizes/font_size = 18
 text = "✖"
 
 [node name="HSeparator" type="HSeparator" parent="Panel/VBox"]
@@ -83,10 +80,11 @@ metadata/_tab_index = 0
 layout_mode = 2
 size_flags_horizontal = 3
 script = ExtResource("3_grid")
-fixed_columns = 2
+min_card_width = 240.0
+max_columns = 2
 uniform_card_size = true
-h_separation = 8
-v_separation = 8
+h_separation = 16
+v_separation = 16
 
 [node name="Frutería" type="ScrollContainer" parent="Panel/VBox/TabContainer"]
 visible = false
@@ -99,7 +97,12 @@ metadata/_tab_index = 1
 layout_mode = 2
 size_flags_horizontal = 3
 script = ExtResource("3_grid")
-min_card_width = 160.0
+min_card_width = 180.0
+max_columns = 4
+uniform_card_size = true
+card_aspect_ratio = 1.0
+h_separation = 8
+v_separation = 8
 center_orphan = true
 
 [node name="Armas" type="ScrollContainer" parent="Panel/VBox/TabContainer"]
@@ -113,7 +116,12 @@ metadata/_tab_index = 2
 layout_mode = 2
 size_flags_horizontal = 3
 script = ExtResource("3_grid")
-min_card_width = 160.0
+min_card_width = 180.0
+max_columns = 4
+uniform_card_size = true
+card_aspect_ratio = 1.0
+h_separation = 8
+v_separation = 8
 center_orphan = true
 
 [node name="BottomHBox" type="HBoxContainer" parent="Panel/VBox"]
@@ -123,13 +131,11 @@ theme_override_constants/separation = 10
 [node name="StatsButton" type="Button" parent="Panel/VBox/BottomHBox"]
 custom_minimum_size = Vector2(130, 56)
 layout_mode = 2
-theme_override_font_sizes/font_size = 18
-text = "📊 Ver Stats"
+text = "📊 Stats"
 
 [node name="ContinueButton" type="Button" parent="Panel/VBox/BottomHBox"]
 custom_minimum_size = Vector2(0, 56)
 layout_mode = 2
 size_flags_horizontal = 3
 theme_type_variation = "PrimaryButton"
-theme_override_font_sizes/font_size = 18
-text = "⚔️ INICIAR SIGUIENTE DÍA"
+text = "▶ SIGUIENTE DÍA"

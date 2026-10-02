@@ -19,24 +19,18 @@ func open_modal() -> void:
 func _refresh_ui() -> void:
 	for child in progress_container.get_children():
 		child.queue_free()
+	var best: int = int(SaveManager.save_data.get("best_clients_in_day", 0))
+	$Panel/VBox/MilestonePanel/Content/BestLabel.text = str(best) + " / 100 días"
+	$Panel/VBox/MilestonePanel/Content/ProgressBar.value = mini(best, 100)
 
-	_add_row("Días completados", str(int(SaveManager.save_data.get("best_clients_in_day", 0))))
-	_add_row("Negocios en quiebra", str(int(SaveManager.save_data.get("days_started", 0))))
+	_add_row("Negocios iniciados", str(int(SaveManager.save_data.get("days_started", 0))))
+	_add_row("Frutas cortadas en total", UiTheme.format_money(float(SaveManager.save_data.get("total_fruits_cut", 0))))
 	_add_row("Comodines descubiertos", str(SaveManager.get_discovered_cards().size()) + " / " + str(CardDatabase.ALL_CARDS.size()))
 
 func _add_row(label_text: String, value_text: String) -> void:
-	var row := HBoxContainer.new()
-	var label := Label.new()
-	label.text = label_text
-	label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	label.add_theme_font_size_override("font_size", 16)
-	var value := Label.new()
-	value.text = value_text
-	value.add_theme_font_size_override("font_size", 16)
-	value.modulate = Color(0.7, 0.95, 0.75)
-	row.add_child(label)
-	row.add_child(value)
-	progress_container.add_child(row)
+	var card := StatCard.create()
+	card.setup("", label_text, value_text, UiTheme._palette_color("color_success", UiTheme.COLOR_SUCCESS))
+	progress_container.add_child(card)
 
 func _on_close_pressed() -> void:
 	SoundManager.play_click()

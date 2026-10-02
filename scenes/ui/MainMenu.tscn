@@ -12,6 +12,7 @@
 [ext_resource type="Texture2D" uid="uid://bay06q8cb31ci" path="res://assets/ui/icons/info.png" id="11_7uy2f"]
 [ext_resource type="Texture2D" uid="uid://ts4equqnr1im" path="res://assets/ui/backgrounds/menu_bg.png" id="tex_bg"]
 [ext_resource type="Texture2D" uid="uid://bnf8gub0jg74" path="res://assets/ui/backgrounds/logo.png" id="tex_logo"]
+[ext_resource type="Script" path="res://scripts/ui/ContentSizedModal.gd" id="fit"]
 
 [node name="MainMenu" type="Control" unique_id=78427337]
 layout_mode = 3
@@ -24,6 +25,7 @@ theme = ExtResource("1_clp4r")
 script = ExtResource("1_mm")
 
 [node name="BG" type="TextureRect" parent="." unique_id=553298813]
+mouse_filter = 2
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -47,64 +49,38 @@ offset_right = -16.0
 offset_bottom = -30.0
 grow_horizontal = 0
 grow_vertical = 0
-theme_override_colors/font_color = Color(0.65, 0.72, 0.82, 1)
-theme_override_font_sizes/font_size = 14
+theme_type_variation = &"Body"
 text = "v0.017"
 horizontal_alignment = 2
 
-[node name="HBoxContainer" type="HBoxContainer" parent="." unique_id=1448893597]
-layout_mode = 1
-anchors_preset = 10
-anchor_right = 1.0
-offset_bottom = 511.0
-grow_horizontal = 2
-metadata/_edit_use_anchors_ = true
-
-[node name="TextureRect" type="TextureRect" parent="HBoxContainer" unique_id=744494906]
-layout_mode = 2
-size_flags_horizontal = 6
-texture = ExtResource("tex_logo")
-expand_mode = 3
-stretch_mode = 3
-
 [node name="CenterVBox" type="VBoxContainer" parent="." unique_id=1840560888]
 layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -300.0
-offset_top = -480.0
-offset_right = 300.0
-offset_bottom = 480.0
+anchor_left = 0.08
+anchor_top = 0.06
+anchor_right = 0.92
+anchor_bottom = 0.94
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_constants/separation = 22
+theme_override_constants/separation = 28
 alignment = 1
 
 [node name="TitleVBox" type="VBoxContainer" parent="CenterVBox" unique_id=1687227059]
 layout_mode = 2
-size_flags_horizontal = 4
-size_flags_vertical = 6
-theme_override_constants/separation = 50
+size_flags_horizontal = 3
+theme_override_constants/separation = 12
 metadata/_edit_use_anchors_ = true
 
-[node name="s1" type="Label" parent="CenterVBox/TitleVBox" unique_id=1483546501]
+[node name="Logo" type="TextureRect" parent="CenterVBox/TitleVBox"]
+custom_minimum_size = Vector2(0, 240)
 layout_mode = 2
-custom_minimum_size = Vector2(0, 14)
-theme_override_font_sizes/font_size = 14
-horizontal_alignment = 1
+mouse_filter = 2
+texture = ExtResource("tex_logo")
+expand_mode = 1
+stretch_mode = 5
 
 [node name="TitleLabel" type="Label" parent="CenterVBox/TitleVBox" unique_id=1962924208]
 layout_mode = 2
 theme_type_variation = &"TitleLabel"
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.8)
-theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
-theme_override_constants/shadow_offset_y = 3
-theme_override_constants/outline_size = 10
-theme_override_font_sizes/font_size = 42
 text = "Crazy Fruit"
 horizontal_alignment = 1
 
@@ -113,52 +89,52 @@ layout_mode = 2
 theme_type_variation = &"SubtitleLabel"
 text = "🎯 100 días, ¿eso está pelado?"
 horizontal_alignment = 1
-
-[node name="s2" type="Label" parent="CenterVBox/TitleVBox" unique_id=190160798]
-layout_mode = 2
-custom_minimum_size = Vector2(0, 14)
-theme_override_font_sizes/font_size = 14
-horizontal_alignment = 1
+autowrap_mode = 3
 
 [node name="ButtonsVBox" type="VBoxContainer" parent="CenterVBox" unique_id=632926681]
 layout_mode = 2
-theme_override_constants/separation = 10
+theme_override_constants/separation = 18
 
 [node name="PlayButton" type="Button" parent="CenterVBox/ButtonsVBox" unique_id=1658374002]
-custom_minimum_size = Vector2(0, 64)
+custom_minimum_size = Vector2(0, 88)
 layout_mode = 2
 theme_type_variation = &"PrimaryButton"
-theme_override_font_sizes/font_size = 40
 text = "JUGAR"
 
-[node name="PrestigeShopButton" type="Button" parent="CenterVBox/ButtonsVBox" unique_id=200775943]
-custom_minimum_size = Vector2(0, 52)
+[node name="NavigationGrid" type="GridContainer" parent="CenterVBox/ButtonsVBox"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 18
-text = "MERCADO DE PRESTIGIO"
+columns = 2
+theme_override_constants/h_separation = 16
+theme_override_constants/v_separation = 16
+
+[node name="PrestigeShopButton" type="Button" parent="CenterVBox/ButtonsVBox/NavigationGrid" unique_id=200775943]
+custom_minimum_size = Vector2(0, 88)
+layout_mode = 2
+size_flags_horizontal = 3
+text = "PRESTIGIO"
 icon = ExtResource("6_7mi0g")
 expand_icon = true
 
-[node name="ProgressButton" type="Button" parent="CenterVBox/ButtonsVBox" unique_id=921980326]
-custom_minimum_size = Vector2(0, 52)
+[node name="ProgressButton" type="Button" parent="CenterVBox/ButtonsVBox/NavigationGrid" unique_id=921980326]
+custom_minimum_size = Vector2(0, 88)
 layout_mode = 2
-theme_override_font_sizes/font_size = 18
-text = " VER PROGRESO"
+size_flags_horizontal = 3
+text = "PROGRESO"
 icon = ExtResource("7_ee60a")
 expand_icon = true
 
-[node name="AchievementsButton" type="Button" parent="CenterVBox/ButtonsVBox" unique_id=2010979216]
-custom_minimum_size = Vector2(0, 52)
+[node name="AchievementsButton" type="Button" parent="CenterVBox/ButtonsVBox/NavigationGrid" unique_id=2010979216]
+custom_minimum_size = Vector2(0, 88)
 layout_mode = 2
-theme_override_font_sizes/font_size = 18
+size_flags_horizontal = 3
 text = "LOGROS"
 icon = ExtResource("8_qjd48")
 expand_icon = true
 
-[node name="CardsButton" type="Button" parent="CenterVBox/ButtonsVBox" unique_id=1043777907]
-custom_minimum_size = Vector2(0, 52)
+[node name="CardsButton" type="Button" parent="CenterVBox/ButtonsVBox/NavigationGrid" unique_id=1043777907]
+custom_minimum_size = Vector2(0, 88)
 layout_mode = 2
-theme_override_font_sizes/font_size = 18
+size_flags_horizontal = 3
 text = "COMODINES"
 icon = ExtResource("9_ff4wq")
 expand_icon = true
@@ -166,24 +142,8 @@ expand_icon = true
 [node name="SettingsButton" type="Button" parent="CenterVBox/ButtonsVBox" unique_id=211925383]
 custom_minimum_size = Vector2(0, 52)
 layout_mode = 2
-theme_override_font_sizes/font_size = 18
 text = " AJUSTES"
 icon = ExtResource("10_nqw28")
-expand_icon = true
-
-[node name="s1" type="Control" parent="CenterVBox/ButtonsVBox" unique_id=1525991438]
-layout_mode = 2
-
-[node name="s2" type="Control" parent="CenterVBox/ButtonsVBox" unique_id=1550027706]
-layout_mode = 2
-
-[node name="ResetButton" type="Button" parent="CenterVBox/ButtonsVBox" unique_id=2124653026]
-custom_minimum_size = Vector2(0, 44)
-layout_mode = 2
-theme_type_variation = &"DangerButton"
-theme_override_font_sizes/font_size = 14
-text = "REINICIAR PROGRESO"
-icon = ExtResource("11_7uy2f")
 expand_icon = true
 
 [node name="ResetConfirmDialog" parent="." unique_id=1353792082 instance=ExtResource("3_cd")]
@@ -209,18 +169,16 @@ color = Color(0, 0, 0, 0.65)
 
 [node name="SettingsCard" type="PanelContainer" parent="SettingsPanel" unique_id=1243044022]
 layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
+anchor_left = 0.08
 anchor_top = 0.5
-anchor_right = 0.5
+anchor_right = 0.92
 anchor_bottom = 0.5
-offset_left = -310.0
-offset_top = -220.0
-offset_right = 310.0
-offset_bottom = 220.0
+offset_top = -280.0
+offset_bottom = 280.0
 grow_horizontal = 2
 grow_vertical = 2
 theme_type_variation = &"ModalPanel"
+script = ExtResource("fit")
 
 [node name="VBox" type="VBoxContainer" parent="SettingsPanel/SettingsCard" unique_id=398066142]
 layout_mode = 2
@@ -235,8 +193,15 @@ horizontal_alignment = 1
 [node name="SettingsSection" parent="SettingsPanel/SettingsCard/VBox" unique_id=1879334553 instance=ExtResource("2_ss")]
 layout_mode = 2
 
+[node name="ResetButton" type="Button" parent="SettingsPanel/SettingsCard/VBox" unique_id=2124653026]
+custom_minimum_size = Vector2(0, 56)
+layout_mode = 2
+theme_type_variation = &"DangerButton"
+text = "REINICIAR PROGRESO"
+icon = ExtResource("11_7uy2f")
+expand_icon = true
+
 [node name="BackButton" type="Button" parent="SettingsPanel/SettingsCard/VBox" unique_id=333504889]
 custom_minimum_size = Vector2(0, 52)
 layout_mode = 2
-theme_override_font_sizes/font_size = 18
 text = "← VOLVER"

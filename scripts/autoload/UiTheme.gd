@@ -28,14 +28,7 @@ const COLOR_SUCCESS: Color = Color(0.31, 0.84, 0.62)
 const COLOR_DANGER: Color = Color(1.0, 0.35, 0.37)
 
 
-var FONT_DISPLAY: FontFile = preload("res://assets/fonts/display-ttf/SkitserCartoon.ttf")
-var FONT_BODY: FontFile = preload("res://assets/fonts/body-ttf/Cartoonic Massive Regular.ttf")
-
 func _ready() -> void:
-	var system_emoji := SystemFont.new()
-	system_emoji.allow_system_fallback = true
-	FONT_DISPLAY.fallbacks = [system_emoji]
-	FONT_BODY.fallbacks = [system_emoji]
 	_install_theme()
 
 # ---------------------------------------------------------------------------
@@ -47,6 +40,8 @@ func _install_theme() -> void:
 	if theme == null:
 		push_warning("UiTheme: no se pudo cargar %s; usando tema de respaldo por código." % THEME_PATH)
 		theme = _build_fallback_theme()
+	if theme.has_method("refresh_typography"):
+		theme.refresh_typography()
 	get_tree().root.theme = theme
 
 # Devuelve el Theme activo (o null si aún no está aplicado).
@@ -137,25 +132,35 @@ func apply_modal_panel(panel: PanelContainer) -> void:
 
 # Escala el botón al pasar el ratón encima para dar feedback táctil de
 # interacción. Recalcula el pivot si el tamaño cambia.
-func add_hover_scale(button: Control, amount: float = 1.05) -> void:
+func add_hover_scale(button: Control, amount: float = 0.0) -> void:
 	if button == null:
 		return
+	var hover_scale: float = amount if amount > 0.0 else _motion_value("hover_scale_percent", 103) / 100.0
+	var duration: float = _motion_value("hover_duration_ms", 120) / 1000.0
 	button.pivot_offset = button.size * 0.5
 	button.resized.connect(func():
 		button.pivot_offset = button.size * 0.5
 	)
 	button.mouse_entered.connect(func():
-		var tween := button.create_tween()
-		tween.tween_property(button, "scale", Vector2(amount, amount), 0.12).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+		var tween := _replace_motion(button, &"hover_tween")
+		tween.tween_property(button, "scale", Vector2.ONE * hover_scale, duration).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 	)
 	button.mouse_exited.connect(func():
-		var tween := button.create_tween()
-		tween.tween_property(button, "scale", Vector2.ONE, 0.12).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+		var tween := _replace_motion(button, &"hover_tween")
+		tween.tween_property(button, "scale", Vector2.ONE, duration).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 	)
 
 # Tarjeta/panel genérico para la UI generada por código. Si cambias el borde o
 # el fondo por defecto, aquí se lee la paleta editable del theme.
 func card_style(border_color: Color = COLOR_BORDER, bg_color: Color = COLOR_ROW) -> StyleBoxFlat:
+	var theme := _current_theme()
+	if theme and theme.has_stylebox("panel", "Card"):
+		var editable_style := theme.get_stylebox("panel", "Card").duplicate() as StyleBoxFlat
+		if border_color != COLOR_BORDER:
+			editable_style.border_color = border_color
+		if bg_color != COLOR_ROW:
+			editable_style.bg_color = bg_color
+		return editable_style
 	var style := _box_style(bg_color, border_color, 14, 6)
 	style.content_margin_left = 16
 	style.content_margin_right = 16
@@ -181,6 +186,10 @@ func apply_card(panel: PanelContainer, border_color: Color = COLOR_BORDER, bg_co
 func format_stat(value: float) -> String:
 	return "%.1f" % snappedf(value, 0.1)
 
+## Precisión visual del jackpot: no participa en los cálculos del juego.
+func format_jackpot(value: float, permanent: bool) -> String:
+	return ("%.2f" if permanent else "%.3f") % value
+
 # Dinero con un decimal y sufijos para cantidades grandes (1250 -> "1.3K").
 func format_money(value: float) -> String:
 	var v: float = float(value)
@@ -197,20 +206,33 @@ func pop_in(control: Control) -> void:
 		return
 	control.pivot_offset = control.size * 0.5
 	control.modulate.a = 0.0
-	control.scale = Vector2(0.96, 0.96)
-	var tween := control.create_tween()
+	control.scale = Vector2.ONE * _motion_value("pop_start_percent", 96) / 100.0
+	var tween := _replace_motion(control, &"pop_tween")
 	tween.set_parallel(true)
-	tween.tween_property(control, "modulate:a", 1.0, 0.22).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
-	tween.tween_property(control, "scale", Vector2.ONE, 0.28).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	tween.tween_property(control, "modulate:a", 1.0, _motion_value("pop_fade_ms", 180) / 1000.0).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	tween.tween_property(control, "scale", Vector2.ONE, _motion_value("pop_scale_ms", 240) / 1000.0).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 
 # Pulso de escala en una etiqueta (p.ej. al subir el dinero).
-func pulse_label(label: Control, amount: float = 1.14) -> void:
+func pulse_label(label: Control, amount: float = 0.0) -> void:
 	if label == null:
 		return
 	label.pivot_offset = label.size * 0.5
-	var tween := label.create_tween()
-	tween.tween_property(label, "scale", Vector2(amount, amount), 0.14).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-	tween.tween_property(label, "scale", Vector2.ONE, 0.24).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN_OUT)
+	var peak: float = amount if amount > 0.0 else _motion_value("pulse_peak_percent", 108) / 100.0
+	var tween := _replace_motion(label, &"pulse_tween")
+	tween.tween_property(label, "scale", Vector2.ONE * peak, _motion_value("pulse_in_ms", 90) / 1000.0).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	tween.tween_property(label, "scale", Vector2.ONE, _motion_value("pulse_out_ms", 180) / 1000.0).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN_OUT)
+
+func _motion_value(key: StringName, fallback: int) -> float:
+	var theme := _current_theme()
+	return float(theme.get_constant(key, "Motion")) if theme and theme.has_constant(key, "Motion") else float(fallback)
+
+func _replace_motion(control: Control, key: StringName) -> Tween:
+	var previous: Tween = control.get_meta(key) as Tween if control.has_meta(key) else null
+	if previous and previous.is_valid():
+		previous.kill()
+	var tween := control.create_tween()
+	control.set_meta(key, tween)
+	return tween
 
 # Ráfaga de confeti para momentos de victoria (recibe el panel contenedor y
 # una posición en coordenadas locales del panel).

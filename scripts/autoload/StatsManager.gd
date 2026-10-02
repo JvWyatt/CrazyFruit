@@ -27,7 +27,7 @@ var balance: BalanceData = BalanceData.new()
 # ----------------------------------------------------------------------------
 # Cada arma vive en su propio .tres: res://data/knives/<id>.tres (recurso
 # KnifeData, editable en el inspector). Campos: damage (daño por golpe),
-# energy_cost (gasto de resistencia ANTES de balance.resistance_cost_multiplier)
+# El coste de resistencia es global (ver BalanceData.base_energy_cost)
 # y price (costo para desbloquear durante la partida, ver RunUpgradeModal.gd).
 var knives_db: Dictionary = {}
 
@@ -186,7 +186,6 @@ func _build_catalogs() -> void:
 		fist.name = "Puño"
 		fist.description = "La herramienta más básica para empezar."
 		fist.damage = 5.0
-		fist.energy_cost = 1.0
 		fist.unlock_order = 1
 		fist.price = 0
 		fist.icon = "👊"
@@ -297,16 +296,14 @@ func _compute_final_max_energy() -> float:
 	var prestige_bonus: float = get_prestige_multiplier("expert_hand", balance.prestige_energy_bonus_per_level)
 	return base_energy * run_bonus * card_energy_multiplier * prestige_bonus
 
-# Cuánta resistencia se gasta por cada golpe con el arma equipada (ver
-# balance.resistance_cost_multiplier desde data/balance.tres).
+# Resistencia por corte: estadística global, independiente del arma equipada.
 func get_final_energy_cost() -> float:
 	if _final_energy_cost < 0.0:
 		_final_energy_cost = _compute_final_energy_cost()
 	return _final_energy_cost
 
 func _compute_final_energy_cost() -> float:
-	var knife: KnifeData = get_equipped_knife_data()
-	return knife.energy_cost * balance.resistance_cost_multiplier * card_energy_cost_multiplier
+	return balance.base_energy_cost * balance.resistance_cost_multiplier * card_energy_cost_multiplier
 
 # Multiplicador final aplicado al dinero ganado por cada fruta cortada.
 func get_final_money_multiplier() -> float:

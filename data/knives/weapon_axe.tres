@@ -8,7 +8,6 @@ id = "weapon_axe"
 name = "Hacha"
 description = "Un corte pesado que parte cualquier fruta."
 damage = 70.0
-energy_cost = 0.3
 unlock_order = 8
 price = 2767063
 icon = "🪓"

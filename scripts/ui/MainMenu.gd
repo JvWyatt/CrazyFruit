@@ -14,12 +14,12 @@ signal open_cards_requested
 signal open_achievements_requested
 
 @onready var play_button: Button = $CenterVBox/ButtonsVBox/PlayButton
-@onready var prestige_shop_button: Button = $CenterVBox/ButtonsVBox/PrestigeShopButton
-@onready var progress_button: Button = $CenterVBox/ButtonsVBox/ProgressButton
-@onready var achievements_button: Button = $CenterVBox/ButtonsVBox/AchievementsButton
-@onready var cards_button: Button = $CenterVBox/ButtonsVBox/CardsButton
+@onready var prestige_shop_button: Button = $CenterVBox/ButtonsVBox/NavigationGrid/PrestigeShopButton
+@onready var progress_button: Button = $CenterVBox/ButtonsVBox/NavigationGrid/ProgressButton
+@onready var achievements_button: Button = $CenterVBox/ButtonsVBox/NavigationGrid/AchievementsButton
+@onready var cards_button: Button = $CenterVBox/ButtonsVBox/NavigationGrid/CardsButton
 @onready var settings_button: Button = $CenterVBox/ButtonsVBox/SettingsButton
-@onready var reset_button: Button = $CenterVBox/ButtonsVBox/ResetButton
+@onready var reset_button: Button = $SettingsPanel/SettingsCard/VBox/ResetButton
 @onready var reset_confirm_dialog: ConfirmDialog = $ResetConfirmDialog
 @onready var version_label: Label = $VersionLabel
 
@@ -63,7 +63,7 @@ func _ready() -> void:
 	call_deferred("_maybe_animate")
 
 func _setup_hover_animations() -> void:
-	UiTheme.add_hover_scale(play_button, 1.06)
+	UiTheme.add_hover_scale(play_button)
 	UiTheme.add_hover_scale(prestige_shop_button)
 	UiTheme.add_hover_scale(progress_button)
 	UiTheme.add_hover_scale(achievements_button)
@@ -92,11 +92,8 @@ func _maybe_animate() -> void:
 func animate_in() -> void:
 	center_vbox.pivot_offset = center_vbox.size * 0.5
 	center_vbox.modulate.a = 0.0
-	center_vbox.position.y += 20
 	var tween := create_tween()
-	tween.set_parallel(true)
 	tween.tween_property(center_vbox, "modulate:a", 1.0, 0.4).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
-	tween.tween_property(center_vbox, "position:y", center_vbox.position.y - 20, 0.5).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 
 func _on_play_pressed() -> void:
 	SoundManager.play_click()

@@ -8,7 +8,6 @@ id = "weapon_chainsaw"
 name = "Motosierra"
 description = "La herramienta definitiva para cortar sin parar."
 damage = 130.0
-energy_cost = 0.1
 unlock_order = 10
 price = 83703658
 icon = "🪚"

@@ -8,7 +8,6 @@ id = "weapon_knife"
 name = "Cuchillo"
 description = "Un filo fiable para el trabajo diario."
 damage = 35.0
-energy_cost = 0.5
 unlock_order = 6
 price = 91506
 icon = "🔪"

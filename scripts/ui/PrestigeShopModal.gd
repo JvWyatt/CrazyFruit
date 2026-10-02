@@ -22,7 +22,7 @@ func open_modal() -> void:
 	_refresh_ui()
 
 func _refresh_ui() -> void:
-	prestige_label.text = "⭐ " + UiTheme.format_stat(SaveManager.get_prestige_points()) + " Rep."
+	prestige_label.text = "⭐ " + UiTheme.format_money(SaveManager.get_prestige_points()) + " Rep."
 
 	for key in StatsManager.prestige_definitions.keys():
 		var def: PrestigeUpgradeData = StatsManager.prestige_definitions[key]
@@ -35,7 +35,7 @@ func _refresh_ui() -> void:
 			"experience": effect_text = "+" + UiTheme.format_stat(StatsManager.balance.prestige_damage_bonus_per_level * 100.0) + "% Daño"
 			"expert_hand": effect_text = "+" + UiTheme.format_stat(StatsManager.balance.prestige_energy_bonus_per_level * 100.0) + "% Resistencia"
 			"good_provider": effect_text = "+" + UiTheme.format_stat(StatsManager.balance.prestige_money_bonus_per_level * 100.0) + "% Dinero"
-			"good_fortune": effect_text = "+" + UiTheme.format_stat(StatsManager.balance.prestige_jackpot_bonus_per_level * 100.0) + " p.p. Jackpot"
+			"good_fortune": effect_text = "+" + UiTheme.format_jackpot(StatsManager.balance.prestige_jackpot_bonus_per_level * 100.0, true) + " p.p. Jackpot"
 			"launch_speed": effect_text = "+" + UiTheme.format_stat(StatsManager.balance.prestige_launch_bonus_per_level * 100.0) + "% Velocidad"
 
 		# Tarjeta compacta del grid (scripts/ui/ShopCard.gd). Todo el diseno de
@@ -50,6 +50,7 @@ func _refresh_ui() -> void:
 			card.action_button.pressed.connect(func():
 				if StatsManager.buy_prestige_upgrade(captured_key):
 					SoundManager.play_victory()
+					UiTheme.pulse_label(card.current_stat_label)
 			)
 			items_container.add_child(card)
 		card.setup(
@@ -57,7 +58,7 @@ func _refresh_ui() -> void:
 			def.name,
 			"Nivel " + str(level),
 			effect_text,
-			UiTheme.format_stat(cost) + " ⭐",
+			"MEJORAR " + UiTheme.format_money(cost) + " ⭐",
 			can_buy
 		)
 		card.update_current_stat(str(key))

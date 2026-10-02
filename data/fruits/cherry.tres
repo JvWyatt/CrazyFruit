@@ -10,7 +10,6 @@ icon_emoji = "🍒"
 max_hp = 137.0
 min_reward = 4
 max_reward = 8
-jackpot_chance = 0.0
 unlock_order = 4
 price = 169
 base_color = Color(0.8, 0.08, 0.18, 1.0)

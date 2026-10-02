@@ -8,8 +8,7 @@ extends Control
 #     (CardSelectionModal), con el botón ELEGIR debajo.
 #   - THUMBNAIL: la miniatura de la galería de comodines del menú
 #     (CardsModal). Sin botón: al tocarla avisa con `previewed`.
-#   - DETAIL: la carta en grande de esa misma galería. Sin botón y con el
-#     MISMO efecto flip para leer el reverso con su descripción.
+#   - DETAIL: presentación de solo lectura, también sin reverso.
 #
 # IMPORTANTE: este widget NO contiene lógica de selección ni efectos. Solo
 # PRESENTA la Dictionary de CardDatabase que ya generaba el sistema y emite
@@ -46,7 +45,7 @@ signal previewed(card_data: Dictionary)
 enum Presentation {
 	PICK,       # carta elegible con botón ELEGIR (CardSelectionModal)
 	THUMBNAIL,  # miniatura de la galería: al tocarla avisa con previewed
-	DETAIL,     # carta grande de la galería: se gira para leer el reverso
+	DETAIL,     # solo lectura; nunca se gira
 }
 
 const CARD_SIZE: Vector2 = Vector2(180, 300)
@@ -57,7 +56,7 @@ const CARD_FRAME: float = 2.0
 const CARD_PADDING: float = 6.0
 # Separación entre el borde inferior de la carta y el botón ELEGIR.
 const CARD_GAP: float = 10.0
-const BUTTON_HEIGHT: float = 42.0
+const BUTTON_HEIGHT: float = 56.0
 # Margen que deja el contenido del reverso respecto al borde de la imagen.
 const BACK_TEXT_INSET: float = 6.0
 # Velo que se echa sobre la imagen del dorso para que el texto se lea encima.
@@ -66,12 +65,15 @@ const BACK_TEXTURE: Texture2D = preload("res://assets/card/back.png")
 const FRONT_ART_TEXTURE: Texture2D = preload("res://assets/card/Joker2.png")
 
 # Pista que se añade al final de la descripción del reverso, según el modo.
-const HINT_PICK: String = "\n\n⟳ Toca para elegirla"
+const HINT_PICK: String = "\n\n⟳ Toca para volver"
 const HINT_DETAIL: String = "\n\n⟳ Toca para ver el anverso"
 
 var _data: Dictionary = {}
 var _flipping: bool = false
 var _showing_back: bool = false
+var _pointer_down: bool = false
+var _press_position: Vector2
+@export var tap_slop: float = 18.0
 
 var _presentation: Presentation = Presentation.PICK
 var _card_width: float = CARD_SIZE.x
@@ -84,7 +86,6 @@ var _art_container: Control
 var _front_art: Control
 var _back_art_rect: TextureRect
 var _art_label: Label
-var _back_rarity: Label
 var _back_title: Label
 var _back_desc: Label
 
@@ -181,34 +182,38 @@ func _rebuild() -> void:
 func configure(card_data: Dictionary) -> void:
 	_data = card_data
 	var border: Color = card_data.get("color", Color(0.3, 0.7, 1.0))
-	var rarity_text: String = "[" + str(card_data.get("rarity", "")).to_upper() + "]"
 	var title_text: String = str(card_data.get("title", ""))
 	var desc_text: String = str(card_data.get("desc", ""))
 	var icon_text: String = str(card_data.get("icon", "🃏"))
 
 	_build_face(true, border)
-	_build_face(false, border)
+	if _presentation == Presentation.PICK:
+		_build_face(false, border)
 
 	if _art_label != null:
 		_art_label.text = icon_text
-	_back_rarity.text = rarity_text
-	_back_rarity.modulate = border
-	_back_title.text = title_text
-	_back_desc.text = desc_text + _hint_text()
+	if _back_title:
+		_back_title.text = title_text
+		_back_desc.text = desc_text + _hint_text()
 
 	var image: Variant = card_data.get("image", FRONT_ART_TEXTURE)
 	if image != null:
 		_set_art_texture(_art_container, image)
-	if _front_art != null:
-		_front_art.tooltip_text = title_text + " · " + desc_text
+	if _presentation != Presentation.PICK:
+		tooltip_text = title_text + "\n" + desc_text
 	if _back_art_rect != null:
 		_back_art_rect.texture = BACK_TEXTURE
+
+func _make_custom_tooltip(for_text: String) -> Object:
+	var tip := preload("res://scenes/ui/components/CardTooltip.tscn").instantiate()
+	tip.set_text(for_text)
+	return tip
 
 # Gira SOLO la carta. El boton ELEGIR es hermano del marco, no hijo suyo, asi
 # que se queda quieto durante la vuelta: antes se escalaba el widget entero y
 # el boton se volteaba pegado a la tarjeta.
 func flip() -> void:
-	if _flipping:
+	if _flipping or _presentation != Presentation.PICK:
 		return
 	_flipping = true
 	_set_cards_filter(Control.MOUSE_FILTER_IGNORE)
@@ -223,24 +228,43 @@ func flip() -> void:
 	tween.tween_method(_set_cards_scale, 0.0, 1.0, 0.16).set_ease(Tween.EASE_OUT)
 	tween.tween_callback(func():
 		_flipping = false
-		_set_cards_filter(Control.MOUSE_FILTER_STOP)
+		_set_cards_filter(Control.MOUSE_FILTER_PASS)
 	)
 
 # Solo la carta da la vuelta. El boton ELEGIR vive FUERA del marco, asi que al
 # pulsarlo no le llega este evento: se limita a elegir la carta, sin girar nada.
 func _on_card_gui_input(event: InputEvent) -> void:
+	if event.device == InputEvent.DEVICE_ID_EMULATION:
+		return
+	var pointer_event: bool = false
 	var pressed: bool = false
+	var position: Vector2
 	if event is InputEventScreenTouch:
-		pressed = (event as InputEventScreenTouch).pressed
+		if event.canceled:
+			_pointer_down = false
+			return
+		pointer_event = true
+		pressed = event.pressed
+		position = event.position
 	elif event is InputEventMouseButton:
 		var mb := event as InputEventMouseButton
-		pressed = mb.pressed and mb.button_index == MOUSE_BUTTON_LEFT
-	if not pressed:
+		pointer_event = mb.button_index == MOUSE_BUTTON_LEFT
+		pressed = mb.pressed
+		position = mb.position
+	if not pointer_event:
+		return
+	if pressed:
+		_pointer_down = true
+		_press_position = position
+		return
+	var was_down: bool = _pointer_down
+	_pointer_down = false
+	if not was_down or position.distance_to(_press_position) > tap_slop:
 		return
 	accept_event()
 	SoundManager.play_click()
 	# En miniatura no hay nada que girar: el toque solo pide abrirla en grande.
-	if _presentation == Presentation.THUMBNAIL:
+	if _presentation != Presentation.PICK:
 		previewed.emit(_data)
 		return
 	flip()
@@ -294,7 +318,7 @@ func _build_face(is_front: bool, border: Color) -> void:
 func _make_card_frame(border: Color) -> PanelContainer:
 	var frame := PanelContainer.new()
 	frame.name = "CardFrame"
-	frame.mouse_filter = Control.MOUSE_FILTER_STOP
+	frame.mouse_filter = Control.MOUSE_FILTER_PASS
 	frame.gui_input.connect(_on_card_gui_input)
 	frame.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	frame.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
@@ -304,14 +328,9 @@ func _make_card_frame(border: Color) -> PanelContainer:
 	frame.pivot_offset = _card_box() * 0.5
 	frame.resized.connect(func(): frame.pivot_offset = frame.size * 0.5)
 	var inset := _card_inset()
-	var sb := StyleBoxFlat.new()
-	sb.bg_color = COLOR_CARD_BG
+	var sb := UiTheme.card_style(border)
 	sb.border_color = border
 	sb.set_border_width_all(int(CARD_FRAME))
-	sb.set_corner_radius_all(12)
-	sb.shadow_color = Color(0, 0, 0, 0.4)
-	sb.shadow_size = 6
-	sb.shadow_offset = Vector2(0, 3)
 	sb.content_margin_left = inset
 	sb.content_margin_right = inset
 	sb.content_margin_top = inset
@@ -345,21 +364,14 @@ func _build_front_art(frame: Control) -> void:
 	var art_label := Label.new()
 	art_label.name = "ArtLabel"
 	art_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	art_label.add_theme_font_size_override("font_size", _hint_font_size())
+	art_label.theme_type_variation = &"IconLabel"
 	art_label.modulate = Color(1, 1, 1, 0.9)
 	art_vbox.add_child(art_label)
 	_art_label = art_label
-	var art_hint := Label.new()
-	art_hint.name = "ArtHint"
-	art_hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	art_hint.add_theme_font_size_override("font_size", _hint_font_size() / 5.0)
-	art_hint.modulate = Color(1, 1, 1, 0.45)
-	art_vbox.add_child(art_hint)
-	art_hint.text = "ILUSTRACIÓN PRÓXIMAMENTE" if _presentation == Presentation.PICK else ""
 
 # El reverso es la MISMA carta girada: no se redimensiona nunca. La imagen del
 # dorso llena el hueco del marco (que ya tiene su proporción) y el texto
-# (rareza, título y descripción) va ENCIMA, superpuesto.
+# (título y descripción) va ENCIMA, superpuesto y centrado verticalmente.
 #
 # El trick que lo hace posible: el contenido cuelga de un Control simple
 # ("Overlay", NO es un Container) con clip_contents = true. Al no ser Container
@@ -396,55 +408,34 @@ func _build_back_art(frame: Control) -> void:
 	# Bloque de texto centrado sobre la imagen. Su ancho se fija para que los
 	# Labels con autowrap midan bien el salto de línea.
 	var text_width: float = _art_size().x - BACK_TEXT_INSET * 2.0
+	var text_scroll := ScrollContainer.new()
+	text_scroll.name = "TextScroll"
+	text_scroll.set_script(preload("res://scripts/ui/TouchScrollContainer.gd"))
+	text_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	text_scroll.gui_input.connect(_on_card_gui_input)
+	overlay.add_child(text_scroll)
+	text_scroll.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	text_scroll.offset_left = BACK_TEXT_INSET
+	text_scroll.offset_top = BACK_TEXT_INSET
+	text_scroll.offset_right = -BACK_TEXT_INSET
+	text_scroll.offset_bottom = -BACK_TEXT_INSET
 	var text_box := VBoxContainer.new()
 	text_box.name = "TextBox"
 	text_box.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	text_box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	text_box.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	text_box.alignment = BoxContainer.ALIGNMENT_CENTER
 	text_box.add_theme_constant_override("separation", 8)
-	overlay.add_child(text_box)
-	text_box.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	text_box.offset_left = BACK_TEXT_INSET
-	text_box.offset_top = BACK_TEXT_INSET
-	text_box.offset_right = -BACK_TEXT_INSET
-	text_box.offset_bottom = -BACK_TEXT_INSET
-	_back_rarity = _make_rarity_label(text_width)
+	text_scroll.add_child(text_box)
 	_back_title = _make_title_label(text_width)
 	_back_desc = Label.new()
 	_back_desc.name = "DescLabel"
 	_back_desc.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_back_desc.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_back_desc.custom_minimum_size = Vector2(text_width, 0)
-	_back_desc.add_theme_font_size_override("font_size", _desc_font_size())
-	_back_desc.add_theme_color_override("font_color", Color.WHITE)
-	_back_desc.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.85))
-	_back_desc.add_theme_constant_override("outline_size", 3)
-	text_box.add_child(_back_rarity)
+	_back_desc.theme_type_variation = &"JokerDescription"
 	text_box.add_child(_back_title)
 	text_box.add_child(_back_desc)
-
-# El tamaño del texto del reverso y del icono del anverso baja con el ancho de
-# la carta: a 180 px caben con holgura, en miniatura (100 px) se reducirían a
-# ilegibles, así que el texto se queda en grande y se recorta (clip_contents).
-func _desc_font_size() -> float:
-	if _presentation == Presentation.THUMBNAIL:
-		return 20.0
-	return 13.0 if _card_width < 200.0 else 16.0
-
-func _hint_font_size() -> float:
-	return clampf(_card_width * 0.24, 12.0, 44.0)
-
-func _make_rarity_label(min_width: float) -> Label:
-	var rarity := Label.new()
-	rarity.name = "RarityLabel"
-	rarity.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	# Mismo ancho mínimo que el resto de etiquetas: así ocupa todo el ancho de la
-	# carta y el texto queda centrado, en vez de estrecharse a lo que mida la
-	# palabra y quedarse pegado al borde izquierdo.
-	rarity.custom_minimum_size = Vector2(min_width, 0)
-	rarity.add_theme_font_size_override("font_size", 13)
-	rarity.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.9))
-	rarity.add_theme_constant_override("outline_size", 3)
-	return rarity
 
 func _make_title_label(min_width: float) -> Label:
 	var title := Label.new()
@@ -456,51 +447,20 @@ func _make_title_label(min_width: float) -> Label:
 	# fijar el ancho, el texto se mide a 1 carácter por línea y el contenedor
 	# crece a miles de píxeles. Le damos el ancho útil de la carta.
 	title.custom_minimum_size = Vector2(min_width, 0)
-	title.add_theme_color_override("font_color", Color(1, 1, 1, 1))
-	title.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.9))
-	title.add_theme_constant_override("outline_size", 4)
-	title.add_theme_font_override("font", UiTheme.FONT_DISPLAY)
-	title.add_theme_font_size_override("font_size", _title_font_size())
+	title.theme_type_variation = &"JokerTitle"
 	return title
-
-func _title_font_size() -> float:
-	if _presentation == Presentation.THUMBNAIL:
-		return 34.0
-	return 20.0 if _card_width < 200.0 else 30.0
 
 func _make_choose_button() -> Button:
 	var choose_btn := Button.new()
 	choose_btn.name = "ChooseButton"
 	choose_btn.custom_minimum_size = Vector2(0, BUTTON_HEIGHT)
 	choose_btn.text = "ELEGIR"
-	choose_btn.add_theme_font_size_override("font_size", 15)
-	choose_btn.add_theme_color_override("font_color", Color(0.25, 0.15, 0.02))
-	choose_btn.add_theme_color_override("font_hover_color", Color(0.25, 0.15, 0.02))
-	choose_btn.add_theme_color_override("font_pressed_color", Color(0.25, 0.15, 0.02))
-	choose_btn.add_theme_stylebox_override("normal", _compact_btn_style(Color(0.98, 0.78, 0.22), Color(1, 0.95, 0.62), 4))
-	choose_btn.add_theme_stylebox_override("hover", _compact_btn_style(Color(1, 0.86, 0.38), Color(1, 0.97, 0.72), 5))
-	choose_btn.add_theme_stylebox_override("pressed", _compact_btn_style(Color(0.8, 0.6, 0.12), Color(0.95, 0.75, 0.25), 2))
+	choose_btn.theme_type_variation = &"PrimaryButton"
 	choose_btn.pressed.connect(func():
 		SoundManager.play_victory()
 		chosen.emit(_data)
 	)
 	return choose_btn
-
-# ---------------------------------------------------------------------------
-# Estilos
-# ---------------------------------------------------------------------------
-
-func _compact_btn_style(bg: Color, border: Color, radius: int) -> StyleBoxFlat:
-	var sb := StyleBoxFlat.new()
-	sb.bg_color = bg
-	sb.border_color = border
-	sb.set_border_width_all(2)
-	sb.set_corner_radius_all(radius)
-	sb.content_margin_left = 12
-	sb.content_margin_right = 12
-	sb.content_margin_top = 6
-	sb.content_margin_bottom = 6
-	return sb
 
 # Crea un TextureRect de arte ya configurado.
 # IMPORTANTE: expand_mode = EXPAND_IGNORE_SIZE es lo que hace que el TextureRect

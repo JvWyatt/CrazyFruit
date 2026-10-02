@@ -10,8 +10,6 @@ extends Resource
 @export var name: String = ""
 @export var description: String = ""
 @export var damage: float = 5.0
-# Gasto de resistencia por golpe ANTES de balance.resistance_cost_multiplier.
-@export var energy_cost: float = 1.0
 # Posición en la cadena de desbloqueo (1 = la primera). Ordena la Armería y
 # define la arma PREVIA requerida (la del unlock_order inmediatamente menor),
 # exactamente igual que FruitData.unlock_order en la Frutería. Sin este campo

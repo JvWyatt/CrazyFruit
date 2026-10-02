@@ -13,7 +13,6 @@ signal return_to_menu_requested
 @onready var jackpots_label: Label = $Panel/VBox/StatsVBox/JackpotsLabel
 @onready var golden_label: Label = $Panel/VBox/StatsVBox/GoldenLabel
 @onready var prestige_earned_label: Label = $Panel/VBox/PrestigeContainer/VBox/PrestigeEarnedLabel
-@onready var total_prestige_label: Label = $Panel/VBox/PrestigeContainer/VBox/TotalPrestigeLabel
 @onready var continue_btn: Button = $Panel/VBox/ContinueButton
 
 func _ready() -> void:
@@ -28,8 +27,7 @@ func open_modal(summary: Dictionary) -> void:
 	fruits_label.text = "🍉 Frutas cortadas: " + str(summary.get("fruits_cut", 0))
 	jackpots_label.text = "⭐ Jackpots conseguidos: " + str(summary.get("jackpots", 0))
 	golden_label.text = "✨ Frutas doradas cortadas: " + str(summary.get("golden_fruits", 0))
-	prestige_earned_label.text = "+ " + UiTheme.format_stat(float(summary.get("earned_prestige", 0))) + " ⭐"
-	total_prestige_label.text = "⭐ Reputación total acumulada: " + UiTheme.format_stat(float(summary.get("total_prestige", 0)))
+	prestige_earned_label.text = "+ " + UiTheme.format_money(float(summary.get("earned_prestige", 0))) + " ⭐"
 
 func _on_continue_pressed() -> void:
 	SoundManager.play_click()

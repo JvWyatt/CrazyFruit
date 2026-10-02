@@ -10,7 +10,6 @@ icon_emoji = "🍉"
 max_hp = 12262.0
 min_reward = 512
 max_reward = 1024
-jackpot_chance = 0.0
 unlock_order = 11
 price = 2883
 base_color = Color(0.18, 0.68, 0.32, 1.0)

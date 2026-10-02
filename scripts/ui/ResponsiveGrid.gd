@@ -52,17 +52,29 @@ extends Container
 @export var uniform_card_size: bool = false
 # Repartir entre filas el alto disponible que sobre por encima del mínimo.
 @export var stretch_rows: bool = false
+## 0: altura natural. 1: tarjetas cuadradas, incluyendo borde y acción.
+@export_range(0.0, 3.0, 0.01) var card_aspect_ratio: float = 0.0
+
+var _last_usable_width: float = -1.0
 
 func _ready() -> void:
-	resized.connect(queue_sort)
+	resized.connect(_on_available_width_changed)
 	# Si vive en una ScrollContainer que aun esta oculta (pestaña sin abrir), su
 	# resized no se dispara al abrirla: hay que escucharlo tambien ahi.
 	var parent := get_parent()
 	if parent is ScrollContainer:
-		(parent as ScrollContainer).resized.connect(queue_sort)
+		(parent as ScrollContainer).resized.connect(_on_available_width_changed)
 	# call_deferred: al construirse desde codigo el ancho aun puede ser 0, y las
 	# tarjetas llegan despues (asi que hay que enganchar su visibility_changed).
 	call_deferred("_rebind_children")
+
+func _on_available_width_changed() -> void:
+	var width: float = _usable_width()
+	if not is_equal_approx(width, _last_usable_width):
+		_last_usable_width = width
+		# El alto natural depende del número de columnas y de la proporción.
+		update_minimum_size()
+	queue_sort()
 
 # Recoloca las tarjetas. Llamarlo solo si se cambian las propiedades a mano en
 # tiempo de ejecucion; desde la escena se aplican antes de entrar en el arbol.
@@ -84,7 +96,8 @@ func _cards() -> Array[Control]:
 	var out: Array[Control] = []
 	for child in get_children():
 		var ctrl := child as Control
-		if ctrl and ctrl.is_visible_in_tree():
+		# Medir también pestañas ocultas cuando sirven de referencia del modal.
+		if ctrl and ctrl.visible and not ctrl.is_queued_for_deletion():
 			out.append(ctrl)
 	return out
 
@@ -143,6 +156,25 @@ func _natural_width(col_w: PackedFloat32Array) -> float:
 		total += w
 	return total + h_separation * float(maxi(col_w.size() - 1, 0))
 
+func _expand_column_widths(col_w: PackedFloat32Array, usable: float) -> void:
+	var slack: float = maxf(0.0, usable - _natural_width(col_w))
+	if slack <= 0.0:
+		return
+	var total: float = 0.0
+	for width in col_w:
+		total += width
+	total = maxf(total, 0.001)
+	for col in col_w.size():
+		col_w[col] += slack * (col_w[col] / total)
+
+func _aspect_row_heights(row_h: PackedFloat32Array, col_w: PackedFloat32Array) -> void:
+	if card_aspect_ratio <= 0.0:
+		return
+	var height: float = 0.0
+	for width in col_w:
+		height = maxf(height, width / card_aspect_ratio)
+	row_h.fill(height)
+
 # --- Tamano minimo ----------------------------------------------------------
 
 func _get_minimum_size() -> Vector2:
@@ -153,11 +185,15 @@ func _get_minimum_size() -> Vector2:
 	var measured := _measure(cards, cols)
 	var col_w: PackedFloat32Array = measured["cols"]
 	var row_h: PackedFloat32Array = measured["rows"]
+	var natural_width: float = _natural_width(col_w)
+	if card_aspect_ratio > 0.0:
+		_expand_column_widths(col_w, _usable_width())
+		_aspect_row_heights(row_h, col_w)
 	var total_h: float = 0.0
 	for h in row_h:
 		total_h += h
 	total_h += v_separation * float(maxi(row_h.size() - 1, 0))
-	return Vector2(_natural_width(col_w), total_h)
+	return Vector2(natural_width, total_h)
 
 # --- Colocacion -------------------------------------------------------------
 
@@ -178,17 +214,11 @@ func _sort_cards() -> void:
 	# El ancho sobrante se reparte entre las columnas en proporcion a lo que cada
 	# una ya pide: asi las tarjetas aprovechan todo el ancho disponible y las
 	# columnas con mas texto no se quedan rezagadas.
-	var slack: float = maxf(0.0, usable - _natural_width(col_w))
-	if slack > 0.0:
-		var base_total: float = 0.0
-		for w in col_w:
-			base_total += w
-		base_total = maxf(base_total, 0.001)
-		for i in col_w.size():
-			col_w[i] += slack * (col_w[i] / base_total)
+	_expand_column_widths(col_w, usable)
+	_aspect_row_heights(row_h, col_w)
 
 	# Posicion vertical de cada fila (alto = la tarjeta mas alta de la fila).
-	if stretch_rows:
+	if stretch_rows and card_aspect_ratio <= 0.0:
 		var natural_height: float = v_separation * float(maxi(row_h.size() - 1, 0))
 		for height in row_h:
 			natural_height += height

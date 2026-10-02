@@ -10,9 +10,8 @@ extends Control
 # ajustar el volumen (SettingsSection), continuar jugando o salir del negocio
 # (con ConfirmDialog estilizado antes de renunciar).
 #
-# Layout superior: la barra de dinero y todo lo que va justo debajo (racha y
-# anillo de energía) viven a partir de TOP_SAFE_MARGIN px para no quedar tapados
-# por la barra de estado / notch del móvil. El aviso de logro (AchToast) NO
+# Layout superior: objetivo, recursos y telemetría se ordenan con Containers.
+# SafeAreaLayout en Main adapta los márgenes al notch del móvil. AchToast NO
 # vive aquí sino en ToastLayer, un CanvasLayer propio con layer = 10: así se
 # dibuja por encima del HUD (aunque comparta su altura) y nunca queda tapado
 # mientras dura el aviso.
@@ -39,14 +38,13 @@ signal quit_run_requested
 @onready var settings_section: SettingsSection = $PausePanel/Card/SettingsVBox/SettingsSection
 @onready var settings_back_btn: Button = $PausePanel/Card/SettingsVBox/SettingsBackButton
 @onready var pause_confirm_dialog: ConfirmDialog = $PauseConfirmDialog
-@onready var streak_ring: StreakRing = $StreakRing
-@onready var time_bar: ProgressBar = $TopContainer/VBox/TimeBar
-@onready var time_label: Label = $TopContainer/VBox/TimeBar/TimeLabel
-@onready var energy_bar: ProgressBar = $TopContainer/VBox/EnergyBar
-@onready var energy_label: Label = $TopContainer/VBox/EnergyBar/EnergyLabel
-@onready var rate_value: Label = $RatePanel/VBox/RateValue
-@onready var multiplier_value: Label = $RatePanel/VBox/MultiplierValue
-@onready var rate_panel: PanelContainer = $RatePanel
+@onready var streak_ring: StreakRing = $TopContainer/VBox/Telemetry/StreakRing
+@onready var time_bar: ProgressBar = $TopContainer/VBox/Resources/TimeBar
+@onready var time_label: Label = $TopContainer/VBox/Resources/TimeBar/TimeLabel
+@onready var energy_bar: ProgressBar = $TopContainer/VBox/Resources/EnergyBar
+@onready var energy_label: Label = $TopContainer/VBox/Resources/EnergyBar/EnergyLabel
+@onready var rate_value: Label = $TopContainer/VBox/Telemetry/RatePanel/VBox/RateValue
+@onready var multiplier_value: Label = $TopContainer/VBox/Telemetry/RatePanel/VBox/MultiplierValue
 @onready var milestone_label: Label = $MilestoneLabel
 @onready var ach_toast: PanelContainer = $ToastLayer/AchToast
 @onready var ach_icon: Label = $ToastLayer/AchToast/HBox/AchIcon
@@ -79,10 +77,7 @@ func _ready() -> void:
 	GameManager.streak_broken.connect(_flash_streak_break)
 	AchievementManager.achievement_unlocked.connect(_on_achievement_unlocked)
 
-	# Estilos del tema (themes/ui01_theme.tres): Stats/Pausa en dorado
-	# (PrimaryButton), Continuar dorado y Salir en rojo (DangerButton).
-	UiTheme.apply_button_style(stats_btn, "primary")
-	UiTheme.apply_button_style(pause_btn, "primary")
+	# Las acciones secundarias conservan el tema; Continuar es la acción principal.
 	UiTheme.apply_button_style(continue_btn, "primary")
 	UiTheme.apply_button_style(pause_quit_btn, "danger")
 
@@ -129,7 +124,7 @@ var _order_target: float = 0.0
 func _on_money_changed(amount: float) -> void:
 	money_label.text = "💰 $" + UiTheme.format_money(amount) + " / $" + UiTheme.format_money(_order_target)
 	if amount > _last_money and _last_money >= 0.0:
-		UiTheme.pulse_label(money_label, 1.12)
+		UiTheme.pulse_label(money_label)
 	_last_money = amount
 
 func _on_order_progress_changed(progress: float, target: float) -> void:
@@ -144,7 +139,7 @@ func _on_energy_changed(current_e: float, max_e: float) -> void:
 	# La estamina es estado de partida: barra propia en el panel superior.
 	energy_bar.max_value = max_e
 	energy_bar.value = clampf(current_e, 0.0, max_e)
-	energy_label.text = "⚡ " + UiTheme.format_stat(current_e) + " / " + UiTheme.format_stat(max_e)
+	energy_label.text = "⚡ " + str(ceili(current_e)) + " / " + str(ceili(max_e))
 
 # La señal round_time_changed llega cada frame; los rótulos solo cambian una vez
 # por décima de segundo, así que se guardan para evitar escrituras redundantes.
@@ -157,7 +152,7 @@ func _on_round_time_changed(time_left: float) -> void:
 	var total: float = GameManager.get_round_time()
 	time_bar.max_value = total
 	time_bar.value = clampf(time_left, 0.0, total)
-	var text: String = "⏱ " + UiTheme.format_stat(maxf(0.0, time_left)) + "s / " + UiTheme.format_stat(total) + "s"
+	var text: String = "⏱ " + str(secs) + " s"
 	if text != _last_time_text:
 		_last_time_text = text
 		time_label.text = text
@@ -197,7 +192,7 @@ func _on_streak_changed(streak: int, multiplier: float) -> void:
 	_last_streak_multiplier = multiplier
 
 func _set_multiplier_display(multiplier: float) -> void:
-	multiplier_value.text = "🔥 Multi: x" + UiTheme.format_stat(multiplier)
+	multiplier_value.text = "🔥 x" + UiTheme.format_stat(multiplier)
 
 func _cancel_multiplier_fly() -> void:
 	if _multiplier_fly_tween and _multiplier_fly_tween.is_valid():
@@ -293,7 +288,7 @@ func _show_next_achievement() -> void:
 	_ach_showing = true
 	var def: Dictionary = _ach_queue.pop_front()
 	ach_icon.text = str(def.get("icon", "🏆"))
-	ach_title.text = "🎉 Logro desbloqueado"
+	ach_title.text = "🎉 Logro completado"
 	ach_desc.text = str(def.get("name", "¡Logro conseguido!"))
 	# Entrada y salida discretas sin cortar la partida (fade + escala suave,
 	# sin mover la posición para no chocar con los anchors del panel).

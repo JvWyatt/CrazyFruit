@@ -8,7 +8,6 @@ id = "weapon_box_cutter"
 name = "Cúter"
 description = "Una hoja fina y sorprendentemente eficaz."
 damage = 25.0
-energy_cost = 0.6
 unlock_order = 5
 price = 16638
 icon = "🪒"

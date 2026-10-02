@@ -14,9 +14,9 @@ signal modal_closed
 signal open_cards_requested
 
 # Dos columnas con el mismo ancho y alto en todas las casillas.
-const CARD_MIN_WIDTH: float = 176.0
-const MAX_COLUMNS: int = 2
-const GRID_SEPARATION: int = 10
+@export var card_min_width: float = 240.0
+@export_range(1, 4) var max_columns: int = 2
+@export var grid_separation: int = 10
 
 @onready var close_button: Button = $Panel/VBox/HeaderHBox/CloseButton
 @onready var continue_button: Button = $Panel/VBox/ContinueButton
@@ -48,26 +48,26 @@ func _refresh_ui() -> void:
 	var crit_mult: float = StatsManager.get_final_critical_multiplier()
 
 	# Section 1: Combate y Corte
-	_add_stat("⚡", "Coste de resistencia", _number(cost_en), Color(0.9, 0.9, 0.9))
-	_add_stat("🎯", "Probabilidad de Crítico", _number(crit_chance) + "%", Color(0.8, 0.5, 1.0))
-	_add_stat("💥", "Multiplicador de Crítico", "x" + _number(crit_mult), Color(0.8, 0.5, 1.0))
+	_add_stat("⚡", "Coste por corte", _number(cost_en), Color(0.9, 0.9, 0.9))
+	_add_stat("🎯", "Prob. de crítico", _number(crit_chance) + "%", Color(0.8, 0.5, 1.0))
+	_add_stat("💥", "Daño crítico", "x" + _number(crit_mult), Color(0.8, 0.5, 1.0))
 
 	# Frutas
-	_add_stat("🍎", "Multiplicador de vida de frutas", "x" + _number(StatsManager.get_fruit_max_hp_multiplier()), Color(1.0, 0.5, 0.5))
+	_add_stat("🍎", "Vida de frutas", "x" + _number(StatsManager.get_fruit_max_hp_multiplier()), Color(1.0, 0.5, 0.5))
 
 	# Economía
-	_add_stat("📉", "Multiplicador de recompensa mínima", "x" + _number(StatsManager.get_fruit_min_reward_multiplier()), Color(1.0, 0.88, 0.3))
-	_add_stat("📈", "Multiplicador de recompensa máxima", "x" + _number(StatsManager.get_fruit_max_reward_multiplier()), Color(1.0, 0.88, 0.3))
-	_add_stat("💵", "Multiplicador de ganancias", "x" + _number(StatsManager.get_final_money_multiplier()), Color(1.0, 0.88, 0.3))
+	_add_stat("📉", "Recompensa mínima", "x" + _number(StatsManager.get_fruit_min_reward_multiplier()), Color(1.0, 0.88, 0.3))
+	_add_stat("📈", "Recompensa máxima", "x" + _number(StatsManager.get_fruit_max_reward_multiplier()), Color(1.0, 0.88, 0.3))
+	_add_stat("💵", "Ganancias", "x" + _number(StatsManager.get_final_money_multiplier()), Color(1.0, 0.88, 0.3))
 
 	# Suerte
-	_add_stat("🎰", "Probabilidad de Jackpot", _number(jackpot_bonus) + "%", Color(1.0, 0.75, 0.2))
-	_add_stat("🃏", "Multiplicador de Jackpot", "x" + _number(jackpot_multiplier), Color(1.0, 0.75, 0.2))
-	_add_stat("🥇", "Probabilidad de Fruta Dorada", _number(golden_fruit_chance) + "%", Color(1.0, 0.85, 0.2))
+	_add_stat("🎰", "Prob. de jackpot", _number(jackpot_bonus) + "%", Color(1.0, 0.75, 0.2))
+	_add_stat("🃏", "Premio jackpot", "x" + _number(jackpot_multiplier), Color(1.0, 0.75, 0.2))
+	_add_stat("🥇", "Prob. fruta dorada", _number(golden_fruit_chance) + "%", Color(1.0, 0.85, 0.2))
 
 	# Piedra
 	var stone_break: float = StatsManager.get_stone_break_chance()
-	_add_stat("🪨", "Probabilidad de romper piedra", _number(stone_break * 100.0) + "%", Color(0.7, 0.75, 0.85))
+	_add_stat("🪨", "Prob. romper piedra", _number(stone_break * 100.0) + "%", Color(0.7, 0.75, 0.85))
 	_add_cards_tile()
 
 # La duodécima casilla comparte el marco bento y abre la galería existente.
@@ -89,13 +89,12 @@ func _create_stats_grid() -> void:
 	grid.name = "Grid"
 	grid.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	grid.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	grid.h_separation = GRID_SEPARATION
-	grid.v_separation = GRID_SEPARATION
-	grid.min_card_width = CARD_MIN_WIDTH
-	grid.max_columns = MAX_COLUMNS
-	grid.fixed_columns = MAX_COLUMNS
+	grid.h_separation = grid_separation
+	grid.v_separation = grid_separation
+	grid.min_card_width = card_min_width
+	grid.max_columns = max_columns
 	grid.uniform_card_size = true
-	grid.stretch_rows = true
+	grid.stretch_rows = false
 	stats_container.add_child(grid)
 	_stats_grid = grid
 

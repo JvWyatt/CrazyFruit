@@ -8,7 +8,6 @@ id = "weapon_table_knife"
 name = "Cuchillo de mesa"
 description = "Un filo sencillo y práctico."
 damage = 15.0
-energy_cost = 0.8
 unlock_order = 3
 price = 550
 icon = "🔪"

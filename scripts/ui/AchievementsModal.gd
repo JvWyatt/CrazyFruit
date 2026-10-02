@@ -48,9 +48,9 @@ func _refresh_ui() -> void:
 	var total_count: int = AchievementManager.DEFINITIONS.size()
 	_game_completed = _is_game_completed()
 	if _game_completed:
-		summary_label.text = "🏆 " + str(unlocked_count) + " / " + str(total_count) + " logros desbloqueados"
+		summary_label.text = "🏆 " + str(unlocked_count) + " / " + str(total_count) + " logros completados"
 	else:
-		summary_label.text = "🏆 " + str(unlocked_count) + " logros conseguidos (la lista completa se desbloquea al superar el objetivo) 🤫"
+		summary_label.text = "🏆 " + str(unlocked_count) + " logros completados"
 
 	# Cancela cualquier construcción previa en curso.
 	_build_in_progress = false
@@ -77,7 +77,7 @@ func _refresh_ui() -> void:
 			"cat": "",
 			"tag": "Aún no hay logros",
 			"icon": "🤫",
-			"defs": [{"id": "", "name": "Consigue tu primer logro durante la partida. ¡La lista completa se desbloqueará al superar el objetivo!", "desc": "", "icon": "", "cat": "", "kind": "flag", "flag": ""}],
+			"defs": [{"id": "", "name": "Completa tu primer logro durante la partida.", "desc": "", "icon": "", "cat": "", "kind": "flag", "flag": ""}],
 			"placeholder": true,
 		})
 	else:
@@ -111,6 +111,8 @@ func _next_tab() -> bool:
 			cat_unlocked += 1
 
 	var scroll := ScrollContainer.new()
+	scroll.set_script(preload("res://scripts/ui/TouchScrollContainer.gd"))
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 
@@ -124,7 +126,7 @@ func _next_tab() -> bool:
 		header.text = str(info["icon"]) + " " + str(info["tag"])
 	else:
 		header.text = str(info["icon"]) + " " + str(info["tag"]) + "  (" + str(cat_unlocked) + "/" + str(_current_defs.size()) + ")"
-	header.add_theme_font_size_override("font_size", 16)
+	header.theme_type_variation = &"Subtitle"
 	header.modulate = Color(1.0, 0.85, 0.3)
 	vbox.add_child(header)
 
@@ -154,15 +156,16 @@ func _make_row(def: Dictionary) -> Control:
 	# extremadamente caro dentro de estas estructuras de scroll (ver 6.0).
 	var name_lbl := Label.new()
 	name_lbl.text = str(def.get("icon", "🏆")) + "  " + str(def.get("name", "")) + "   " + ("✅" if unlocked else "🔒")
-	name_lbl.add_theme_font_size_override("font_size", 16)
+	name_lbl.theme_type_variation = &"CardTitle"
+	name_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	name_lbl.modulate = Color(0.95, 0.95, 1.0) if unlocked else Color(0.72, 0.78, 0.88)
 	vbox.add_child(name_lbl)
 
 	# Descripción.
 	var desc_lbl := Label.new()
 	desc_lbl.text = str(def.get("desc", ""))
-	desc_lbl.add_theme_font_size_override("font_size", 14)
-	desc_lbl.modulate = Color(0.6, 0.68, 0.78)
+	desc_lbl.theme_type_variation = &"CaptionLabel"
+	desc_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	vbox.add_child(desc_lbl)
 
 	# Barra de progreso SOLO para logros de tipo counter (progreso gradual).
@@ -175,7 +178,7 @@ func _make_row(def: Dictionary) -> Control:
 		vbox.add_child(bar)
 		var prog_lbl := Label.new()
 		prog_lbl.text = "Progreso: " + AchievementManager.get_progress_text(id)
-		prog_lbl.add_theme_font_size_override("font_size", 14)
+		prog_lbl.theme_type_variation = &"CaptionLabel"
 		prog_lbl.modulate = Color(0.55, 0.85, 0.7) if not unlocked else Color(0.4, 0.7, 0.55)
 		vbox.add_child(prog_lbl)
 

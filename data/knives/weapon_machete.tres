@@ -8,7 +8,6 @@ id = "weapon_machete"
 name = "Machete"
 description = "Fuerza y alcance en cada golpe."
 damage = 50.0
-energy_cost = 0.4
 unlock_order = 7
 price = 503284
 icon = "🗡️"

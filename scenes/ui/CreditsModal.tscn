@@ -1,7 +1,8 @@
-[gd_scene load_steps=3 format=3]
+[gd_scene load_steps=4 format=3]
 
 [ext_resource type="Theme" uid="uid://cw00u1brw0yxi" path="res://themes/ui01_theme.tres" id="1_theme"]
 [ext_resource type="Script" path="res://scripts/ui/CreditsModal.gd" id="1_credits"]
+[ext_resource type="Script" path="res://scripts/ui/ContentSizedModal.gd" id="fit"]
 
 [node name="CreditsModal" type="Control"]
 theme = ExtResource("1_theme")
@@ -25,18 +26,14 @@ color = Color(0, 0, 0, 0.65)
 
 [node name="Panel" type="PanelContainer" parent="."]
 layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -330.0
-offset_top = -300.0
-offset_right = 330.0
-offset_bottom = 300.0
+anchor_left = 0.06
+anchor_top = 0.12
+anchor_right = 0.94
+anchor_bottom = 0.88
 grow_horizontal = 2
 grow_vertical = 2
 theme_type_variation = "ModalPanel"
+script = ExtResource("fit")
 
 [node name="VBox" type="VBoxContainer" parent="Panel"]
 layout_mode = 2
@@ -45,9 +42,6 @@ theme_override_constants/separation = 20
 [node name="TitleLabel" type="Label" parent="Panel/VBox"]
 layout_mode = 2
 theme_type_variation = &"TitleLabel"
-theme_override_colors/font_outline_color = Color(0, 0, 0, 0.9)
-theme_override_constants/outline_size = 4
-theme_override_font_sizes/font_size = 40
 text = "🎬 ¡CRÉDITOS!"
 horizontal_alignment = 1
 
@@ -60,18 +54,14 @@ autowrap_mode = 2
 
 [node name="QuotaLabel" type="Label" parent="Panel/VBox"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.7, 0.95, 0.75, 1)
-theme_override_font_sizes/font_size = 16
+theme_type_variation = &"Body"
 text = "Cuota del día 100: $1000.0M"
 horizontal_alignment = 1
 autowrap_mode = 2
 
 [node name="CreditAuthorLabel" type="Label" parent="Panel/VBox"]
 layout_mode = 2
-theme_override_colors/font_color = Color(1, 0.95, 0.6, 1)
-theme_override_colors/font_outline_color = Color(0, 0, 0, 0.9)
-theme_override_constants/outline_size = 4
-theme_override_font_sizes/font_size = 26
+theme_type_variation = &"Subtitle"
 text = "👨‍💻 Desarrollado completamente por JvWyatt"
 horizontal_alignment = 1
 autowrap_mode = 2
@@ -80,12 +70,10 @@ autowrap_mode = 2
 custom_minimum_size = Vector2(0, 60)
 layout_mode = 2
 theme_type_variation = "PrimaryButton"
-theme_override_font_sizes/font_size = 18
 text = "▶ CONTINUAR (NUEVOS RÉCORDS)"
 
 [node name="ExitButton" type="Button" parent="Panel/VBox"]
 custom_minimum_size = Vector2(0, 52)
 layout_mode = 2
 theme_type_variation = "DangerButton"
-theme_override_font_sizes/font_size = 18
 text = "🚪 SALIR AL MENÚ"

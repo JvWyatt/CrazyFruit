@@ -8,7 +8,6 @@ id = "weapon_fist"
 name = "Puño"
 description = "La herramienta más básica para empezar."
 damage = 5.0
-energy_cost = 1.0
 unlock_order = 1
 price = 0
 icon = "👊"

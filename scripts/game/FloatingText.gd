@@ -16,8 +16,7 @@ extends Node2D
 func _ready() -> void:
 	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	label.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.9))
-	label.add_theme_constant_override("outline_size", 5)
+	label.theme_type_variation = &"Subtitle"
 
 func setup(text: String, color: Color, scale_multiplier: float = 1.0, duration: float = 0.75) -> void:
 	label.text = text

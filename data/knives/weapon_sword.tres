@@ -8,7 +8,6 @@ id = "weapon_sword"
 name = "Espada"
 description = "Precisión y potencia de nivel superior."
 damage = 95.0
-energy_cost = 0.2
 unlock_order = 9
 price = 15218847
 icon = "⚔️"

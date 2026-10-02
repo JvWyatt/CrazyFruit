@@ -8,7 +8,6 @@ id = "weapon_fork"
 name = "Tenedor"
 description = "Un pequeño avance en precisión."
 damage = 10.0
-energy_cost = 0.9
 unlock_order = 2
 price = 100
 icon = "🍴"

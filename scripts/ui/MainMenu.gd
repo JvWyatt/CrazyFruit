@@ -20,7 +20,7 @@ signal open_achievements_requested
 @onready var cards_button: Button = $CenterVBox/ButtonsVBox/NavigationGrid/CardsButton
 @onready var settings_button: Button = $CenterVBox/ButtonsVBox/SettingsButton
 @onready var reset_button: Button = $SettingsPanel/SettingsCard/VBox/ResetButton
-@onready var reset_confirm_dialog: ConfirmDialog = $ResetConfirmDialog
+@onready var reset_confirm_dialog: ConfirmDialog = $SettingsPanel/ResetConfirmDialog
 @onready var version_label: Label = $VersionLabel
 
 @onready var settings_panel: Control = $SettingsPanel
@@ -123,6 +123,7 @@ func _on_settings_pressed() -> void:
 
 func _on_settings_closed() -> void:
 	SoundManager.play_click()
+	reset_confirm_dialog.visible = false
 	settings_panel.visible = false
 
 func _on_reset_pressed() -> void:

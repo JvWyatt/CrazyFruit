@@ -28,6 +28,7 @@ func _process(delta: float) -> void:
 
 @onready var main_menu: Control = $MainMenu
 @onready var game_world: Node2D = $GameWorld
+@onready var goal_celebration: Node2D = $GoalCelebration
 @onready var fruit_spawner: Node2D = $GameWorld/FruitSpawner
 @onready var swipe_controller: Node2D = $GameWorld/SwipeController
 @onready var hud: Control = $GameWorld/HUDLayer/HUD
@@ -55,6 +56,7 @@ func _ready() -> void:
 	# Wire HUD events
 	hud.open_stats_requested.connect(_on_open_stats_requested)
 	hud.quit_run_requested.connect(_on_quit_run_requested)
+	hud.bonus_celebration_requested.connect(_on_bonus_celebration_requested)
 	stats_modal.open_cards_requested.connect(_on_open_active_cards_requested)
 
 	# Wire Modals events
@@ -96,13 +98,13 @@ func _init_fruit3d_overlay() -> void:
 
 func _current_screen_tag() -> String:
 	if main_menu.visible and (settings_panel_visible()):
+		if main_menu.reset_confirm_dialog.visible: return "menu+settings+reset"
 		return "menu+settings"
 	if main_menu.visible:
 		if prestige_shop_modal.visible: return "menu+prestige"
 		if progress_modal.visible: return "menu+progress"
 		if achievements_modal.visible: return "menu+achievements"
 		if cards_modal.visible: return "menu+cards"
-		if main_menu.get_node("ResetConfirmDialog").visible: return "menu+reset"
 		return "menu"
 	if game_world.visible:
 		return "game"
@@ -111,7 +113,15 @@ func _current_screen_tag() -> String:
 func settings_panel_visible() -> bool:
 	return main_menu.has_node("SettingsPanel") and main_menu.get_node("SettingsPanel").visible
 
+func _on_bonus_celebration_requested() -> void:
+	UiTheme.golden_confetti(goal_celebration, get_viewport().get_visible_rect().size)
+
+func _clear_goal_celebration() -> void:
+	for child in goal_celebration.get_children():
+		child.queue_free()
+
 func _show_main_menu() -> void:
+	_clear_goal_celebration()
 	_log("show_menu")
 	main_menu.visible = true
 	SoundManager.play_menu_music()
@@ -169,6 +179,7 @@ func _on_quit_run_requested() -> void:
 	GameManager.end_run_failed()
 
 func _on_order_completed(order_num: int) -> void:
+	_clear_goal_celebration()
 	fruit_spawner.clear_all()
 	# Objetivo del juego: al completar el día de victoria (get_win_day()) se muestran los CRÉDITOS
 	# en lugar del flujo normal de fin de día. Desde ahí se puede continuar
@@ -193,10 +204,12 @@ func _on_card_chosen(order_num: int) -> void:
 	run_upgrade_modal.open_modal(order_num)
 
 func _on_start_next_order_from_shop() -> void:
+	_clear_goal_celebration()
 	fruit_spawner.enable_spawning()
 	GameManager.advance_to_next_order()
 
 func _on_run_ended(summary: Dictionary) -> void:
+	_clear_goal_celebration()
 	fruit_spawner.clear_all()
 	results_modal.open_modal(summary)
 

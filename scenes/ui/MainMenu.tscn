@@ -146,9 +146,6 @@ text = " AJUSTES"
 icon = ExtResource("10_nqw28")
 expand_icon = true
 
-[node name="ResetConfirmDialog" parent="." unique_id=1353792082 instance=ExtResource("3_cd")]
-layout_mode = 1
-
 [node name="SettingsPanel" type="Control" parent="." unique_id=2092562350]
 visible = false
 layout_mode = 1
@@ -205,3 +202,6 @@ expand_icon = true
 custom_minimum_size = Vector2(0, 52)
 layout_mode = 2
 text = "← VOLVER"
+
+[node name="ResetConfirmDialog" parent="SettingsPanel" unique_id=1353792082 instance=ExtResource("3_cd")]
+layout_mode = 1

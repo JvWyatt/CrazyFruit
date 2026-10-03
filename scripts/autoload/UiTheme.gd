@@ -278,38 +278,42 @@ func _cleanup_confetti_later(particles: Node) -> void:
 	if is_instance_valid(particles):
 		particles.queue_free()
 
-# Lluvia de confeti DORADO para un momento puntual (p. ej. cumplir la cuota del
+# Lluvia de confeti DORADO durante la fase BONUS (al cumplir la cuota del
 # día). A diferencia de confetti_burst(), que explota desde un punto, aquí las
 # partículas caen desde una franja ancha de la pantalla: es un aviso de que el
 # objetivo del día se ha cumplido y que a partir de ahora el dinero es ganancia
-# extra. Es DISCRETA a propósito (pocas partículas, caída lenta, sin
-# explosividad) para no tapar el juego ni interrumpir la partida, y se limpia
-# sola al terminar.
-func golden_confetti(parent: Node, width: float) -> void:
+# extra. La franja inicial ocupa el fondo superior para verse desde el primer
+# instante, sin invadir la UI. Main la elimina al terminar la ronda o salir.
+func golden_confetti(parent: Node, viewport_size: Vector2) -> void:
 	if parent == null:
 		return
 	var particles := CPUParticles2D.new()
-	particles.position = Vector2(maxf(width, 1.0) * 0.5, -12.0)
-	particles.z_index = 5
+	particles.position = Vector2(viewport_size.x * 0.5, viewport_size.y * 0.3)
 	particles.emitting = true
-	particles.amount = 56
-	particles.lifetime = 2.0
-	particles.preprocess = 0.0
-	particles.one_shot = true
+	particles.amount = 72
+	particles.lifetime = 3.2
+	particles.local_coords = false
+	particles.fixed_fps = 30
+	particles.preprocess = 1.0
+	particles.one_shot = false
 	particles.explosiveness = 0.0
 	particles.emission_shape = CPUParticles2D.EMISSION_SHAPE_RECTANGLE
-	particles.emission_rect_extents = Vector2(maxf(width, 1.0) * 0.5, 8.0)
+	particles.emission_rect_extents = Vector2(viewport_size.x * 0.5, viewport_size.y * 0.3)
 	particles.direction = Vector2(0, 1)
 	particles.spread = 18.0
-	particles.gravity = Vector2(0, 130)
-	particles.initial_velocity_min = 26.0
-	particles.initial_velocity_max = 70.0
+	particles.gravity = Vector2(0, 70)
+	particles.initial_velocity_min = 100.0
+	particles.initial_velocity_max = 180.0
 	particles.angular_velocity_min = -110.0
 	particles.angular_velocity_max = 110.0
 	particles.damping_min = 6.0
 	particles.damping_max = 18.0
-	particles.scale_amount_min = 2.0
-	particles.scale_amount_max = 4.0
+	particles.scale_amount_min = 0.7
+	particles.scale_amount_max = 1.3
+	# Confeti rectangular: más legible que los puntos de un píxel por defecto.
+	var image := Image.create(4, 8, false, Image.FORMAT_RGBA8)
+	image.fill(Color.WHITE)
+	particles.texture = ImageTexture.create_from_image(image)
 	var ramp := Gradient.new()
 	ramp.offsets = PackedFloat32Array([0.0, 0.35, 0.75, 1.0])
 	ramp.colors = PackedColorArray([
@@ -324,7 +328,6 @@ func golden_confetti(parent: Node, width: float) -> void:
 	scale_curve.add_point(Vector2(1, 1.0), 0, 0, 0, 0)
 	particles.scale_amount_curve = scale_curve
 	parent.add_child(particles)
-	_cleanup_confetti_later(particles)
 
 # Ráfaga de partículas de un solo color (p. ej. polvo gris al romper una
 # piedra). Se autolimpia solo.

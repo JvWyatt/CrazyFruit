@@ -19,6 +19,7 @@ extends Control
 
 signal open_stats_requested
 signal quit_run_requested
+signal bonus_celebration_requested
 
 @onready var money_label: Label = $TopContainer/VBox/MoneyBar/MoneyLabel
 @onready var money_bar: ProgressBar = $TopContainer/VBox/MoneyBar
@@ -157,10 +158,10 @@ func _on_order_progress_changed(progress: float, target: float) -> void:
 	money_bar.modulate = UiTheme.COLOR_ACCENT if bonus_phase else Color.WHITE
 	_update_money_display(GameManager.run_money)
 
-# El día se cumple con una fruta: confeti dorado discreto (una sola vez) + aviso
-# en el centro. A partir de ese momento la interfaz se queda en modo BONUS.
+# El día se cumple con una fruta: activa una sola lluvia dorada hasta terminar
+# la ronda + aviso en el centro. La interfaz se queda en modo BONUS.
 func _on_order_goal_reached(_bonus: float) -> void:
-	UiTheme.golden_confetti(self, size.x)
+	bonus_celebration_requested.emit()
 	_show_bonus_banner()
 	_on_order_progress_changed(GameManager.order_progress, GameManager.order_target)
 
